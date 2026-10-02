@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-ink-0: #05070a;
+  --color-ink-1: #080b0e;
+  --color-ink-2: #0d1115;
+  --color-ink-3: #14191e;
+  --color-bone: #d8d6ce;
+  --color-ash: #a2a6a4;
+  --color-slate: #6f7576;
+  --color-iron: #3b4246;
+  --color-amber: #d0a45b;
+  --color-cyan: #7fb8c7;
+  --color-mars: #c76e4b;
+  --color-ok: #9dba9b;
+  --color-warn: #d49a56;
+  --color-crit: #c65b55;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: #05070a;
+  color: #d8d6ce;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+canvas {
+  touch-action: none;
+  outline: none;
+}
+
+:focus-visible {
+  outline: 1px solid #d0a45b;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #d0a45b;
+  color: #05070a;
+}
+
+/* ---------- instrument-module surfaces ---------- */
+.module {
+  background-color: rgba(8, 11, 14, 0.9);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  border: 1px solid #1d2429;
+  border-top-color: #2a3238;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 10px 30px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f7576;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.ctl {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a2a6a4;
+  background: #0d1115;
+  border: 1px solid #262e34;
+  border-bottom-color: #14191e;
+  padding: 7px 11px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  min-height: 30px;
+}
+.ctl:hover {
+  color: #d8d6ce;
+  border-color: #3b4246;
+  background: #14191e;
+}
+.ctl:active {
+  background: #080b0e;
+}
+.ctl[data-on="true"] {
+  color: #05070a;
+  background: #d0a45b;
+  border-color: #d0a45b;
+}
+.ctl-primary {
+  color: #d0a45b;
+  border-color: #6b5530;
+}
+.ctl-primary:hover {
+  background: #d0a45b;
+  color: #05070a;
+}
+
+@media (pointer: coarse) {
+  .ctl {
+    min-height: 42px;
+    padding: 9px 13px;
+  }
+}
+
+.rule {
+  height: 1px;
+  background: #1d2429;
+}
+
+.tick-bg {
+  background-image: repeating-linear-gradient(90deg, #2a3238 0 1px, transparent 1px 8px);
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #3b4246 transparent;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: var(--len, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pulse1 {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--run, 60px));
+  }
+}
+@keyframes bootLine {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.anim-up {
+  animation: fadeUp 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.reduced * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* in-world hotspot */
+.hotspot {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #d0a45b;
+  background: rgba(5, 7, 10, 0.6);
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+.hotspot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #d0a45b;
+  border-radius: 50%;
+}
+.hotspot:hover::before {
+  content: attr(title);
+  position: absolute;
+  left: 18px;
+  top: -4px;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #d8d6ce;
+  background: rgba(5, 7, 10, 0.85);
+  border: 1px solid #3b4246;
+  padding: 3px 7px;
+  pointer-events: none;
+}
+.hotspot[data-active="true"] {
+  border-color: #d8d6ce;
+  box-shadow: 0 0 0 4px rgba(208, 164, 91, 0.25);
+}

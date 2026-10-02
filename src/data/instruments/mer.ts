@@ -1,0 +1,70 @@
+import type { HardwareComponent } from "@/types";
+
+/** Mars Exploration Rover payload. Positions are in rover coordinates (metres, +x forward, +y up). */
+export const merHardware: HardwareComponent[] = [
+  {
+    id: "pancam", name: "PANCAM", full: "PANORAMIC CAMERA",
+    purpose: "Photographs the landscape in colour to map geology, minerals and dust.",
+    capability: "Stereo pair on the mast about 1.5 m above ground. Filter wheels span visible to near-infrared light (roughly 400–1,100 nm).",
+    how: "A CCD detector records light through one filter per exposure. Scientists combine exposures into true-colour images and spectra of rocks and soil; stereo pairs give distance and shape.",
+    pos: [0.3, 1.52, 0.15], view: [1, 0.12, 0.45], dist: 0.95,
+    decode: { full: "PANORAMIC CAMERA", what: "A pair of high-resolution digital cameras on the rover mast, built for wide landscape views and fine colour work.", measures: "Brightness of reflected sunlight at many wavelengths, from visible into near-infrared.", why: "Different minerals reflect light differently. By reading those differences scientists choose targets and map geology before driving there." },
+  },
+  {
+    id: "navcam", name: "NAVCAM", full: "NAVIGATION CAMERA",
+    purpose: "Wide black-and-white views for driving and for panoramas of the terrain ahead.",
+    capability: "Stereo monochrome pair on the mast with a field of view of about 45°.",
+    how: "Navcam images are used on Earth to plan drives and to build the terrain models that show where the rover can safely go.",
+    pos: [0.31, 1.54, -0.05], view: [1, 0.15, -0.6], dist: 0.8,
+    decode: { full: "NAVIGATION CAMERA", what: "Two black-and-white cameras on the mast that look at the ground and horizon.", measures: "Shape and distance of terrain, rocks and slopes.", why: "Engineers use them to plan safe drives; scientists use them to spot interesting layers and rocks from afar." },
+  },
+  {
+    id: "minites", name: "MINI-TES", full: "MINIATURE THERMAL EMISSION SPECTROMETER",
+    purpose: "Identifies minerals and measures temperature from a distance using infrared light.",
+    capability: "Infrared spectrometer covering about 5–29 µm, fed by a periscope assembly under the mast.",
+    how: "Warm rocks emit infrared radiation. Each mineral absorbs and emits at characteristic wavelengths, so the spectrum acts as a fingerprint.",
+    pos: [0.27, 0.95, 0.0], view: [1, 0.25, -0.7], dist: 1.1,
+    decode: { full: "MINIATURE THERMAL EMISSION SPECTROMETER", what: "An infrared instrument that reads the heat glow of rocks and sky.", measures: "Thermal infrared spectra between about 5 and 29 micrometres.", why: "It lets the team identify minerals in a rock without driving up to it." },
+  },
+  {
+    id: "hazcam", name: "HAZCAM", full: "HAZARD AVOIDANCE CAMERA",
+    purpose: "Checks the ground right in front of the wheels.",
+    capability: "Wide-angle (about 120°) stereo pairs on the front and rear of the body.",
+    how: "Hazcam images are used to build a 3D picture of nearby terrain so drives can avoid rocks and steep slopes.",
+    pos: [0.51, 0.42, 0.22], view: [1, 0.2, 0.55], dist: 0.9,
+    enables: "Hazcam produces no science headline of its own. It protects the rover so every other instrument can reach its next target.",
+    decode: { full: "HAZARD AVOIDANCE CAMERA", what: "Low-mounted wide-angle cameras on the rover body.", measures: "Terrain shape immediately around the rover.", why: "Safe driving is what lets a solar-powered robot travel tens of kilometres." },
+  },
+  {
+    id: "rat", name: "RAT", full: "ROCK ABRASION TOOL",
+    purpose: "Grinds into a rock to expose fresh material under the dust and weathered surface.",
+    capability: "Grinds a patch about 45 mm across and up to about 5 mm deep.",
+    how: "Two grinding wheels rotate while the tool presses against the rock. Contact instruments then measure the cleaned surface.",
+    pos: [0.78, 0.4, 0.0], view: [0.7, 0.9, 0.5], dist: 0.6,
+    decode: { full: "ROCK ABRASION TOOL", what: "A small grinder on the robotic arm.", measures: "Nothing itself: it prepares the rock for measurement.", why: "Dust and weathering can hide what a rock is made of. Grinding gives an honest look inside." },
+  },
+  {
+    id: "mi", name: "MI", full: "MICROSCOPIC IMAGER",
+    purpose: "Takes extreme close-ups of rock and soil textures.",
+    capability: "Black-and-white close-up camera resolving about 31 µm per pixel.",
+    how: "Mounted on the arm, it images rock surfaces from a few centimetres, revealing grains, layers and small spheres.",
+    pos: [0.87, 0.34, 0.0], view: [1, 0.4, 0.2], dist: 0.55,
+    decode: { full: "MICROSCOPIC IMAGER", what: "A camera that works like a geologist's hand lens.", measures: "Grain size, shape and layering at the scale of tens of micrometres.", why: "Texture reveals how a rock formed: carried by water, blown by wind, or cooled from lava." },
+  },
+  {
+    id: "apxs", name: "APXS", full: "ALPHA PARTICLE X-RAY SPECTROMETER",
+    purpose: "Measures which chemical elements a rock or soil contains.",
+    capability: "Contact instrument. A curium-244 source emits alpha particles and X-rays; atoms in the target emit X-rays with energies unique to each element.",
+    how: "The arm places APXS against a target for hours. A detector records the X-ray energies, producing an elemental composition.",
+    pos: [0.81, 0.36, -0.07], view: [1, 0.35, -0.5], dist: 0.55,
+    decode: { full: "ALPHA PARTICLE X-RAY SPECTROMETER", what: "A chemistry sensor pressed against rock and soil.", measures: "Abundance of elements such as sulfur, magnesium, iron, silicon and chlorine.", why: "Chemistry tells scientists what the rock is made of, and what water did to it." },
+  },
+  {
+    id: "mb", name: "MÖSSBAUER", full: "MÖSSBAUER SPECTROMETER (MIMOS II)",
+    purpose: "Identifies iron-bearing minerals and how oxidised the iron is.",
+    capability: "Contact instrument using gamma rays from a cobalt-57 source and the Mössbauer effect in iron-57.",
+    how: "Gamma rays strike the target; the absorption pattern identifies which iron minerals are present, such as hematite or jarosite.",
+    pos: [0.8, 0.3, 0.07], view: [1, 0.3, 0.55], dist: 0.55,
+    decode: { full: "MÖSSBAUER SPECTROMETER", what: "A contact instrument that probes iron atoms with gamma rays.", measures: "Iron mineral types and oxidation state.", why: "Some iron minerals form only when water is present. Detecting them is a direct clue to past environments." },
+  },
+];
