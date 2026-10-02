@@ -72,6 +72,44 @@ export const opportunity: Artifact = {
       ],
     },
     {
+      id: "q-esperance",
+      question: "What does the rock 'Esperance' record about ancient Martian water?",
+      recordName: "ESPERANCE CASE FILE",
+      instrumentIds: ["pancam", "rat", "mi", "apxs"],
+      measurement: {
+        simple: "A pale rock photographed by Pancam, scraped clean by the RAT, then chemically fingerprinted by APXS.",
+        technical: "Pancam 3-exposure false-color composite (sol 3230); RAT abrasion at target point Esperance6; APXS elemental composition compared against other Meridiani rocks examined over nine-plus years.",
+      },
+      observations: [
+        { id: "o1", label: "PALE ROCK IMAGED · SOL 3230", detail: "Pancam composite shows 'Esperance', about 70 cm across, near Matijevic Hill. Three exposures through different filters, presented in false color to separate materials. 23 February 2013.", mediaId: "media-pia17074" },
+        { id: "o2", label: "RAT EXPOSES ESPERANCE6", detail: "The rock abrasion tool ground away surface material at the target point 'Esperance6' so the contact instruments could measure fresh rock instead of dust and weathering rind.", mediaId: "media-pia17074-fig" },
+        { id: "o3", label: "APXS MEASURES COMPOSITION", detail: "The alpha particle X-ray spectrometer identified chemical elements in the abraded spot: higher aluminium and silica, lower calcium and iron than other rocks Opportunity had examined.", mediaId: "media-pia17074-fig" },
+      ],
+      evidence: [
+        { id: "e1", label: "AL- AND SI-RICH, CA- AND FE-POOR", detail: "Esperance6 composition stands apart from every other Meridiani rock in nine years of APXS data — enriched in aluminium and silica, depleted in calcium and iron.", sourceId: "pia17074" },
+        { id: "e2", label: "PRELIMINARY CLAY INTERPRETATION", detail: "NASA's preliminary interpretation points to clay mineral content produced by intensive alteration by water. Stated as preliminary — a working reading, not a final verdict.", sourceId: "pia17074" },
+      ],
+      interpretation: "Esperance looks like a rock that water attacked hard enough to leave clay minerals behind — the most water-altered chemistry Opportunity found at Meridiani. NASA states this as a preliminary interpretation: consistent with intense aqueous alteration, still open to refinement.",
+      layers: {
+        explore: "This pale rock may hold clay — and clay means water worked on it for a long time.",
+        understand: "HOW TO READ THIS IMAGE: the colors are false color, exaggerated on purpose so different rock materials stand out — Mars does not look like this to human eyes. Pancam took the same view through three different color filters and combined them. The RAT then scraped a clean spot (Esperance6), and APXS read its chemistry: lots of aluminium and silica, little calcium and iron. That recipe matches clay minerals, which form when water soaks rock thoroughly.",
+        technical: "Pancam false-color composite PIA17074 (sol 3230, Feb 2013); RAT abrasion + APXS at Esperance6 (inspected May 2013). Enrichment in Al/Si with Ca/Fe depletion relative to the Meridiani APXS dataset; preliminary interpretation as clay-bearing, intensively water-altered material (NASA Photojournal PIA17074). Compare with the acidic Burns formation (q-water) and near-neutral Endeavour rim (q-endeavour) for the site's full water-chemistry range.",
+      },
+      sources: [
+        { sourceId: "pia17074", claim: "Esperance6 chain: Pancam image, RAT abrasion, APXS composition, preliminary clay interpretation." },
+        { sourceId: "nasa-mer-instruments", claim: "Pancam/RAT/APXS operating principles and specifications." },
+      ],
+      trace: [
+        { kind: "image", title: "REAL IMAGE · PANCAM SOL 3230", detail: "False-color composite of 'Esperance', ~70 cm across. Three exposures through different filters.", mediaId: "media-pia17074", sourceId: "pia17074" },
+        { kind: "target", title: "TARGET · ESPERANCE6", detail: "A point on the pale rock near Matijevic Hill, chosen for contact science. See the annotated target map.", mediaId: "media-pia17074-fig", sourceId: "pia17074" },
+        { kind: "action", title: "RAT ABLATES THE SURFACE", detail: "The rock abrasion tool grinds away dust and weathered rind, exposing fresh mineral surface for analysis.", sourceId: "nasa-mer-instruments" },
+        { kind: "measurement", title: "APXS MEASURES ELEMENTS", detail: "Alpha particles and X-rays from a curium-244 source make atoms in the rock emit X-rays unique to each element. Hours of accumulation give the composition.", sourceId: "nasa-mer-instruments" },
+        { kind: "observation", title: "OBSERVATION · AL/SI HIGH, CA/FE LOW", detail: "Higher aluminium and silica, lower calcium and iron than any other rock Opportunity examined in nine-plus years on Mars.", sourceId: "pia17074" },
+        { kind: "evidence", title: "EVIDENCE · UNUSUAL CHEMISTRY", detail: "The composition stands apart from the full Meridiani APXS dataset — something altered this rock more intensely than its surroundings.", sourceId: "pia17074" },
+        { kind: "interpretation", title: "INTERPRETATION · WATER-ALTERED CLAY (PRELIMINARY)", detail: "NASA's preliminary interpretation: clay mineral content from intensive alteration by water. Preliminary — the working reading, stated with its uncertainty intact.", sourceId: "pia17074" },
+      ],
+    },
+    {
       id: "q-endeavour",
       question: "What kind of water chemistry is recorded at the rim of Endeavour crater?",
       recordName: "OLDER, GENTLER WATER",
@@ -135,6 +173,7 @@ export const opportunity: Artifact = {
     ev("victoria", 951, null, "ARRIVES AT VICTORIA CRATER", "After more than two years of driving south, the rover reaches the rim of a crater roughly 730 m wide.", "drive", "nasa-mer", "victoria"),
     ev("victoria-exit", 1634, null, "LEAVES VICTORIA", "Opportunity departs Victoria to begin a long drive toward Endeavour crater.", "drive", "nasa-mer", "victoria-exit"),
     ev("endeavour", 2681, null, "ARRIVES AT ENDEAVOUR CRATER", "The rover reaches the rim of a crater about 22 km across, with older rocks than the plains.", "drive", "arvidson2014", "capeyork"),
+    ev("esperance", 3230, null, "TARGET: ESPERANCE", "At Matijevic Hill, Pancam images the pale rock 'Esperance'. The RAT exposes target Esperance6 and APXS measures aluminium- and silica-rich chemistry — a preliminary sign of water-altered clay.", "science", "pia17074"),
     ev("marathon", 3967, null, "A MARATHON ON MARS", "Cumulative driving distance passes 42.195 km — a marathon.", "drive", "nasa-mer", "marathon"),
     ev("last", LAST_SOL, null, "LAST COMMUNICATION", "The final signal arrives on 10 June 2018, as a planet-encircling dust storm blocks sunlight.", "end", "nasa-opp-end", "perseverance"),
     ev("complete", 5352, null, "MISSION DECLARED COMPLETE", "After repeated attempts to contact the rover, NASA declares the mission complete.", "end", "nasa-opp-end", "perseverance"),
@@ -165,6 +204,8 @@ export const opportunity: Artifact = {
   },
   sources: [
     { sourceId: "nasa-mer", claim: "Rover design, landing, timeline of major drives." },
+    { sourceId: "nasa-mer-instruments", claim: "Instrument specs, calibration systems, operating principles." },
+    { sourceId: "pia17074", claim: "Esperance investigation: image, RAT, APXS, interpretation." },
     { sourceId: "nasa-opp-end", claim: "Last communication on sol 5111; mission declared complete." },
     { sourceId: "squyres2004", claim: "Evidence for an ancient aqueous environment." },
     { sourceId: "nasa-3d", claim: "Official model availability (not yet integrated)." },

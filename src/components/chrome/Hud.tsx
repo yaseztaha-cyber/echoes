@@ -16,6 +16,7 @@ import { ScienceChain, SignalLink } from "@/components/science/ScienceChain";
 import { Archive, GroundTruth, Search } from "@/components/sources/Overlays";
 import { MissionLab } from "@/components/lab/MissionLab";
 import { Remains, Finale } from "@/components/mission/Remains";
+import { Evidence } from "@/components/evidence/EvidenceTrace";
 import { clock } from "@/engine/time/clock";
 
 function MissionConsole() {
@@ -388,6 +389,7 @@ export function Hud() {
       {overlay === "lab" && <MissionLab />}
       {overlay === "remains" && <Remains />}
       {overlay === "finale" && <Finale />}
+      {overlay === "evidence" && <Evidence />}
       <Compare />
       <Decode />
       <Veil />

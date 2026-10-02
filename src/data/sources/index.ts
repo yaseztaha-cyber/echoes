@@ -25,6 +25,8 @@ export const SOURCES: SourceRecord[] = [
   { id: "nasa-bm", title: "Blue Marble: Land Surface, Shallow Water, and Shaded Topography", publisher: "NASA Earth Observatory", kind: "NASA", url: "https://visibleearth.nasa.gov/images/57752/blue-marble-land-surface-shallow-water-and-shaded-topography", supports: "Earth surface imagery" },
   { id: "photojournal", title: "NASA Photojournal", publisher: "NASA / JPL-Caltech", kind: "ARCHIVE", url: "https://photojournal.jpl.nasa.gov/", supports: "Mission imagery used in the photograph / 3D comparison" },
   { id: "nasa-3d", title: "NASA 3D Resources", publisher: "NASA", kind: "NASA", url: "https://science.nasa.gov/3d-resources/", supports: "Official spacecraft models (integration pending; current models are reconstructions)" },
+  { id: "pia17074", title: "'Esperance' Target Examined by Opportunity (PIA17074)", publisher: "NASA / JPL-Caltech / Cornell / ASU", kind: "NASA", url: "https://photojournal.jpl.nasa.gov/catalog/PIA17074", supports: "Esperance Pancam image (sol 3230), RAT abrasion at Esperance6, APXS composition, preliminary clay interpretation" },
+  { id: "nasa-mer-instruments", title: "MER Science Instruments: specs and calibration", publisher: "NASA Science", kind: "NASA", url: "https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/science-instruments/", supports: "Pancam, MI, Mini-TES, Mössbauer, APXS, RAT, magnet array and calibration target specifications" },
 ];
 
 export const sourceById = (id: string) => SOURCES.find((s) => s.id === id);

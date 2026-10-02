@@ -36,6 +36,12 @@ export interface MediaAsset {
   accuracy?: Accuracy;
   caption?: string;
   recordUrl?: string;
+  /** Mars sol of the observation, when documented. */
+  sol?: number;
+  /** Hardware id that recorded it, when known. */
+  instrumentId?: string;
+  /** e.g. FALSE COLOR COMPOSITE, ANNOTATED, TRUE-COLOR APPROXIMATION. */
+  imageType?: string;
 }
 
 export interface ModelAsset {
@@ -97,6 +103,15 @@ export interface Evidence {
   sourceId: string;
 }
 
+/** One clickable link in an instrument → measurement → evidence chain. */
+export interface TraceStep {
+  kind: "image" | "target" | "action" | "measurement" | "observation" | "evidence" | "interpretation";
+  title: string;
+  detail: string;
+  mediaId?: string;
+  sourceId?: string;
+}
+
 export interface ScienceQuestion {
   id: string;
   question: string;
@@ -108,6 +123,8 @@ export interface ScienceQuestion {
   interpretation: string;
   layers: { explore: string; understand: string; technical: string };
   sources: [SourceReference, ...SourceReference[]];
+  /** Clickable instrument → image → data → evidence chain, when documented. */
+  trace?: TraceStep[];
 }
 
 export interface TimelineEvent {

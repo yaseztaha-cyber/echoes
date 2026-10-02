@@ -38,8 +38,16 @@ export function InstrumentPanel() {
             )}
             <div className="flex flex-col gap-1.5">
               {!how && aud !== "student" && <button className="ctl" onClick={() => { sfx.select(); setHow(true); }}>HOW IT WORKED</button>}
+              {qs.some((x) => x.trace && x.trace.length > 0) ? (
+                <button
+                  className="ctl ctl-primary"
+                  onClick={() => { sfx.confirm(); const t = qs.find((x) => x.trace && x.trace.length > 0) ?? qs[0]; useEcho.setState({ overlay: "evidence", questionId: t.id }); }}
+                >
+                  SHOW ME THE DATA →
+                </button>
+              ) : null}
               {qs.length > 0 ? (
-                <button className="ctl ctl-primary" onClick={() => openScience(qs[0].id)}>SEE THE SCIENCE →</button>
+                <button className="ctl" onClick={() => openScience(qs[0].id)}>SEE THE SCIENCE →</button>
               ) : (
                 <div className="border border-iron/60 p-2 text-[12px] leading-snug text-ash">
                   <Chip tone="text-cyan">SUPPORT ROLE</Chip>
