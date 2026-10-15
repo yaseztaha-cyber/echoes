@@ -255,3 +255,28 @@ placeholders remain: every globe is a sourced map or a labelled representative.
 - KTX2 re-confirmed deferred (single-file conflict stands).
 - Benchmarks: `docs/RENDERING_BENCHMARKS.md` — static budgets measured, camera
   paths defined, in-browser numbers pending a GPU machine (stated, not claimed).
+
+---
+
+## PHASE 4.1 — VALIDATION RECORD (real browser, real GPU)
+
+- Test rig: Windows, Intel HD Graphics 530 via ANGLE/D3D11, Playwright Chromium,
+  DPR 1.25, `high` preset with auto-quality ON. MAX_TEXTURE_SIZE 16384.
+- Measured: solar overview 60.4 FPS (p95 16.8 ms, p99 18.5); Mars close orbit
+  60.1 FPS (p95 17.0, p99 19.7); Opportunity site 60.2 FPS (p95 16.8, p99 17.6).
+- Full journey replayed by automation: boot → ENTER → Mars focus → orbit →
+  site select → descend → site. No position jumps, no blank globes, markers
+  aligned (Opportunity panel shows documented 1.9462°S 354.4734°E).
+- Console: 0 application errors. Upstream THREE.Clock deprecation noted, not ours.
+- Jupiter decision: NASA Cassini globe (Dec 7 2000, ~144 km/px, NASA/JPL/Univ. of
+  Arizona) evaluated — the downloadable is a perspective globe RENDER, not the
+  cylindrical map. Wrapping it as an equirectangular texture would violate the
+  false-mapping rule, so Voyager 720px stands with its 1979-epoch label. The
+  CICLOPS gallery is recorded as the on-demand observation path
+  (https://ciclops.org/view/92/).
+- Saturn/Uranus/Neptune authentic observation views: deferred to the archive
+  phase, which owns image-viewer infrastructure — recorded, not silently dropped.
+- Defect fixed: ReplayCard overlapped the site minimap on short viewports.
+  First enforced zone rule — one contextual panel per zone; the minimap yields
+  while the event card is open and returns on close (no z-index change).
+- Favicon 404 fixed with an inline SVG data-URI (zero bundle cost).

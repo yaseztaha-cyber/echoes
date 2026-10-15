@@ -312,6 +312,9 @@ export function Hud() {
   const aid = useEcho((s) => s.artifactId);
   const overlay = useEcho((s) => s.overlay);
   const minimap = useEcho((s) => s.minimap);
+  // Zone rule (Phase 4.1): one contextual panel per zone. The mission-event
+  // card owns the left zone while open; the minimap yields and returns on close.
+  const eventOpen = useEcho((s) => s.activeEventId !== null);
   const scienceOpen = useEcho((s) => s.scienceOpen);
   const reduced = useEcho((s) => s.reducedMotion);
   const art = artifactById(aid);
@@ -371,7 +374,7 @@ export function Hud() {
           <div className={`absolute bottom-[100px] right-3 flex flex-col items-end gap-2 max-md:hidden ${flying ? "opacity-30" : ""}`}>
             <Provenance />
           </div>
-          {minimap && (
+          {minimap && !eventOpen && (
             <div className={`pointer-events-auto absolute left-3 top-[260px] max-md:hidden ${flying ? "opacity-40" : ""}`}>
               <Minimap />
             </div>
