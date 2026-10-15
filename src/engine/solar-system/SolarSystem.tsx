@@ -6,6 +6,8 @@ import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_V
 import { Atmosphere, BandedGlobe, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
+import { HI_URLS } from "@/engine/textures/manager";
+import { useHiMap } from "@/engine/textures/hiGlobe";
 import sunUrl from "@/assets/tex/sun.jpg";
 import { clock } from "@/engine/time/clock";
 import { tele, siteRef, htmlLayer } from "@/engine/telemetry";
@@ -70,11 +72,13 @@ function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {
   const sunFrom = () => sun;
   const venusView = useEcho((s) => s.venusView);
   const kind = b.id === "venus" && venusView === "clouds" ? "venus_clouds" : b.tex;
+  // Phase 4: hi-res upgrade only for bodies with runtime 4K delivery.
+  const hiMap = useHiMap(b.id, b.radius, kind && HI_URLS[kind] ? HI_URLS[kind] : null);
   return (
     <>
       {kind ? (
         <Suspense fallback={<PlainGlobe color={b.color} radius={b.radius} />}>
-          <Globe kind={kind} radius={b.radius} rough={1} />
+          <Globe kind={kind} radius={b.radius} rough={1} hiMap={hiMap} />
         </Suspense>
       ) : b.bands ? (
         <BandedGlobe colors={b.bands} radius={b.radius} />

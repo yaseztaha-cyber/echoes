@@ -48,13 +48,16 @@ interface GlobeProps {
   radius: number;
   detail?: boolean;
   rough?: number;
+  /** Phase 4 hi-res override. Bundled map below stays mounted as the fallback. */
+  hiMap?: THREE.Texture | null;
 }
 
 /** Textured globe. Color maps are published calibrated imagery: sRGB, no material repaint. */
-export function Globe({ kind, radius, detail, rough = 1 }: GlobeProps) {
-  const map = useTexture(URLS[kind]);
-  map.anisotropy = 8;
-  map.colorSpace = THREE.SRGBColorSpace;
+export function Globe({ kind, radius, detail, rough = 1, hiMap }: GlobeProps) {
+  const base = useTexture(URLS[kind]);
+  base.anisotropy = 8;
+  base.colorSpace = THREE.SRGBColorSpace;
+  const map = hiMap ?? base;
   const u = useRef({ uDetail: { value: 0 } });
   const mat = useMemo(() => {
     // Phase 3: calibrated source maps (MDIM 2.1, LROC, BMNG) — no tint repaint.

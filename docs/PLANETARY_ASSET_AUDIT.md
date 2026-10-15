@@ -231,3 +231,27 @@ Deliberate non-upgrades (spec §15, §29): small maps delivered native — a 720
 Voyager Jupiter is honest; upscaling it to 2K would be the exact fabrication the
 spec forbids. Hi-res streaming remains a later phase. No procedural planet
 placeholders remain: every globe is a sourced map or a labelled representative.
+
+---
+
+## PHASE 4 — ADAPTIVE ENGINE RECORD
+
+- Stages A→C per body by screen fraction with hysteresis (no flapping);
+  D/E remain planet/site scenes. `src/engine/lod/stages.ts`.
+- Residency manager: dedup, priority, LRU eviction, refcount + pin protection,
+  failure retry, cancel. Fallbacks stay on `useTexture` (always resident, never
+  blank). 96 MiB cap ≈ two 4K chains. `src/engine/textures/`.
+- Hi-res delivery: `public/tex-hi/` 4K for earth/moon/mars/pluto only (sources
+  allow it); fetched on demand at stage C on high/ultra, prefetched at B,
+  released below. Small maps have no hi-res tier — recorded, not upscaled.
+- Adaptive stepper: p95-driven, ~3 s to step down, ~20 s to recover toward the
+  user's ceiling, 5 s cooldown, single-tier moves. Drives the existing quality
+  tiers (= DPR + shadows + terrain + hi-res eligibility), so dynamic render
+  resolution is bounded and visibility never changes. Manual pick sets the
+  ceiling; AUTO toggle in Settings. DevPanel shows p95, residency, estimate.
+- Jupiter Cassini upgrade attempted and declined: Jónsson path 404, PIA direct
+  dead — Voyager 720px stands with epoch label. Saturn/Uranus/Neptune authentic
+  observation mode deferred to the archive phase (recorded, not silently dropped).
+- KTX2 re-confirmed deferred (single-file conflict stands).
+- Benchmarks: `docs/RENDERING_BENCHMARKS.md` — static budgets measured, camera
+  paths defined, in-browser numbers pending a GPU machine (stated, not claimed).

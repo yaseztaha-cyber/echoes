@@ -11,8 +11,11 @@ export function DevPanel() {
   const mem = (performance as any).memory?.usedJSHeapSize;
   const rows: [string, string][] = [
     ["FPS", String(t.fps)],
+    ["FRAME P95", `${t.frameP95.toFixed(1)} MS`],
     ["DRAW CALLS", String(t.drawCalls)],
     ["TRIANGLES", t.triangles.toLocaleString()],
+    ["TEX RESIDENT / PENDING", `${t.texResident} / ${t.texPending}`],
+    ["TEX GPU EST", `${(t.texBytesEst / 1048576).toFixed(1)} MB (EST)`],
     ["TILES DRAWN / CACHED", `${t.tilesDrawn} / ${t.tilesCached}`],
     ["ACTIVE TERRAIN LOD", String(t.maxDepth)],
     ["LOADED MODELS", art ? art.model.title : "—"],
@@ -24,7 +27,7 @@ export function DevPanel() {
     ["MISSION", art?.missionId ?? "—"],
     ["ARTIFACT", art?.id ?? "—"],
     ["SOURCE IDS", art?.sources.map((x) => x.sourceId).join(", ") ?? "—"],
-    ["QUALITY", s.quality],
+    ["QUALITY", `${s.quality}${s.autoQuality ? " (AUTO ≤ " + s.qualityCeiling + ")" : " (MANUAL)"}`],
   ];
   return (
     <div className="module pointer-events-auto absolute bottom-3 left-3 z-50 w-[360px] p-3">

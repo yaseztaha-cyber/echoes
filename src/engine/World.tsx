@@ -7,7 +7,9 @@ import { PlanetScene } from "./planets/PlanetScene";
 import { SiteScene } from "./sites/SiteScene";
 import { tick } from "./time/clock";
 import { siteRef, tele, htmlLayer } from "./telemetry";
-import { useEcho } from "@/state/store";
+import { useEcho, persist } from "@/state/store";
+import { adaptive } from "./performance/adaptive";
+import { globeResidency } from "./textures/manager";
 import { artifactById } from "@/data/artifacts";
 
 function TimeDriver() {
@@ -19,6 +21,14 @@ function Perf() {
   const gl = useThree((s) => s.gl);
   const acc = { n: 0, t: 0 };
   useFrame((_, dt) => {
+    const p95 = adaptive.sample(Math.min(dt * 1000, 250));
+    tele.frameP95 = p95;
+    const st = useEcho.getState();
+    const { verdict, next } = adaptive.evaluate(st.quality, st.qualityCeiling, st.autoQuality);
+    if (verdict !== "hold" && next !== st.quality) {
+      useEcho.setState({ quality: next });
+      persist("echoes.quality", next);
+    }
     acc.n++;
     acc.t += dt;
     if (acc.t > 0.5) {
@@ -27,6 +37,10 @@ function Perf() {
       acc.t = 0;
       tele.drawCalls = gl.info.render.calls;
       tele.triangles = gl.info.render.triangles;
+      const rs = globeResidency.stats();
+      tele.texResident = rs.resident;
+      tele.texPending = rs.pending;
+      tele.texBytesEst = rs.bytesEstimate;
     }
   });
   return null;

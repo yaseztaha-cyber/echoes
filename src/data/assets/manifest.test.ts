@@ -44,6 +44,16 @@ describe("globe asset manifest", () => {
     }
   });
 
+  it("hi-res runtime delivery exists exactly where 4K sources allow", () => {
+    const hi = GLOBE_MANIFEST.filter((m) => m.hiresUrl);
+    expect(hi.map((m) => m.body).sort()).toEqual(["earth", "mars", "moon", "pluto"]);
+    for (const m of hi) {
+      expect(m.hiresUrl).toMatch(/^\/tex-hi\/.+_4k\.jpg$/);
+      const p = join(__dirname, "..", "..", "..", "public", m.hiresUrl!);
+      expect(existsSync(p), p).toBe(true);
+    }
+  });
+
   it("every entry carries an explicit scientific classification", () => {
     const allowed = ["OBSERVED", "MOSAIC", "ENHANCED", "REPRESENTATIVE", "RECONSTRUCTED", "SIMULATED"];
     for (const m of GLOBE_MANIFEST) {

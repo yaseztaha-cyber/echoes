@@ -64,6 +64,9 @@ export interface EchoState {
   progress: string[];
   last: LastLocation | null;
   quality: Quality;
+  /** Auto stepper may degrade below the ceiling and recover up to it, never above. */
+  qualityCeiling: Quality;
+  autoQuality: boolean;
   reducedMotion: boolean;
   audioOn: boolean;
   tiles: { loaded: number; needed: number; level: number; ready: boolean };
@@ -105,6 +108,8 @@ export const useEcho = create<EchoState>(() => ({
   progress: load<string[]>("echoes.progress", []),
   last: load<LastLocation | null>("echoes.last", null),
   quality: load<Quality>("echoes.quality", "high"),
+  qualityCeiling: load<Quality>("echoes.ceiling", "high"),
+  autoQuality: load<boolean>("echoes.autoq", true),
   reducedMotion:
     load<boolean | null>("echoes.reduced", null) ??
     (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches),

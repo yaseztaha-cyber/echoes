@@ -3,8 +3,12 @@ import * as THREE from "three";
 /** Mutable per-frame telemetry. Written by the engine, read by HUD at low rate. */
 export const tele = {
   fps: 60,
+  frameP95: 0,
   drawCalls: 0,
   triangles: 0,
+  texResident: 0,
+  texPending: 0,
+  texBytesEst: 0,
   altitudeM: 0,
   altLabelBasis: "ALT",
   distanceToFocusM: 0,

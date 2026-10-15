@@ -95,18 +95,23 @@ function Segmented<T extends string>({ a, b, value, onChange, label }: { a: [T, 
 
 function Settings() {
   const q = useEcho((s) => s.quality);
+  const auto = useEcho((s) => s.autoQuality);
   const reduced = useEcho((s) => s.reducedMotion);
   const audio = useEcho((s) => s.audioOn);
   return (
     <div className="module absolute right-0 top-9 z-40 w-64 p-3 anim-up">
-      <div className="label mb-1">GRAPHICS QUALITY</div>
+      <div className="label mb-1">GRAPHICS QUALITY {auto ? "· AUTO" : "· MANUAL"}</div>
       <div className="grid grid-cols-4 gap-1">
         {(["ultra", "high", "medium", "low"] as const).map((k) => (
-          <button key={k} className="ctl px-1" data-on={q === k} onClick={() => { useEcho.setState({ quality: k }); persist("echoes.quality", k); }}>
+          <button key={k} className="ctl px-1" data-on={q === k} onClick={() => { useEcho.setState({ quality: k, qualityCeiling: k }); persist("echoes.quality", k); persist("echoes.ceiling", k); }}>
             {k}
           </button>
         ))}
       </div>
+      <button className="ctl mt-1 w-full" data-on={auto} aria-pressed={auto} onClick={() => { useEcho.setState({ autoQuality: !auto }); persist("echoes.autoq", !auto); }}>
+        AUTO ADAPT {auto ? "ON" : "OFF"}
+      </button>
+      <div className="label mt-1 leading-relaxed">AUTO STEPS DOWN ON SUSTAINED SLOW FRAMES, RECOVERS TO YOUR PICK. RANGE AND MARKERS NEVER HIDE.</div>
       <div className="label mb-1 mt-3">ACCESSIBILITY</div>
       <div className="flex gap-1">
         <button className="ctl flex-1" data-on={reduced} aria-pressed={reduced} onClick={() => { useEcho.setState({ reducedMotion: !reduced }); persist("echoes.reduced", !reduced); }}>

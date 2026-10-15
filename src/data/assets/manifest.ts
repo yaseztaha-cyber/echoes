@@ -31,6 +31,8 @@ export interface GlobeAsset {
   credit: string;
   format: string;
   colorSpace: "SRGBColorSpace";
+  /** Runtime hi-res URL (public/, on-demand only) for bodies with 4K delivery. */
+  hiresUrl?: string;
   orientation: string;
   status: "APPROVED";
 }
@@ -54,6 +56,7 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     gaps: "Seasonal (December) snow/vegetation state; no night side, no clouds layer",
     credit: "NASA Earth Observatory / Blue Marble",
     format: "JPEG q90",
+    hiresUrl: "/tex-hi/earth_4k.jpg",
     colorSpace: "SRGBColorSpace",
     orientation: "Standard equirectangular; verified aligned with renderer UV + markers",
     status: "APPROVED",
@@ -76,6 +79,7 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     gaps: "Polar fill is laser albedo, not camera imagery; no elevation wired (displacement map retained for later phase)",
     credit: "NASA SVS / LRO / Arizona State University",
     format: "JPEG q90",
+    hiresUrl: "/tex-hi/moon_4k.jpg",
     colorSpace: "SRGBColorSpace",
     orientation: "Standard equirectangular; verified aligned with renderer UV + markers",
     status: "APPROVED",
@@ -98,6 +102,7 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     gaps: "Viking-era coverage/processing lineage per USGS record; regional detail deferred to streaming phase",
     credit: "USGS Astrogeology / NASA Viking",
     format: "JPEG q90",
+    hiresUrl: "/tex-hi/mars_4k.jpg",
     colorSpace: "SRGBColorSpace",
     orientation: "Standard equirectangular; verified aligned with renderer UV + markers",
     status: "APPROVED",
@@ -276,6 +281,7 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     gaps: "Southern polar night black; far-side resolution coarser; no invented far-side geography",
     credit: "USGS Astrogeology / NASA/JHUAPL/SwRI (New Horizons)",
     format: "JPEG q90",
+    hiresUrl: "/tex-hi/pluto_4k.jpg",
     colorSpace: "SRGBColorSpace",
     orientation: "Standard equirectangular per product record",
     status: "APPROVED",
