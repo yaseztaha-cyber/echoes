@@ -42,14 +42,15 @@ interface GlobeProps {
   rough?: number;
 }
 
-/** Textured globe. In planet scenes a procedural micro-detail layer fades in as altitude falls. */
+/** Textured globe. Color maps are published calibrated imagery: sRGB, no material repaint. */
 export function Globe({ kind, radius, detail, rough = 1 }: GlobeProps) {
   const map = useTexture(URLS[kind]);
   map.anisotropy = 8;
+  map.colorSpace = THREE.SRGBColorSpace;
   const u = useRef({ uDetail: { value: 0 } });
   const mat = useMemo(() => {
-    // the USGS Viking colourised mosaic is very pale; a gentle multiply restores martian ochre without repainting it
-    const m = new THREE.MeshStandardMaterial({ map, roughness: rough, metalness: 0, color: kind === "mars" ? "#d79a78" : "#ffffff" });
+    // Phase 3: calibrated source maps (MDIM 2.1, LROC, BMNG) — no tint repaint.
+    const m = new THREE.MeshStandardMaterial({ map, roughness: rough, metalness: 0, color: "#ffffff" });
     if (detail) {
       m.onBeforeCompile = (sh) => {
         sh.uniforms.uDetail = u.current.uDetail;

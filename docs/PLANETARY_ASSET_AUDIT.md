@@ -161,3 +161,35 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 No asset above may be described in-app at a resolution or fidelity beyond what this
 document records. Globe textures are single-LOD visualization aids until the Phase 5
 streaming pyramid lands.
+
+---
+
+## PHASE 3 — REPLACEMENT RECORD (verified, committed)
+
+Machine manifest: `src/data/assets/manifest.ts`. Pipeline: `scripts/build-globes.py`
+(verify → LANCZOS downsample → sRGB JPEG q90; 2048×1024 bundled + 4096×2048 hi-res
+retained in git-ignored `assets-hi/`; no upscaling anywhere — moon hi-res comes from
+the 4K TIFF, not the 2K JPEG).
+
+- **earth.jpg ← BMNG topo.bathy Dec 2004, 5400×2700.** Orientation cross-checked
+  against prior map: 0.0° shift, corr 0.93. Seasonal (December) composite — recorded,
+  not mixed silently.
+- **moon.jpg ← SVS CGI Moon Kit 2025 color, 4K TIFF.** Orientation ~0° shift.
+  Polar fill is LDAM laser albedo; map is aesthetics-optimized per SVS, not science
+  data. Displacement (LOLA) deliberately NOT wired — later phase.
+- **mars.jpg ← USGS MDIM 2.1 color mosaic, 21339×10670.** Orientation verified by
+  feature check (Syrtis Major 72.5°E, Hellas 71.2°E). The legacy 1000×500 texture
+  was 180° shifted — Mars markers previously sat on the wrong hemisphere; fixed.
+- Renderer: `Globe` now sets `SRGBColorSpace` (was linear — color was wrong) and the
+  `#d79a78` Mars repaint tint was removed (calibrated maps are not repainted).
+- KTX2 evaluated and deferred: needs a ~500 KB WASM transcoder plus async loader
+  rework and non-inlined hosting, which conflicts with the single-file build; JPEG +
+  mipmaps chosen with rationale. Revisit with the residency manager (later phase).
+- Bundle impact: dist/index.html 6.37 MB → ~7.3 MB expected (three 0.5–0.7 MB JPEGs
+  inlined as base64). No runtime behavior change besides sharper globes.
+
+| Asset | Was | Now |
+|---|---|---|
+| earth.jpg | PROVISIONAL (three.js copy) | APPROVED `earth-bmng-2004` |
+| moon.jpg | PROVISIONAL (three.js copy) | APPROVED `moon-lroc-2025` |
+| mars.jpg | PROVISIONAL (1000×500, 180° off) | APPROVED `mars-mdim21` |

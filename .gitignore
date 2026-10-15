@@ -33,3 +33,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# phase 3 hi-res delivery (regenerate with scripts/build-globes.py)
+assets-hi/
