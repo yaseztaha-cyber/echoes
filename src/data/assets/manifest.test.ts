@@ -10,18 +10,20 @@ describe("globe asset manifest", () => {
     expect(validateManifest(GLOBE_MANIFEST)).toEqual([]);
   });
 
-  it("covers exactly the three renderer globe kinds", () => {
-    expect(GLOBE_MANIFEST.map((m) => m.body).sort()).toEqual(["earth", "mars", "moon"]);
-    for (const kind of ["earth", "moon", "mars"] as const) {
+  it("covers every renderer globe body with its surface/default view", () => {
+    for (const kind of ["earth", "moon", "mars", "mercury", "venus", "jupiter", "saturn", "uranus", "neptune", "pluto"] as const) {
       const m = globeAssetFor(kind);
       expect(m?.body).toBe(kind);
       expect(m?.status).toBe("APPROVED");
+      expect(m?.flat).not.toBe(true);
     }
+    // venus resolves to radar surface, never the representative clouds, by accident
+    expect(globeAssetFor("venus")?.id).toBe("venus-magellan");
   });
 
   it("returns null for bodies without a verified map (no silent fallback)", () => {
-    expect(globeAssetFor("jupiter")).toBeNull();
-    expect(globeAssetFor("sun")).toBeNull();
+    expect(globeAssetFor("titan")).toBeNull();
+    expect(globeAssetFor("europa")).toBeNull();
     expect(globeAssetFor("")).toBeNull();
   });
 
@@ -34,9 +36,19 @@ describe("globe asset manifest", () => {
 
   it("delivered files exist on disk and are non-trivial", () => {
     for (const m of GLOBE_MANIFEST) {
-      const p = join(TEX, `${m.body}.jpg`);
+      const p = m.flat
+        ? join(__dirname, "..", "..", "assets", "sun", `${m.sourceFile}`)
+        : join(TEX, m.view === "clouds" ? "venus_clouds.jpg" : m.body === "sun" ? "sun.jpg" : `${m.body}.jpg`);
       expect(existsSync(p), p).toBe(true);
-      expect(statSync(p).size).toBeGreaterThan(100_000);
+      expect(statSync(p).size).toBeGreaterThan(4_000);
+    }
+  });
+
+  it("every entry carries an explicit scientific classification", () => {
+    const allowed = ["OBSERVED", "MOSAIC", "ENHANCED", "REPRESENTATIVE", "RECONSTRUCTED", "SIMULATED"];
+    for (const m of GLOBE_MANIFEST) {
+      expect(allowed.some((c) => m.class.includes(c)), m.id).toBe(true);
+      expect(m.epoch.length).toBeGreaterThan(3);
     }
   });
 

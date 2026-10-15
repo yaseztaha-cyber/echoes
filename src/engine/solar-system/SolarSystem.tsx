@@ -6,6 +6,7 @@ import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_V
 import { Atmosphere, BandedGlobe, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
+import sunUrl from "@/assets/tex/sun.jpg";
 import { clock } from "@/engine/time/clock";
 import { tele, siteRef, htmlLayer } from "@/engine/telemetry";
 import { useEcho } from "@/state/store";
@@ -44,11 +45,18 @@ function ringTexture() {
 
 function Sun() {
   const tex = useMemo(glowTexture, []);
+  // RECONSTRUCTED photosphere (SDO/HMI-derived granulation, see manifest).
+  // Real wavelength observations live in the SolarScope science view.
+  const surface = useMemo(() => {
+    const t = new THREE.TextureLoader().load(sunUrl);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }, []);
   return (
     <group>
       <mesh>
         <sphereGeometry args={[2.4, 48, 32]} />
-        <meshBasicMaterial color="#fff0cf" toneMapped={false} />
+        <meshBasicMaterial map={surface} toneMapped={false} />
       </mesh>
       <sprite scale={[11, 11, 1]}>
         <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
@@ -60,11 +68,13 @@ function Sun() {
 function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {
   const ringTex = useMemo(ringTexture, []);
   const sunFrom = () => sun;
+  const venusView = useEcho((s) => s.venusView);
+  const kind = b.id === "venus" && venusView === "clouds" ? "venus_clouds" : b.tex;
   return (
     <>
-      {b.tex ? (
+      {kind ? (
         <Suspense fallback={<PlainGlobe color={b.color} radius={b.radius} />}>
-          <Globe kind={b.tex} radius={b.radius} rough={1} />
+          <Globe kind={kind} radius={b.radius} rough={1} />
         </Suspense>
       ) : b.bands ? (
         <BandedGlobe colors={b.bands} radius={b.radius} />
@@ -75,8 +85,10 @@ function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {
       {b.id === "mars" && <Atmosphere radius={b.radius} color="#c9906a" strength={0.55} sun={sunFrom} scale={1.06} power={4} />}
       {b.id === "venus" && <Atmosphere radius={b.radius} color="#d9c089" strength={0.8} sun={sunFrom} scale={1.07} power={3} />}
       {b.ring && (
+        // Documented C-to-A ring extent (inner ~1.24R, outer ~2.27R). Gradient is
+        // representative shading, not measured optical depth — see manifest.
         <mesh rotation={[Math.PI / 2 - 0.47, 0, 0]}>
-          <ringGeometry args={[b.radius * 1.2, b.radius * 2.2, 96]} />
+          <ringGeometry args={[b.radius * 1.24, b.radius * 2.27, 96]} />
           <meshBasicMaterial map={ringTex} transparent side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
       )}

@@ -193,3 +193,41 @@ the 4K TIFF, not the 2K JPEG).
 | earth.jpg | PROVISIONAL (three.js copy) | APPROVED `earth-bmng-2004` |
 | moon.jpg | PROVISIONAL (three.js copy) | APPROVED `moon-lroc-2025` |
 | mars.jpg | PROVISIONAL (1000×500, 180° off) | APPROVED `mars-mdim21` |
+
+---
+
+## PHASE 3b — COMPLETE SYSTEM RECORD (verified, committed)
+
+Machine manifest: `src/data/assets/manifest.ts` (15 records). Pipeline:
+`scripts/build-system.py` (verify → deliver native, downsample only; hi-res only
+where the source supports it). Renderer: `Globe` kind union extended; per-body `tex`
+in `model.ts`; Venus surface/clouds switch (`venusView`); Pluto added as a dwarf
+planet entry (JPL Keplerian circular approx, a=39.482, L0=238.9 — orbit line + label
+automatic, UI names it DWARF PLANET); Saturn rings set to documented 1.24–2.27R with
+representative shading note; Sun sphere uses the RECONSTRUCTED granulation with a
+dedicated SolarScope science view for flat SDO records.
+
+Orientation verification method: three.js sphere UV gives left edge = ±180° with
+`lon = x/W·360−180`. Cross-checked per map: Earth 0.0° (corr 0.93), Moon ~0°,
+Mars via Syrtis Major 72.5°E + Hellas 71.2°E, Venus radar via Maxwell Montes 2.0°E
+(vs 3°E documented). Zonal giants assume the same JPL tmaps convention (sibling
+products of the verified Venus map); discrete-storm alignment on Jupiter is
+approximate — recorded, not claimed.
+
+| Body | Record | Class | Source → delivered |
+|---|---|---|---|
+| Mercury | `mercury-mdis-bdr` | MOSAIC (750nm mono) | MESSENGER BDR 1024×512 → native |
+| Venus surface | `venus-magellan` | MOSAIC (RADAR, not a photo) | Magellan 1440×720 → native |
+| Venus clouds | `venus-clouds-rep` | REPRESENTATIVE (fictitious) | JPL 1440×720 → native |
+| Jupiter | `jupiter-voyager` | MOSAIC (1979 epoch, storms drift) | Voyager 720×360 → native |
+| Saturn | `saturn-rep` | REPRESENTATIVE (fictitious globe) | JPL 720×360 → native |
+| Uranus | `uranus-rep` | REPRESENTATIVE (fictional) | JPL 720×360 → native |
+| Neptune | `neptune-rep` | REPRESENTATIVE (fictional, no GDS claim) | JPL 720×360 → native |
+| Pluto (dwarf) | `pluto-nh-mosaic` | MOSAIC (LORRI 300m; S-pole night black) | USGS 24888×12444 → 2048 + 4K hi |
+| Sun visible | `sun-visible-recon` | RECONSTRUCTED (HMI-derived, method filed) | HMI 1024 → 1024×512 (no fake detail) |
+| Sun 304/193/HMI | `sun-aia304/193/hmi-flat` | OBSERVED flat full-disk (false-color labelled) | SDO 1024 → native |
+
+Deliberate non-upgrades (spec §15, §29): small maps delivered native — a 720px
+Voyager Jupiter is honest; upscaling it to 2K would be the exact fabrication the
+spec forbids. Hi-res streaming remains a later phase. No procedural planet
+placeholders remain: every globe is a sourced map or a labelled representative.

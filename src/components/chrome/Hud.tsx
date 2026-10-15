@@ -17,6 +17,7 @@ import { Archive, GroundTruth, Search } from "@/components/sources/Overlays";
 import { MissionLab } from "@/components/lab/MissionLab";
 import { Remains, Finale } from "@/components/mission/Remains";
 import { Evidence } from "@/components/evidence/EvidenceTrace";
+import { SolarScope } from "@/components/solar/SolarScope";
 import { clock } from "@/engine/time/clock";
 
 function MissionConsole() {
@@ -390,6 +391,7 @@ export function Hud() {
       {overlay === "remains" && <Remains />}
       {overlay === "finale" && <Finale />}
       {overlay === "evidence" && <Evidence />}
+      {overlay === "sun" && <SolarScope />}
       <Compare />
       <Decode />
       <Veil />

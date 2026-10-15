@@ -18,18 +18,39 @@ const lightTime = (km: number) => {
 
 function BodyPanel() {
   const focus = useEcho((s) => s.focusBody);
+  const venusView = useEcho((s) => s.venusView);
   const t = useTele(300);
   const b = bodyById(focus);
   if (!b) return null;
   const sites = b.destination ? artifactsFor(b.destination) : [];
   return (
     <div className="pointer-events-auto flex w-full flex-col gap-3">
-      <Panel title={b.name} sub={b.kind.toUpperCase()}>
+      <Panel title={b.name} sub={b.dwarf ? "DWARF PLANET" : b.kind.toUpperCase()}>
         <Field k="SUN DISTANCE" v={`${t.sunDistAU.toFixed(3)} AU`} />
         <Field k="MEAN RADIUS" v={`${b.km.toLocaleString()} KM`} />
+        {b.dwarf && <Field k="CLASS" v="DWARF PLANET · KUIPER BELT" tone="text-amber" />}
         {focus !== "earth" && focus !== "sun" && <Field k="FROM EARTH" v={fmtDist(t.focusRealKm * 1000)} />}
         {focus !== "earth" && focus !== "sun" && <Field k="LIGHT TIME" v={lightTime(t.focusRealKm)} />}
         {b.a > 0 && <Field k="ORBIT" v={`${b.a} AU · ${b.periodDays.toLocaleString()} D`} />}
+        {focus === "venus" && (
+          <div className="mt-3">
+            <div className="label mb-1">VENUS VIEW</div>
+            <div className="flex gap-1">
+              {(["surface", "clouds"] as const).map((v) => (
+                <button key={v} className="ctl flex-1 px-1 text-[9.5px]" data-on={venusView === v} onClick={() => { sfx.select(); useEcho.setState({ venusView: v }); }}>
+                  {v === "surface" ? "SURFACE DATA" : "CLOUDS"}
+                </button>
+              ))}
+            </div>
+            <div className="label mt-1 leading-relaxed">SURFACE = MAGELLAN RADAR, NOT A PHOTO · CLOUDS = REPRESENTATIVE APPEARANCE</div>
+          </div>
+        )}
+        {focus === "sun" && (
+          <>
+            <Field k="PHOTOSPHERE" v="RECONSTRUCTED FROM SDO/HMI" tone="text-warn" />
+            <button className="ctl ctl-primary mt-3 w-full" onClick={() => { sfx.open(); useEcho.setState({ overlay: "sun" }); }}>SOLAR SCIENCE VIEW →</button>
+          </>
+        )}
         <div className="label mt-2 leading-relaxed">DISTANCES COMPUTED FROM A CIRCULAR-ORBIT MODEL. DISPLAY POSITIONS USE ADJUSTED VISUAL SCALE.</div>
         {b.destination && (
           <button className="ctl ctl-primary mt-3 w-full" onClick={() => travelToBody(b.destination!)}>

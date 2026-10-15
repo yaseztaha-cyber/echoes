@@ -10,6 +10,8 @@ export interface Body {
   id: string;
   name: string;
   kind: "star" | "planet" | "moon";
+  /** True for Pluto: orbits like a planet entry but is a dwarf planet. */
+  dwarf?: boolean;
   a: number; // AU
   periodDays: number;
   L0: number; // mean longitude at J2000, degrees
@@ -17,7 +19,7 @@ export interface Body {
   km: number; // real radius
   color: string;
   parent?: string;
-  tex?: "earth" | "mars" | "moon";
+  tex?: "earth" | "mars" | "moon" | "mercury" | "venus" | "venus_clouds" | "jupiter" | "saturn" | "uranus" | "neptune" | "pluto";
   bands?: string[];
   ring?: boolean;
   destination?: "mars" | "moon";
@@ -25,15 +27,17 @@ export interface Body {
 
 export const BODIES: Body[] = [
   { id: "sun", name: "SUN", kind: "star", a: 0, periodDays: 1, L0: 0, radius: 2.4, km: 695700, color: "#fff1d0" },
-  { id: "mercury", name: "MERCURY", kind: "planet", a: 0.387, periodDays: 87.97, L0: 252.25, radius: 0.35, km: 2439.7, color: "#8d8a84" },
-  { id: "venus", name: "VENUS", kind: "planet", a: 0.723, periodDays: 224.7, L0: 181.98, radius: 0.8, km: 6051.8, color: "#c9b48a" },
+  { id: "mercury", name: "MERCURY", kind: "planet", a: 0.387, periodDays: 87.97, L0: 252.25, radius: 0.35, km: 2439.7, color: "#8d8a84", tex: "mercury" },
+  { id: "venus", name: "VENUS", kind: "planet", a: 0.723, periodDays: 224.7, L0: 181.98, radius: 0.8, km: 6051.8, color: "#c9b48a", tex: "venus" },
   { id: "earth", name: "EARTH", kind: "planet", a: 1, periodDays: 365.256, L0: 100.46, radius: 0.85, km: 6371, color: "#6c8fa0", tex: "earth" },
   { id: "moon", name: "MOON", kind: "moon", a: 0, periodDays: 27.32, L0: 218.32, radius: 0.23, km: 1737.4, color: "#9a9a96", parent: "earth", tex: "moon", destination: "moon" },
   { id: "mars", name: "MARS", kind: "planet", a: 1.524, periodDays: 686.98, L0: 355.45, radius: 0.6, km: 3389.5, color: "#b5694a", tex: "mars", destination: "mars" },
-  { id: "jupiter", name: "JUPITER", kind: "planet", a: 5.203, periodDays: 4332.59, L0: 34.4, radius: 3.0, km: 69911, color: "#c8a98a", bands: ["#b99b7e", "#d8c3a5", "#a9856a", "#e2d2b8", "#b08868", "#cdb396"] },
-  { id: "saturn", name: "SATURN", kind: "planet", a: 9.537, periodDays: 10759.22, L0: 49.94, radius: 2.5, km: 58232, color: "#d3bf94", bands: ["#cdb98c", "#dcc9a0", "#c2ab7c", "#e0d1ae"], ring: true },
-  { id: "uranus", name: "URANUS", kind: "planet", a: 19.19, periodDays: 30688.5, L0: 313.23, radius: 1.5, km: 25362, color: "#9bc3c9" },
-  { id: "neptune", name: "NEPTUNE", kind: "planet", a: 30.07, periodDays: 60182, L0: 304.88, radius: 1.4, km: 24622, color: "#5f86b8" },
+  { id: "jupiter", name: "JUPITER", kind: "planet", a: 5.203, periodDays: 4332.59, L0: 34.4, radius: 3.0, km: 69911, color: "#c8a98a", tex: "jupiter" },
+  { id: "saturn", name: "SATURN", kind: "planet", a: 9.537, periodDays: 10759.22, L0: 49.94, radius: 2.5, km: 58232, color: "#d3bf94", tex: "saturn", ring: true },
+  { id: "uranus", name: "URANUS", kind: "planet", a: 19.19, periodDays: 30688.5, L0: 313.23, radius: 1.5, km: 25362, color: "#9bc3c9", tex: "uranus" },
+  { id: "neptune", name: "NEPTUNE", kind: "planet", a: 30.07, periodDays: 60182, L0: 304.88, radius: 1.4, km: 24622, color: "#5f86b8", tex: "neptune" },
+  // Dwarf planet. Circular approximation of JPL Keplerian elements (a=39.482, L=238.929 at J2000); kept in the planet list so it keeps its orbit line and label.
+  { id: "pluto", name: "PLUTO", kind: "planet", dwarf: true, a: 39.482, periodDays: 90560, L0: 238.9, radius: 0.35, km: 1188.3, color: "#b8a89a", tex: "pluto" },
 ];
 
 export const bodyById = (id: string) => BODIES.find((b) => b.id === id);

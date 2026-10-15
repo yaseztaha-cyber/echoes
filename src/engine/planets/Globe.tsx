@@ -5,9 +5,17 @@ import { useTexture } from "@react-three/drei";
 import marsUrl from "@/assets/tex/mars.jpg";
 import earthUrl from "@/assets/tex/earth.jpg";
 import moonUrl from "@/assets/tex/moon.jpg";
+import mercuryUrl from "@/assets/tex/mercury.jpg";
+import venusUrl from "@/assets/tex/venus.jpg";
+import venusCloudsUrl from "@/assets/tex/venus_clouds.jpg";
+import jupiterUrl from "@/assets/tex/jupiter.jpg";
+import saturnUrl from "@/assets/tex/saturn.jpg";
+import uranusUrl from "@/assets/tex/uranus.jpg";
+import neptuneUrl from "@/assets/tex/neptune.jpg";
+import plutoUrl from "@/assets/tex/pluto.jpg";
 import { GLOBE_R } from "@/lib/geo";
 
-const URLS = { mars: marsUrl, earth: earthUrl, moon: moonUrl } as const;
+const URLS = { mars: marsUrl, earth: earthUrl, moon: moonUrl, mercury: mercuryUrl, venus: venusUrl, venus_clouds: venusCloudsUrl, jupiter: jupiterUrl, saturn: saturnUrl, uranus: uranusUrl, neptune: neptuneUrl, pluto: plutoUrl } as const;
 
 function bandTexture(colors: string[]) {
   const c = document.createElement("canvas");
@@ -36,7 +44,7 @@ float vn3(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
 `;
 
 interface GlobeProps {
-  kind: "mars" | "earth" | "moon";
+  kind: keyof typeof URLS;
   radius: number;
   detail?: boolean;
   rough?: number;
