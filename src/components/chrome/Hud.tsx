@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useEcho, persist, type CamMode } from "@/state/store";
 import { artifactById, ALL_QUESTIONS } from "@/data/artifacts";
-import { bodyById } from "@/engine/solar-system/model";
+import { bodyById } from "@/engine/frames/frames";
 import { setCamMode, returnToSolarSystem } from "@/engine/director";
 import { stopDemo } from "@/features/exploration/demo";
 import { Field, Status, stateAt, useTele, pad2 } from "./ui";

@@ -3,7 +3,7 @@ import { useEcho } from "@/state/store";
 import { useTele, Field } from "@/components/chrome/ui";
 import { fmtDist, fmtLat, fmtLon } from "@/lib/geo";
 import { artifactById, artifactsFor } from "@/data/artifacts";
-import { BODIES, ORBIT_K, bodyPos } from "@/engine/solar-system/model";
+import { BODIES, ORBIT_K, bodyPos } from "@/engine/frames/frames";
 import { clock } from "@/engine/time/clock";
 import { tele, siteRef } from "@/engine/telemetry";
 import { buildPath, artifactStateAt } from "@/engine/missions/pathing";

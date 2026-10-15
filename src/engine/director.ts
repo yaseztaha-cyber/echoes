@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { useEcho, showBanner, persist, type CamMode } from "@/state/store";
 import { cam, fly, flyTo, setView, setFollow, wait, smoother, easeInOut, easeOut } from "./cameras/controller";
 import { clock, configureClock, setT } from "./time/clock";
-import { bodyById, bodyPos } from "./solar-system/model";
+import { bodyById, bodyPos } from "./frames/frames";
 import { artifactById } from "@/data/artifacts";
 import { VOYAGER_NOW } from "@/data/artifacts/voyager";
 import { env, siteRef } from "./telemetry";

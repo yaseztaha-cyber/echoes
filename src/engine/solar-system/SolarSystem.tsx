@@ -2,7 +2,7 @@ import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, Line } from "@react-three/drei";
-import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_VISUAL_ORBIT, voyagerAU, type Body } from "./model";
+import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_VISUAL_ORBIT, voyagerAU, type Body } from "../frames/frames";
 import { Atmosphere, BandedGlobe, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";

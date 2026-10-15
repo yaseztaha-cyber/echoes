@@ -1,7 +1,7 @@
 import { useEcho } from "@/state/store";
 import { ARTIFACTS, artifactById, artifactsFor } from "@/data/artifacts";
 import { sourceById } from "@/data/sources";
-import { BODIES, bodyById } from "@/engine/solar-system/model";
+import { BODIES, bodyById } from "@/engine/frames/frames";
 import { Chip, Field, Panel, Status, stateAt, useTele } from "@/components/chrome/ui";
 import { descendToSite, focusBody, goVoyager, inspectHardware, leaveSite, openRemains, returnToSolarSystem, scalePullback, selectSite, startReplay, travelToBody, goToArtifact } from "@/engine/director";
 import { fmtDist, fmtLat, fmtLon } from "@/lib/geo";
