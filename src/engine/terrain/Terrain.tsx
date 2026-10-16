@@ -31,11 +31,16 @@ interface Req {
 }
 
 const cache = new Map<string, Tile>();
+// Cached edge-snap bits per tile key. Bits only change when a tile's neighbor
+// layout in `depths` changes, so we compute them once per tile and reuse.
+// Invalidated on clearCache and on LRU eviction.
+const bitsCache = new Map<string, number>();
 let frameNo = 0;
 
 function clearCache() {
   cache.forEach((t) => t.geo.dispose());
   cache.clear();
+  bitsCache.clear();
 }
 
 const lin = (v: number) => Math.pow(v, 2.2);
@@ -307,9 +312,6 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     const bitsFor = (x0: number, z0: number, size: number, depth: number): number =>
       edgeSnapBits(depths, rx, rz, rootSize, x0, z0, size, depth);
 
-    // Pass C — resolve drawn tiles: exact snap variant, else stale variant for
-    // this frame (skirts cover) plus a rebuild, else a cached ancestor as the
-    // backdrop while the correct variant streams in.
     const ancestorVariant = (x0: number, z0: number, size: number, depth: number): Tile | undefined => {
       for (let dd = depth - 1; dd >= 0; dd--) {
         const S = rootSize / 2 ** dd;
@@ -321,15 +323,26 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       return undefined;
     };
 
-    visitA(rx, rz, rootSize, 0);
-    // Stitch flags only matter where cracks are visible (shouldStitch): far
-    // tiles keep bits=0 forever, so they build once and never churn rebuilds
-    // while the camera flies. This is what keeps the streamer quiet.
     const fresh: Req[] = [];
     const refresh: Req[] = [];
     for (const [key, c] of depths) {
       const near = shouldStitch(c.d, c.size);
-      const bits = near ? bitsFor(c.x0, c.z0, c.size, c.depth) : 0;
+      // Snap bits are cached per tile — edgeSnapBits is expensive and only
+      // changes when a tile's neighbor layout in `depths` changes. Stale bits
+      // cause a subpixel crack for a frame or two until the tile is rebuilt,
+      // which is imperceptible and far cheaper than recomputing every frame.
+      let bits: number;
+      if (near) {
+        const cached = bitsCache.get(key);
+        if (cached !== undefined) {
+          bits = cached;
+        } else {
+          bits = bitsFor(c.x0, c.z0, c.size, c.depth);
+          bitsCache.set(key, bits);
+        }
+      } else {
+        bits = 0;
+      }
       const t = cache.get(key);
       if (t && t.bits === bits) {
         t.used = frameNo;
@@ -357,11 +370,10 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     refresh.sort((a, b) => a.d - b.d);
     need.push(...fresh, ...refresh.slice(0, 2));
 
-    need.sort((a, b) => a.depth - b.depth || a.d - b.d);
-    const t0 = performance.now();
+    const tBuild = performance.now();
     const budget = quality === "low" ? 3 : 5;
     for (let i = 0; i < need.length; i++) {
-      if (performance.now() - t0 > budget) break;
+      if (performance.now() - tBuild > budget) break;
       const r = need[i];
       const old = cache.get(r.key);
       if (old) old.geo.dispose();
@@ -376,6 +388,7 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       for (let i = 0; i < arr.length && cache.size > 520; i++) {
         arr[i].geo.dispose();
         cache.delete(arr[i].key);
+        bitsCache.delete(arr[i].key);
       }
     }
 

@@ -2,10 +2,10 @@ import { Component, Suspense, useMemo, type ReactNode } from "react";
 import * as THREE from "three";
 import { Html, Line, useGLTF } from "@react-three/drei";
 import { htmlLayer } from "@/engine/telemetry";
-import type { Artifact } from "@/types";
 import { useEcho } from "@/state/store";
 import { focusInstrument } from "@/engine/director";
 import { MER_OFFICIAL_URL, MER_YAW } from "./merOfficial";
+import type { Artifact } from "@/types";
 
 /**
  * Spacecraft models. All are RECONSTRUCTED from documented dimensions using simple primitives.
@@ -13,33 +13,50 @@ import { MER_OFFICIAL_URL, MER_YAW } from "./merOfficial";
  */
 type V = [number, number, number];
 
-const mk = (color: string, metalness: number, roughness: number, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
-  new THREE.MeshStandardMaterial({ color, metalness, roughness, ...extra });
-const MAT = {
-  alu: mk("#aeb1b2", 0.85, 0.42),
-  dust: mk("#8f7a66", 0.1, 0.95),
-  dustAlu: mk("#9b8f84", 0.5, 0.7),
-  solar: mk("#161d2a", 0.6, 0.38),
-  web: mk("#9d8f78", 0.4, 0.6),
-  black: mk("#141618", 0.3, 0.6),
-  gold: mk("#b8923a", 0.95, 0.32),
-  white: mk("#cfcfca", 0.2, 0.7),
-  steel: mk("#767b80", 0.9, 0.35),
-  foil: mk("#c4a24f", 1.0, 0.28, { side: THREE.DoubleSide }),
-  dish: mk("#cfd0cc", 0.5, 0.45, { side: THREE.DoubleSide }),
+interface BaseMat { color: string; metalness?: number; roughness?: number; extra?: Partial<THREE.MeshStandardMaterialParameters>; }
+
+const BASE_MAT: Record<string, BaseMat> = {
+  alu: { color: "#aeb1b2", metalness: 0.85, roughness: 0.42 },
+  dust: { color: "#8f7a66", metalness: 0.1, roughness: 0.95 },
+  dustAlu: { color: "#9b8f84", metalness: 0.5, roughness: 0.7 },
+  solar: { color: "#161d2a", metalness: 0.6, roughness: 0.38 },
+  web: { color: "#9d8f78", metalness: 0.4, roughness: 0.6 },
+  black: { color: "#141618", metalness: 0.3, roughness: 0.6 },
+  gold: { color: "#b8923a", metalness: 0.95, roughness: 0.32 },
+  white: { color: "#cfcfca", metalness: 0.2, roughness: 0.7 },
+  steel: { color: "#767b80", metalness: 0.9, roughness: 0.35 },
+  foil: { color: "#c4a24f", metalness: 1.0, roughness: 0.28, extra: { side: THREE.DoubleSide } },
+  dish: { color: "#cfd0cc", metalness: 0.5, roughness: 0.45, extra: { side: THREE.DoubleSide } },
 };
-type MatKey = keyof typeof MAT;
+type MatKey = keyof typeof BASE_MAT;
+
+const matCache = new Map<string, THREE.Material>();
+function useMat(key: MatKey): THREE.Material {
+  const q = useEcho((s) => s.quality);
+  const cacheKey = `${key}:${q}`;
+  let mat = matCache.get(cacheKey);
+  if (!mat) {
+    const b = BASE_MAT[key];
+    mat = q === "low"
+      ? new THREE.MeshBasicMaterial({ color: b.color, ...b.extra })
+      : new THREE.MeshStandardMaterial({ color: b.color, metalness: b.metalness!, roughness: b.roughness!, ...b.extra });
+    matCache.set(cacheKey, mat);
+  }
+  return mat;
+}
 
 function Box({ p, s, m, r }: { p: V; s: V; m: MatKey; r?: V }) {
+  const mat = useMat(m);
   return (
-    <mesh position={p} rotation={r} material={MAT[m]} castShadow receiveShadow>
+    <mesh position={p} rotation={r} material={mat} castShadow receiveShadow>
       <boxGeometry args={s} />
     </mesh>
   );
 }
 function Cyl({ p, r, h, m, rot, seg = 18, r2 }: { p: V; r: number; h: number; m: MatKey; rot?: V; seg?: number; r2?: number }) {
+  const mat = useMat(m);
   return (
-    <mesh position={p} rotation={rot} material={MAT[m]} castShadow receiveShadow>
+    <mesh position={p} rotation={rot} material={mat} castShadow receiveShadow>
       <cylinderGeometry args={[r2 ?? r, r, h, seg]} />
     </mesh>
   );
@@ -51,17 +68,21 @@ function Bar({ a, b, r = 0.014, m = "alu" }: { a: V; b: V; r?: number; m?: MatKe
     const len = d.length();
     return { pos: A.clone().add(B).multiplyScalar(0.5), quat: new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()), len };
   }, [a, b]);
+  const mat = useMat(m);
   return (
-    <mesh position={pos} quaternion={quat} material={MAT[m]} castShadow>
+    <mesh position={pos} quaternion={quat} material={mat} castShadow>
       <cylinderGeometry args={[r, r, len, 8]} />
     </mesh>
   );
 }
-const Ball = ({ p, r, m }: { p: V; r: number; m: MatKey }) => (
-  <mesh position={p} material={MAT[m]} castShadow>
-    <sphereGeometry args={[r, 12, 10]} />
-  </mesh>
-);
+const Ball = ({ p, r, m }: { p: V; r: number; m: MatKey }) => {
+  const mat = useMat(m);
+  return (
+    <mesh position={p} material={mat} castShadow>
+      <sphereGeometry args={[r, 12, 10]} />
+    </mesh>
+  );
+};
 
 /* ---------------------------------------------------------------- MER */
 function Wheel({ p }: { p: V }) {
@@ -195,6 +216,7 @@ function SojournerRover() {
 
 /* ---------------------------------------------------------------- InSight */
 function InSightLander() {
+  const dishMat = useMat("dish");
   return (
     <group>
       <Cyl p={[0, 0.95, 0]} r={0.8} h={0.08} m="dustAlu" seg={6} />
@@ -220,7 +242,7 @@ function InSightLander() {
       <Bar a={[0.5, 1.05, 0]} b={[1.0, 1.4, 0.4]} r={0.04} m="steel" />
       <Bar a={[1.0, 1.4, 0.4]} b={[1.5, 0.9, 0.85]} r={0.035} m="steel" />
       {/* SEIS under wind & thermal shield */}
-      <mesh position={[1.55, 0.0, 0.9]} material={MAT.dish} castShadow>
+      <mesh position={[1.55, 0.0, 0.9]} material={dishMat} castShadow>
         <sphereGeometry args={[0.42, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2]} />
       </mesh>
       {/* HP3 */}
@@ -337,10 +359,11 @@ function LunarRover({ pos }: { pos: V }) {
 
 /* ---------------------------------------------------------------- Voyager */
 function VoyagerCraft() {
+  const dishMat = useMat("dish");
   return (
     <group>
       <Cyl p={[0, 0, 0]} r={0.9} h={0.47} m="gold" seg={10} />
-      <mesh position={[0, 0.7 + 3.67, 0]} material={MAT.dish} castShadow>
+      <mesh position={[0, 0.7 + 3.67, 0]} material={dishMat} castShadow>
         <sphereGeometry args={[3.67, 56, 8, 0, Math.PI * 2, Math.PI - 0.528, 0.528]} />
       </mesh>
       <Bar a={[0.0, 0.4, 0]} b={[0.8, 1.2, 0]} r={0.025} />
