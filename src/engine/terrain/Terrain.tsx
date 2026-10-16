@@ -17,6 +17,8 @@ interface Tile {
   cx: number;
   cz: number;
   used: number;
+  /** Edge-snap flags the geometry was built with ([top, right, bottom, left]). */
+  bits: number;
 }
 interface Req {
   key: string;
@@ -25,6 +27,7 @@ interface Req {
   size: number;
   depth: number;
   d: number;
+  bits: number;
 }
 
 const cache = new Map<string, Tile>();
@@ -36,6 +39,61 @@ function clearCache() {
 }
 
 const lin = (v: number) => Math.pow(v, 2.2);
+
+/**
+ * Edge-stitching resolution (pure, headless-testable). Given the set of drawn
+ * cell keys (`depth/x0/z0`) plus the world rect, returns the snap bitmask for
+ * a tile: an edge snaps when its neighbor across that edge is drawn coarser.
+ * Edges: 0 top (z0 side), 1 right, 2 bottom, 3 left. Bit e set = snap edge e.
+ */
+export function edgeSnapBits(
+  drawn: { has(key: string): boolean },
+  rx: number,
+  rz: number,
+  rootSize: number,
+  x0: number,
+  z0: number,
+  size: number,
+  depth: number
+): number {
+  const hasCell = (d: number, cx: number, cz: number) => drawn.has(`${d}/${cx}/${cz}`);
+  const ancestorDrawn = (mx: number, mz: number): boolean => {
+    for (let dd = depth - 1; dd >= 0; dd--) {
+      const S = rootSize / 2 ** dd;
+      const ox = rx + Math.floor((mx - rx) / S) * S;
+      const oz = rz + Math.floor((mz - rz) / S) * S;
+      if (hasCell(dd, ox, oz)) return true;
+    }
+    return false;
+  };
+  const needsSnap = (edge: number): boolean => {
+    const h = size / 2;
+    let mx = 0, mz = 0;
+    if (edge === 0) { mx = x0 + h; mz = z0; }
+    else if (edge === 1) { mx = x0 + size; mz = z0 + h; }
+    else if (edge === 2) { mx = x0 + h; mz = z0 + size; }
+    else { mx = x0; mz = z0 + h; }
+    if (mx < rx || mx > rx + rootSize || mz < rz || mz > rz + rootSize) return false;
+    // Same-depth neighbor shares the whole edge (grid-aligned subdivision).
+    const same: [number, number] =
+      edge === 0 ? [x0, z0 - size]
+      : edge === 1 ? [x0 + size, z0]
+      : edge === 2 ? [x0, z0 + size]
+      : [x0 - size, z0];
+    if (hasCell(depth, same[0], same[1])) return false;
+    // Finer neighbors (child size h) snap to us instead — one origin per half.
+    const fine: [number, number][] =
+      edge === 0 ? [[x0, z0 - h], [x0 + h, z0 - h]]
+      : edge === 1 ? [[x0 + size, z0], [x0 + size, z0 + h]]
+      : edge === 2 ? [[x0, z0 + size], [x0 + h, z0 + size]]
+      : [[x0 - size, z0], [x0 - size, z0 + h]];
+    if (fine.every(([nx, nz]) => hasCell(depth + 1, nx, nz))) return false;
+    return ancestorDrawn(mx, mz);
+  };
+  let bits = 0;
+  for (let e = 0; e < 4; e++) if (needsSnap(e)) bits |= 1 << e;
+  return bits;
+}
 
 function colorAt(world: TerrainWorld, x: number, z: number, h: number, slope: number, out: number[]) {
   const n1 = fbm(x / 700, z / 700, 3, 5);
@@ -59,11 +117,30 @@ function colorAt(world: TerrainWorld, x: number, z: number, h: number, slope: nu
   out[0] = lin(r); out[1] = lin(g); out[2] = lin(b);
 }
 
-function buildTile(world: TerrainWorld, x0: number, z0: number, size: number, key: string): Tile {
+/** Exported for headless stitching tests (geometry only, no renderer needed). */
+export function buildTile(world: TerrainWorld, x0: number, z0: number, size: number, key: string, snap: [boolean, boolean, boolean, boolean] = [false, false, false, false]): Tile {
   const step = size / N;
   const M = N + 3;
   const hs = new Float32Array(M * M);
   for (let j = 0; j < M; j++) for (let i = 0; i < M; i++) hs[j * M + i] = heightAt(x0 + (i - 1) * step, z0 + (j - 1) * step);
+  // Edge stitching: where the neighbor across an edge is drawn coarser, snap
+  // this tile's odd edge vertices onto the straight corner-to-corner segment.
+  // The coarse neighbor's edge IS that segment (its own grid is 2x sparser),
+  // so both sides coincide exactly — no crack, no skirt wall showing through.
+  // Corners (even indices) are shared grid points and already exact.
+  const snapEdge = (edge: number) => {
+    if (!snap[edge]) return;
+    for (let k = 1; k < N; k += 2) {
+      let a = 0, b = 0;
+      if (edge === 0) { a = 1 * M + (k - 1 + 1); b = 1 * M + (k + 1 + 1); }
+      else if (edge === 2) { a = (N + 1) * M + (k - 1 + 1); b = (N + 1) * M + (k + 1 + 1); }
+      else if (edge === 3) { a = (k - 1 + 1) * M + 1; b = (k + 1 + 1) * M + 1; }
+      else { a = (k - 1 + 1) * M + (N + 1); b = (k + 1 + 1) * M + (N + 1); }
+      const m = edge === 0 ? 1 * M + (k + 1) : edge === 2 ? (N + 1) * M + (k + 1) : edge === 3 ? (k + 1) * M + 1 : (k + 1) * M + (N + 1);
+      hs[m] = (hs[a] + hs[b]) / 2;
+    }
+  };
+  snapEdge(0); snapEdge(1); snapEdge(2); snapEdge(3);
   const cx = x0 + size / 2, cz = z0 + size / 2;
   const V = (N + 1) * (N + 1);
   const S = 4 * (N + 1);
@@ -126,7 +203,8 @@ function buildTile(world: TerrainWorld, x0: number, z0: number, size: number, ke
   geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
   geo.setIndex(idxs);
   geo.computeBoundingSphere();
-  return { key, geo, cx, cz, used: frameNo };
+  const bits = (snap[0] ? 1 : 0) | (snap[1] ? 2 : 0) | (snap[2] ? 4 : 0) | (snap[3] ? 8 : 0);
+  return { key, geo, cx, cz, used: frameNo, bits };
 }
 
 function detailTexture() {
@@ -172,6 +250,10 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     terrainState.world = world;
     terrainState.seed = seed;
     clearCache();
+    // Synchronous root tile: guaranteed coverage on the first frame while the
+    // correct snap variants stream in through the budget loop.
+    const rx0 = center[0] - rootSize / 2, rz0 = center[1] - rootSize / 2;
+    cache.set(`0/${rx0}/${rz0}`, buildTile(world, rx0, rz0, rootSize, `0/${rx0}/${rz0}`));
     sig.current = "";
     return () => clearCache();
   }, [world, seed]);
@@ -187,40 +269,71 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     let ready = 0;
     let deepest = 0;
     const cp = camera.position;
+    const rx = center[0] - rootSize / 2, rz = center[1] - rootSize / 2;
 
-    const visit = (x0: number, z0: number, size: number, depth: number): boolean => {
-      const key = `${depth}/${x0}/${z0}`;
-      const t = cache.get(key);
+    // Pass A — coverage structure only. The split rule is pure camera geometry,
+    // so the drawn depth layout is deterministic per frame, independent of cache.
+    const depths = new Map<string, { x0: number; z0: number; size: number; depth: number; d: number }>();
+    const visitA = (x0: number, z0: number, size: number, depth: number): void => {
       const cx = x0 + size / 2, cz = z0 + size / 2;
       // 3D-aware split metric: altitude counts, so high-altitude views stay
       // coarse (fewer tile boundaries on the horizon) and ground views refine.
-      // Previously horizontal-only, which refined to maxDepth even from 20 km up.
       const dist = Math.hypot(cp.x - cx, cp.y * 0.85, cp.z - cz);
-      if (!t) need.push({ key, x0, z0, size, depth, d: dist });
-      else t.used = frameNo;
-      const split = depth < depthLimit && dist < size * kSplit;
-      if (split) {
-        const start = draw.length;
+      if (depth < depthLimit && dist < size * kSplit) {
         const h = size / 2;
-        let ok = true;
-        for (let k = 0; k < 4; k++) if (!visit(x0 + (k & 1) * h, z0 + (k >> 1) * h, h, depth + 1)) ok = false;
-        if (ok) return true;
-        draw.length = start;
-      } else {
-        leaves++;
-        if (t) ready++;
+        visitA(x0, z0, h, depth + 1);
+        visitA(x0 + h, z0, h, depth + 1);
+        visitA(x0, z0 + h, h, depth + 1);
+        visitA(x0 + h, z0 + h, h, depth + 1);
+        return;
       }
-      if (t) {
-        draw.push(key);
-        if (depth > deepest) deepest = depth;
-        return true;
+      leaves++;
+      depths.set(`${depth}/${x0}/${z0}`, { x0, z0, size, depth, d: dist });
+    };
+    visitA(rx, rz, rootSize, 0);
+
+    // Pass B — per-edge stitching flags from the drawn neighbor layout.
+    // An edge snaps when its neighbor is drawn coarser. Same-depth and finer
+    // neighbors already coincide exactly, so they need no snap. Skirts remain.
+    const bitsFor = (x0: number, z0: number, size: number, depth: number): number =>
+      edgeSnapBits(depths, rx, rz, rootSize, x0, z0, size, depth);
+
+    // Pass C — resolve drawn tiles: exact snap variant, else stale variant for
+    // this frame (skirts cover) plus a rebuild, else a cached ancestor as the
+    // backdrop while the correct variant streams in.
+    const ancestorVariant = (x0: number, z0: number, size: number, depth: number): Tile | undefined => {
+      for (let dd = depth - 1; dd >= 0; dd--) {
+        const S = rootSize / 2 ** dd;
+        const ox = rx + Math.floor((x0 + size / 2 - rx) / S) * S;
+        const oz = rz + Math.floor((z0 + size / 2 - rz) / S) * S;
+        const t = cache.get(`${dd}/${ox}/${oz}`);
+        if (t) return t;
       }
-      return false;
+      return undefined;
     };
 
-    const rx = center[0] - rootSize / 2, rz = center[1] - rootSize / 2;
-    if (!cache.has(`0/${rx}/${rz}`)) cache.set(`0/${rx}/${rz}`, buildTile(world, rx, rz, rootSize, `0/${rx}/${rz}`));
-    visit(rx, rz, rootSize, 0);
+    visitA(rx, rz, rootSize, 0);
+    for (const [key, c] of depths) {
+      const bits = bitsFor(c.x0, c.z0, c.size, c.depth);
+      const t = cache.get(key);
+      if (t && t.bits === bits) {
+        t.used = frameNo;
+        draw.push(key);
+        ready++;
+        if (c.depth > deepest) deepest = c.depth;
+      } else if (t) {
+        t.used = frameNo;
+        draw.push(key);
+        need.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
+      } else {
+        const back = ancestorVariant(c.x0, c.z0, c.size, c.depth);
+        if (back) {
+          back.used = frameNo;
+          draw.push(back.key);
+        }
+        need.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
+      }
+    }
 
     need.sort((a, b) => a.depth - b.depth || a.d - b.d);
     const t0 = performance.now();
@@ -228,7 +341,12 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     for (let i = 0; i < need.length; i++) {
       if (performance.now() - t0 > budget) break;
       const r = need[i];
-      cache.set(r.key, buildTile(world, r.x0, r.z0, r.size, r.key));
+      const old = cache.get(r.key);
+      if (old) old.geo.dispose();
+      cache.set(
+        r.key,
+        buildTile(world, r.x0, r.z0, r.size, r.key, [!!(r.bits & 1), !!(r.bits & 2), !!(r.bits & 4), !!(r.bits & 8)])
+      );
     }
 
     if (cache.size > 700) {

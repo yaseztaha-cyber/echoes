@@ -321,3 +321,10 @@ Defect → cause → fix (all confirmed in code and/or running app):
     + tilt + soil settle) replaces the burying minimum-sample rule for every
     landed frame; rock clearing 12 m around devices. (Prior aerial-fog change
     was reverted on request; range seams remain open.)
+13. Tile-crack root fix (replaces fog approach): neighbor-aware edge stitching
+    in the terrain quadtree. Tiles query the drawn neighbor layout per frame;
+    edges facing coarser neighbors snap odd vertices onto the coarse segment
+    (watertight to ~0.1 micron, tested); same-depth/finer neighbors already
+    coincide. Snap flags ride the cache keys with ancestor-backdrop fallback,
+    so coverage never holes. Skirts stay as insurance. Depth jumps >1 across
+    one edge remain a documented residual.
