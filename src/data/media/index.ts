@@ -7,6 +7,7 @@ import pia07372 from "@/assets/nasa/PIA07372.jpg";
 import pia17759 from "@/assets/nasa/PIA17759.jpg";
 import pia17074 from "@/assets/nasa/PIA17074.jpg";
 import pia17074fig from "@/assets/nasa/PIA17074_fig1.jpg";
+import pia05138 from "@/assets/nasa/PIA05138.jpg";
 
 const LICENSE = "NASA imagery is generally not subject to copyright. Credit retained.";
 const mk = (id: string, title: string, pia: string, url: string, caption: string): MediaAsset => ({
@@ -60,6 +61,21 @@ export const MEDIA: MediaAsset[] = [
     sol: 3230,
     instrumentId: "pancam",
     imageType: "ANNOTATED",
+  },
+  {
+    id: "media-pia05138",
+    type: "image",
+    title: "First Panoramic Look at Meridiani Planum (PIA05138)",
+    source: "NASA Photojournal",
+    url: pia05138,
+    credit: "NASA/JPL-Caltech/Cornell",
+    licenseNote: LICENSE,
+    artifactId: "opportunity",
+    accuracy: "official",
+    caption: "360-degree Pancam panorama from Eagle crater shortly after touchdown (January 2004). Grayscale mosaic; this is the actual landing-site view, not a reconstruction.",
+    recordUrl: "https://photojournal.jpl.nasa.gov/catalog/PIA05138",
+    instrumentId: "pancam",
+    imageType: "PANORAMIC MOSAIC",
   },
 ];
 

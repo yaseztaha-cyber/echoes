@@ -37,7 +37,7 @@ describe("globe asset manifest", () => {
   it("delivered files exist on disk and are non-trivial", () => {
     for (const m of GLOBE_MANIFEST) {
       const p = m.flat
-        ? join(__dirname, "..", "..", "assets", "sun", `${m.sourceFile}`)
+        ? join(__dirname, "..", "..", "assets", m.body === "sun" ? "sun" : "nasa", `${m.sourceFile}`)
         : join(TEX, m.view === "clouds" ? "venus_clouds.jpg" : m.body === "sun" ? "sun.jpg" : `${m.body}.jpg`);
       expect(existsSync(p), p).toBe(true);
       expect(statSync(p).size).toBeGreaterThan(4_000);

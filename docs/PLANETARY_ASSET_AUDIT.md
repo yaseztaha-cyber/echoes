@@ -280,3 +280,37 @@ placeholders remain: every globe is a sourced map or a labelled representative.
   First enforced zone rule — one contextual panel per zone; the minimap yields
   while the event card is open and returns on close (no z-index change).
 - Favicon 404 fixed with an inline SVG data-URI (zero bundle cost).
+
+---
+
+## PHASE 4.2 — FIDELITY RECOVERY RECORD
+
+Defect → cause → fix (all confirmed in code and/or running app):
+
+1. Diagonal boundary + triangular facets at range → LOD steps at depth borders
+   (no stitching) + 0.05-depth skirts reading as dark bands + a horizontal-only
+   split metric that refined to maxDepth even from 20 km up. Fixed: 3D-aware
+   metric (altitude-weighted), skirts 0.015/min 0.6.
+2. Orange wash at distance → FogExp2 0.000042 (≈75% opaque at 28 km) + warm
+   hemisphere 0.55. Fixed: fog 0.00002, hemisphere 0.38 cooled. Cause found by
+   reading values, not by filtering the output.
+3. Flat/repetitive ground → widened large-scale albedo variation + basalt-patch
+   contrast in vertex colors.
+4. No rocks → RockField: 240 instanced rocks + 5 outcrop slabs, labelled
+   RECONSTRUCTED scatter (representative density/size, not surveyed positions).
+5. "28.4 vs 28.2" → ALT (vertical) vs DIST (slant range): both correct, both
+   from tele. Clarified with live proximity-state labels.
+6. "MISSION SITE" at 28 km → arrival banner renamed MISSION REGION + live
+   Beacon states (PLANETARY/REGIONAL/MISSION SITE/ROVER INSPECTION at
+   5000/500/40 m — navigation settings, tested).
+7. Primitive rover → official NASA MER_static.glb (11.9 MB, CORS *, runtime
+   load, primitive Suspense fallback + error boundary). Orientation
+   bounds-verified (2.28 m wingspan, mast maps ≈10 cm from Pancam mount);
+   stowed-arm hotspot caveat documented. Opportunity + Spirit now OFFICIAL.
+8. Black rover/rocks → missing environment reflections on PBR metals
+   (RoomEnvironment PMREM, intensity 0.5) + instanceColor double-darkening fix.
+9. Panorama Mode A → PIA05138 Eagle-crater 360° grayscale + cylindrical viewer
+   overlay with metadata. Location-correct; not a navigable reconstruction.
+10. Process: an edit-tool fuzzy match deleted a SiteScene import (caught by the
+    browser, fixed); `tsc --noEmit` added to the validation flow (2 pre-existing
+    unused-var errors recorded, untouched).

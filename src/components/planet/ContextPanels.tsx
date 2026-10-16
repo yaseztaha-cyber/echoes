@@ -143,6 +143,9 @@ function ArtifactPanel() {
           <button className="ctl" onClick={() => startReplay()}>▶ REPLAY MISSION</button>
           {voy ? <button className="ctl" onClick={() => scalePullback()}>SCALE PULLBACK</button> : <button className="ctl" onClick={() => openRemains()}>WHAT REMAINS?</button>}
           {art.media.length > 0 && <button className="ctl" onClick={() => useEcho.setState({ compareOpen: true })}>COMPARE NASA IMAGE</button>}
+          {art.media.some((m) => m.imageType?.includes("PANORAM")) && (
+            <button className="ctl" onClick={() => { sfx.open(); useEcho.setState({ overlay: "panorama", panoramaId: null }); }}>VIEW REAL PANORAMA</button>
+          )}
           <button className="ctl" onClick={() => (scene === "site" ? leaveSite() : returnToSolarSystem())}>{scene === "site" ? "↑ LEAVE SITE" : "← SOLAR SYSTEM"}</button>
         </div>
       </Panel>

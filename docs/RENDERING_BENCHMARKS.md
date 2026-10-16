@@ -46,6 +46,7 @@ after ~20 s of p95 ≤ 9 ms toward the user's ceiling, 5 s cooldown. Visibility
 | 2026-10-15 | Win, Intel HD 530 (ANGLE/D3D11), Playwright Chromium, DPR 1.25 | high (auto) | solar overview, 180f | 60.4 | 16.8 ms | p99 18.5 ms; 0 app errors |
 | 2026-10-15 | same | high (auto) | Mars close orbit, 240f | 60.1 | 17.0 ms | p99 19.7 ms; MDIM globe, markers, minimap |
 | 2026-10-15 | same | high (auto) | Opportunity site, 240f | 60.2 | 16.8 ms | p99 17.6 ms; terrain + rover + timeline |
+| 2026-10-15 | same | high (auto) | Opportunity site rebuilt (rocks, official rover, new wash), console + screenshots | — | — | 0 app errors across full journey; inspect close-up verified |
 | — | pending discrete-GPU + rapid-travel/soak paths | — | travel, switching, soak | — | — | §2 paths 6–8 unmeasured |
 
 Console (all runs): 0 application errors. 1 benign upstream warning

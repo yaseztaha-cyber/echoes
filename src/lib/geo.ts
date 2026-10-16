@@ -43,7 +43,20 @@ export const fmtLon = (v: number) => {
 };
 
 export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-export const smoothstep = (a: number, b: number, v: number) => {
+
+/**
+ * Camera context states for mission proximity (navigation settings, not mission
+ * boundaries). Single authoritative thresholds used by every distance label.
+ * DISTANCE here is always line-of-sight range to the subject; ALTITUDE (vertical)
+ * is a different, smaller quantity — both derive from the same telemetry.
+ */
+export type ProximityState = "PLANETARY APPROACH" | "REGIONAL APPROACH" | "MISSION SITE" | "ROVER INSPECTION";
+export function proximityState(distM: number): ProximityState {
+  if (distM < 40) return "ROVER INSPECTION";
+  if (distM < 500) return "MISSION SITE";
+  if (distM < 5000) return "REGIONAL APPROACH";
+  return "PLANETARY APPROACH";
+}export const smoothstep = (a: number, b: number, v: number) => {
   const t = clamp((v - a) / (b - a), 0, 1);
   return t * t * (3 - 2 * t);
 };

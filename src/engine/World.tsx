@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraRig } from "./cameras/CameraRig";
 import { SolarSystem } from "./solar-system/SolarSystem";
@@ -102,9 +103,16 @@ export function World() {
         dpr={dpr}
         camera={{ fov: 50, near: 0.01, far: 30000, position: [0, 6, 22] }}
         gl={{ antialias: quality !== "low", powerPreference: "high-performance" }}
-        onCreated={({ gl }) => {
+        onCreated={({ gl, scene }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.05;
+          // Neutral studio reflections so PBR metals (official spacecraft
+          // models) read as metal instead of black. Low intensity: rough
+          // planetary surfaces are barely affected; lights still dominate.
+          const pmrem = new THREE.PMREMGenerator(gl);
+          scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+          scene.environmentIntensity = 0.5;
+          pmrem.dispose();
         }}
         aria-label="ECHOES 3D simulation viewport"
       >

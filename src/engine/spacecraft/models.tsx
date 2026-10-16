@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { Component, Suspense, useMemo, type ReactNode } from "react";
 import * as THREE from "three";
-import { Html, Line } from "@react-three/drei";
+import { Html, Line, useGLTF } from "@react-three/drei";
 import { htmlLayer } from "@/engine/telemetry";
 import type { Artifact } from "@/types";
 import { useEcho } from "@/state/store";
 import { focusInstrument } from "@/engine/director";
+import { MER_OFFICIAL_URL, MER_YAW } from "./merOfficial";
 
 /**
  * Spacecraft models. All are RECONSTRUCTED from documented dimensions using simple primitives.
@@ -135,6 +136,36 @@ function MerRover() {
       <Cyl p={[0.8, 0.4, 0]} r={0.035} h={0.06} m="steel" />
     </group>
   );
+}
+
+/* ---------------------------------------------------------------- MER official */
+
+/**
+ * Official NASA/JPL MER model (MER_static.glb, NASA 3D Resources).
+ * Metric scale, ground plane at y≈0 — mounts directly in the rover frame.
+ * Single merged mesh: no part hierarchy, so hardware hotspots keep using the
+ * documented mount positions from the artifact record.
+ * Orientation (bounds-verified): 2.28 m wingspan on model X matches the real
+ * 2.3 m panel span, tall mast assembly front-center at model z≈-0.37, so model
+ * forward is -Z → yaw -90° into the +X-forward rover frame. The mapped mast
+ * lands ≈10 cm from the documented Pancam mount. The source arm is stowed, so
+ * arm-instrument hotspots hover near the front deck edge (documented
+ * limitation). Facts: see merOfficial.ts (unit-tested record).
+ */
+function OfficialMer() {
+  const { scene } = useGLTF(MER_OFFICIAL_URL);
+  return <primitive object={scene} rotation={[0, MER_YAW, 0]} />;
+}
+
+/** Local fallback: any load failure keeps the documented primitive reconstruction. */
+class MerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? <MerRover /> : this.props.children;
+  }
 }
 
 /* ---------------------------------------------------------------- Sojourner */
@@ -347,7 +378,13 @@ export function ArtifactModel({ artifact }: { artifact: Artifact }) {
   const kind = artifact.model.kind;
   return (
     <group>
-      {kind === "mer" && <MerRover />}
+      {kind === "mer" ? (
+        <Suspense fallback={<MerRover />}>
+          <MerBoundary>
+            <OfficialMer />
+          </MerBoundary>
+        </Suspense>
+      ) : null}
       {kind === "sojourner" && <SojournerRover />}
       {kind === "insight" && <InSightLander />}
       {kind === "apollo" && <ApolloSite a={artifact} />}

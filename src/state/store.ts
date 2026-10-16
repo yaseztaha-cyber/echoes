@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type SceneId = "solar" | "planet" | "site";
 export type CamMode = "orbit" | "free" | "follow" | "surface" | "inspect" | "cinematic" | "overview";
-export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun";
+export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama";
 export type Quality = "ultra" | "high" | "medium" | "low";
 export type SimMode = "solar-system" | "mission" | "historical";
 export type Level = "explore" | "understand" | "technical";
@@ -54,6 +54,7 @@ export interface EchoState {
   questionId: string | null;
   level: Level;
   decodeId: string | null;
+  panoramaId: string | null;
   overlay: Overlay;
   compareOpen: boolean;
   minimap: boolean;
@@ -98,6 +99,7 @@ export const useEcho = create<EchoState>(() => ({
   questionId: null,
   level: "explore",
   decodeId: null,
+  panoramaId: null,
   overlay: null,
   compareOpen: false,
   minimap: true,

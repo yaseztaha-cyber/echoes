@@ -44,8 +44,10 @@ function colorAt(world: TerrainWorld, x: number, z: number, h: number, slope: nu
   let r: number, g: number, b: number;
   if (world === "mars") {
     const t = n1;
-    r = 0.52 + 0.1 * t; g = 0.31 + 0.07 * t; b = 0.2 + 0.05 * t;
-    const dark = Math.max(0, Math.min(1, (n2 - 0.5) * 3.2)) * 0.55;
+    r = 0.5 + 0.16 * t; g = 0.3 + 0.11 * t; b = 0.19 + 0.08 * t;
+    // dark basaltic patches: stronger large-scale variation so regions read
+    // as different geology instead of one uniform wash
+    const dark = Math.max(0, Math.min(1, (n2 - 0.52) * 3.6)) * 0.6;
     r = r * (1 - dark) + 0.27 * dark; g = g * (1 - dark) + 0.2 * dark; b = b * (1 - dark) + 0.19 * dark;
     const k = 0.9 + 0.2 * n3 - Math.min(0.35, slope * 0.012);
     r *= k; g *= k; b *= k;
@@ -88,7 +90,9 @@ function buildTile(world: TerrainWorld, x0: number, z0: number, size: number, ke
       uv[idx * 2] = wx / uvs; uv[idx * 2 + 1] = wz / uvs;
     }
   }
-  const skirt = Math.max(0.8, size * 0.05);
+  // Shallow skirts hide tile-boundary cracks without drawing deep dark walls
+  // at grazing angles (previous 0.05 depth read as diagonal banding).
+  const skirt = Math.max(0.6, size * 0.015);
   const edge: number[] = [];
   for (let i = 0; i <= N; i++) edge.push(i); // top
   for (let j = 0; j <= N; j++) edge.push(j * (N + 1) + N); // right
@@ -188,7 +192,10 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       const key = `${depth}/${x0}/${z0}`;
       const t = cache.get(key);
       const cx = x0 + size / 2, cz = z0 + size / 2;
-      const dist = Math.hypot(cp.x - cx, cp.y - 0, cp.z - cz);
+      // 3D-aware split metric: altitude counts, so high-altitude views stay
+      // coarse (fewer tile boundaries on the horizon) and ground views refine.
+      // Previously horizontal-only, which refined to maxDepth even from 20 km up.
+      const dist = Math.hypot(cp.x - cx, cp.y * 0.85, cp.z - cz);
       if (!t) need.push({ key, x0, z0, size, depth, d: dist });
       else t.used = frameNo;
       const split = depth < depthLimit && dist < size * kSplit;

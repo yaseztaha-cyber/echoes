@@ -27,10 +27,10 @@ export const opportunity: Artifact = {
   model: {
     kind: "mer",
     title: "OPPORTUNITY / MER-B",
-    source: "NASA mission documentation and rover self-portraits (PIA07372, PIA17759)",
-    modelType: "RECONSTRUCTED",
-    accuracy: "DOCUMENTED REFERENCE · SIMPLIFIED PRIMITIVE GEOMETRY",
-    note: "Proportions follow published rover dimensions (about 1.6 m long, 2.3 m wide, 1.5 m tall). An official NASA model has not been integrated; this is not an official asset.",
+    source: "NASA 3D Resources: Mars Exploration Rovers 3D model (MER_static.glb), NASA/JPL-Caltech",
+    modelType: "OFFICIAL",
+    accuracy: "OFFICIAL NASA GEOMETRY · RUNTIME-LOADED · PRIMITIVE FALLBACK",
+    note: "Official metric-scale geometry loads from NASA CDN at the mission site (11.9 MB); the documented primitive reconstruction remains as the loading and offline fallback. Hardware hotspots use documented mount positions.",
   },
   location: { world: "mars", site: "Eagle crater landing site", region: "MERIDIANI PLANUM", lat: -1.9462, lon: 354.4734, landmark: "Eagle crater" },
   status: "MISSION COMPLETE",
@@ -208,7 +208,7 @@ export const opportunity: Artifact = {
     { sourceId: "pia17074", claim: "Esperance investigation: image, RAT, APXS, interpretation." },
     { sourceId: "nasa-opp-end", claim: "Last communication on sol 5111; mission declared complete." },
     { sourceId: "squyres2004", claim: "Evidence for an ancient aqueous environment." },
-    { sourceId: "nasa-3d", claim: "Official model availability (not yet integrated)." },
+    { sourceId: "nasa-3d", claim: "Official MER geometry, runtime-loaded at the site." },
   ],
   media: MEDIA.filter((m) => m.artifactId === "opportunity"),
 };

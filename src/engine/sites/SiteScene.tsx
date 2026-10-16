@@ -1,17 +1,19 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Html, Line } from "@react-three/drei";
+import { Html, Line, useGLTF } from "@react-three/drei";
 import { Terrain } from "@/engine/terrain/Terrain";
+import { RockField } from "@/engine/terrain/Rocks";
 import { heightAt, slopeAt, terrainState } from "@/engine/terrain/height";
 import { ArtifactModel } from "@/engine/spacecraft/models";
+import { MER_OFFICIAL_URL } from "@/engine/spacecraft/merOfficial";
 import { Stars } from "@/engine/world/Stars";
 import { artifactById } from "@/data/artifacts";
 import { artifactStateAt, buildPath } from "@/engine/missions/pathing";
 import { clock } from "@/engine/time/clock";
 import { env, siteRef, tele, htmlLayer } from "@/engine/telemetry";
 import { useEcho } from "@/state/store";
-import { D2R, RADIUS_KM, fmtDist, localToLonLat, smoothstep } from "@/lib/geo";
+import { D2R, RADIUS_KM, fmtDist, localToLonLat, proximityState, smoothstep } from "@/lib/geo";
 import type { Artifact } from "@/types";
 
 const HORIZON = new THREE.Color("#c8a27e");
@@ -152,12 +154,14 @@ function MissionRoute({ art }: { art: Artifact }) {
 function Beacon({ art }: { art: Artifact }) {
   const wrap = useRef<HTMLDivElement>(null);
   const txt = useRef<HTMLSpanElement>(null);
+  const ctx = useRef<HTMLSpanElement>(null);
   const group = useRef<THREE.Group>(null);
   useFrame(() => {
     if (group.current) group.current.position.copy(siteRef.pos);
     const d = tele.distToArtifact;
     if (wrap.current) wrap.current.style.opacity = String(siteRef.visible ? smoothstep(30, 140, d) : 0);
     if (txt.current) txt.current.textContent = fmtDist(d);
+    if (ctx.current) ctx.current.textContent = proximityState(d);
   });
   return (
     <group ref={group}>
@@ -168,6 +172,7 @@ function Beacon({ art }: { art: Artifact }) {
           </div>
           <div style={{ fontSize: 9.5, letterSpacing: "0.14em", lineHeight: 1.5, paddingBottom: 60, textShadow: "0 0 6px #000" }}>
             <div style={{ color: "#d0a45b" }}>{art.designation} · {art.name}</div>
+            <div style={{ color: "#6f7576" }}><span ref={ctx} /></div>
             <div style={{ color: "#d8d6ce" }}>
               DISTANCE <span ref={txt} />
             </div>
@@ -203,13 +208,17 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
   terrainState.seed = art.terrainSeed;
   const sun = useMemo(() => sunVector(art.sun.el, art.sun.az), [art]);
   env.sunDir.copy(sun);
-  const fog = useMemo(() => new THREE.FogExp2(HORIZON.getHex(), 0.000042), []);
+  const fog = useMemo(() => new THREE.FogExp2(HORIZON.getHex(), 0.00002), []);
+  useEffect(() => {
+    // Start the official rover geometry early so inspection rarely waits.
+    if (art.model.kind === "mer") useGLTF.preload(MER_OFFICIAL_URL);
+  }, [art]);
   return (
     <>
       {mars ? <SkyDome /> : <color attach="background" args={["#000000"]} />}
       {mars && <primitive object={fog} attach="fog" />}
       {!mars && <Stars radius={90000} count={500} dim={0.55} />}
-      <hemisphereLight args={mars ? ["#c9a58b", "#4a2f22", 0.55] : ["#1a1a1c", "#050505", 0.04]} />
+      <hemisphereLight args={mars ? ["#b89a86", "#3a251c", 0.38] : ["#1a1a1c", "#050505", 0.04]} />
       <Terrain
         world={world}
         seed={art.terrainSeed}
@@ -218,6 +227,7 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
         maxDepth={mars ? 11 : 10}
       />
       <SiteArtifact art={art} sun={sun} />
+      <RockField seed={art.terrainSeed} />
       <MissionRoute art={art} />
       <Beacon art={art} />
       <SiteTelemetry art={art} />

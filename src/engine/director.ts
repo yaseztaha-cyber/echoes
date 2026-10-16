@@ -274,7 +274,7 @@ async function arrive(art: Artifact) {
   const pitch0 = Math.asin(s0.y / D0);
   const D1 = { mer: 12.5, sojourner: 4.2, insight: 9, apollo: 34, voyager: 20 }[art.model.kind];
   const azEnd = az0 + 0.55;
-  showBanner("MISSION SITE", `${art.name} · ${art.dates.landing ? "SURFACE" : ""}`, 3600);
+  showBanner("MISSION REGION", `${art.name} · ${art.dates.landing ? "SURFACE" : ""}`, 3600);
   await fly(
     15,
     (u, p, g) => {
