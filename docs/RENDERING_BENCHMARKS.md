@@ -47,6 +47,7 @@ after ~20 s of p95 ≤ 9 ms toward the user's ceiling, 5 s cooldown. Visibility
 | 2026-10-15 | same | high (auto) | Mars close orbit, 240f | 60.1 | 17.0 ms | p99 19.7 ms; MDIM globe, markers, minimap |
 | 2026-10-15 | same | high (auto) | Opportunity site, 240f | 60.2 | 16.8 ms | p99 17.6 ms; terrain + rover + timeline |
 | 2026-10-15 | same | high (auto) | Opportunity site rebuilt (rocks, official rover, new wash), console + screenshots | — | — | 0 app errors across full journey; inspect close-up verified |
+| 2026-10-16 | same rig (user QA captures) | high | Arrival veil + 30 km approach frames | — | — | tile-step lines + shading seam visible at range; albedo proven uniform headless → aerial-perspective fog fix shipped, visual sign-off pending |
 | — | pending discrete-GPU + rapid-travel/soak paths | — | travel, switching, soak | — | — | §2 paths 6–8 unmeasured |
 
 Console (all runs): 0 application errors. 1 benign upstream warning

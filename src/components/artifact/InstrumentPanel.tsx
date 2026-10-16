@@ -126,6 +126,13 @@ export function Compare() {
   }, [open, demo]);
   if (!open || !art) return null;
   const m = art.media[idx];
+  // Deduplicate selector labels (raw + annotated versions share a PIA number).
+  const seen = new Set<string>();
+  const picks = art.media.map((x, i) => ({ x, i, label: x.title.match(/PIA\d+/)?.[0] ?? String(i + 1) })).filter((p) => {
+    if (seen.has(p.label)) return false;
+    seen.add(p.label);
+    return true;
+  });
   return (
     <>
       {m && (
@@ -150,8 +157,8 @@ export function Compare() {
               {m.recordUrl && <a className="label hover:text-amber" href={m.recordUrl} target="_blank" rel="noreferrer">PHOTOJOURNAL ↗</a>}
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
-              {art.media.map((x, i) => (
-                <button key={x.id} className="ctl px-2" data-on={i === idx} onClick={() => setIdx(i)}>{x.title.match(/PIA\d+/)?.[0] ?? i + 1}</button>
+              {picks.map((p) => (
+                <button key={p.x.id} className="ctl px-2" data-on={p.i === idx} onClick={() => setIdx(p.i)}>{p.label}</button>
               ))}
             </div>
           </>

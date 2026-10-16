@@ -213,6 +213,14 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
     // Start the official rover geometry early so inspection rarely waits.
     if (art.model.kind === "mer") useGLTF.preload(MER_OFFICIAL_URL);
   }, [art]);
+  // Aerial perspective: high-altitude views melt into dusty haze (hiding LOD
+  // steps and shading seams at range); ground level stays crisp. Physical for
+  // Mars, and it preserves the verified ground-level look below ~100 m.
+  useFrame(({ camera }) => {
+    const alt = Math.max(0, camera.position.y - heightAt(camera.position.x, camera.position.z));
+    const t = Math.min(1, alt / 25000);
+    fog.density = 0.00002 + t * 0.00005;
+  });
   return (
     <>
       {mars ? <SkyDome /> : <color attach="background" args={["#000000"]} />}
