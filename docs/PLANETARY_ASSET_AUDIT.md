@@ -314,8 +314,3 @@ Defect → cause → fix (all confirmed in code and/or running app):
 10. Process: an edit-tool fuzzy match deleted a SiteScene import (caught by the
     browser, fixed); `tsc --noEmit` added to the validation flow (2 pre-existing
     unused-var errors recorded, untouched).
-11. Follow-up from user QA captures: tile-step lines persist at 20–30 km under
-    the reduced fog. Albedo proven uniform by headless sampling (0.374–0.377
-    center vs ring), so the seam is shading/fog, not data. Fix: altitude-aware
-    aerial-perspective fog (0.00002 ground → 0.00007 at 25 km+). Compare-overlay
-    PIA duplicate buttons deduplicated. Visual sign-off pending next capture.
