@@ -251,7 +251,7 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
   const stat = useRef("");
   const tex = useMemo(detailTexture, []);
   const mat = useMemo(
-    () => new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 1, metalness: 0, side: THREE.DoubleSide }),
+    () => new THREE.MeshBasicMaterial({ vertexColors: true, map: tex, side: THREE.DoubleSide }),
     [tex]
   );
 
@@ -399,7 +399,7 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       {drawn.map((k) => {
         const t = cache.get(k);
         if (!t) return null;
-        return <mesh key={k} geometry={t.geo} material={mat} position={[t.cx, 0, t.cz]} receiveShadow />;
+        return <mesh key={k} geometry={t.geo} material={mat} position={[t.cx, 0, t.cz]} />;
       })}
     </group>
   );

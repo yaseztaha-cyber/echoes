@@ -60,7 +60,6 @@ function SiteArtifact({ art, sun }: { art: Artifact; sun: THREE.Vector3 }) {
   const first = useRef(true);
   const { camera } = useThree();
   const rover = art.model.kind === "mer" || art.model.kind === "sojourner";
-  const bound = art.model.kind === "mer" ? 14 : art.model.kind === "sojourner" ? 6 : art.model.kind === "insight" ? 10 : 60;
   useFrame(() => {
     if (!g.current) return;
     const s = artifactStateAt(art, clock.t);
@@ -107,16 +106,6 @@ function SiteArtifact({ art, sun }: { art: Artifact; sun: THREE.Vector3 }) {
       <directionalLight
         ref={light}
         intensity={art.destination === "moon" ? 4.2 : 2.9}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-bound}
-        shadow-camera-right={bound}
-        shadow-camera-top={bound}
-        shadow-camera-bottom={-bound}
-        shadow-camera-near={1}
-        shadow-camera-far={400}
-        shadow-bias={-0.0004}
-        shadow-normalBias={0.04}
       />
       {light.current && <primitive object={light.current.target} />}
       <group ref={g}>
@@ -236,7 +225,7 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
         seed={art.terrainSeed}
         rootSize={mars ? 65536 : 32768}
         center={mars ? [6000, 10000] : [0, 0]}
-        maxDepth={mars ? 11 : 10}
+        maxDepth={mars ? 9 : 10}
       />
       <SiteArtifact art={art} sun={sun} />
       <RockField seed={art.terrainSeed} />
