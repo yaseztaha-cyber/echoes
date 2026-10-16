@@ -16,7 +16,9 @@ export const globeResidency: ResidencyManager<THREE.Texture> = createResidencyMa
         url,
         (t) => {
           t.colorSpace = THREE.SRGBColorSpace;
-          t.anisotropy = 8;
+          // 4× anisotropy: 8× costs significant iGPU fill-rate at close zoom
+          // for imperceptible sharpness gain over 4× on these maps.
+          t.anisotropy = 4;
           const w = (t.image as { width?: number } | undefined)?.width ?? 0;
           const h = (t.image as { height?: number } | undefined)?.height ?? 0;
           resolve({ texture: t, bytes: w > 0 && h > 0 ? w * h * 4 : 4_194_304 });

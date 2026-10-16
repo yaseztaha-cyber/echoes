@@ -39,6 +39,8 @@ export function useHiMap(
     const s = st.current;
     s.n++;
     if (s.n % 30 !== 0) return;
+    // Frozen tab: never start GPU uploads the user can't see yet.
+    if (typeof document !== "undefined" && document.hidden) return;
     const cam = camera as THREE.PerspectiveCamera;
     const fov = cam.fov ?? 50;
     const dist = measure ? measure(cam) : cam.position.distanceTo(presentBodyPos(bodyId, clock.t, tmp));
