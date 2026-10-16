@@ -113,6 +113,17 @@ export function World() {
           scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
           scene.environmentIntensity = 0.5;
           pmrem.dispose();
+          // A lost GPU context blanks the canvas while the DOM UI survives —
+          // report it instead of leaving a mystifying white view. preventDefault
+          // allows the browser to restore the context without a reload.
+          const canvas = gl.domElement;
+          canvas.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            useEcho.setState({ gpuLost: true });
+          });
+          canvas.addEventListener("webglcontextrestored", () => {
+            useEcho.setState({ gpuLost: false });
+          });
         }}
         aria-label="ECHOES 3D simulation viewport"
       >

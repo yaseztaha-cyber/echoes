@@ -41,6 +41,15 @@ function clearCache() {
 const lin = (v: number) => Math.pow(v, 2.2);
 
 /**
+ * Stitching is only worth rebuild churn where cracks are visible: near tiles.
+ * Far tiles build once, unsnapped (subpixel cracks), and never refresh —
+ * this is what keeps the streamer quiet during fast flights.
+ */
+export function shouldStitch(dist: number, size: number): boolean {
+  return dist < size * 8;
+}
+
+/**
  * Edge-stitching resolution (pure, headless-testable). Given the set of drawn
  * cell keys (`depth/x0/z0`) plus the world rect, returns the snap bitmask for
  * a tile: an edge snaps when its neighbor across that edge is drawn coarser.
@@ -313,8 +322,14 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     };
 
     visitA(rx, rz, rootSize, 0);
+    // Stitch flags only matter where cracks are visible (shouldStitch): far
+    // tiles keep bits=0 forever, so they build once and never churn rebuilds
+    // while the camera flies. This is what keeps the streamer quiet.
+    const fresh: Req[] = [];
+    const refresh: Req[] = [];
     for (const [key, c] of depths) {
-      const bits = bitsFor(c.x0, c.z0, c.size, c.depth);
+      const near = shouldStitch(c.d, c.size);
+      const bits = near ? bitsFor(c.x0, c.z0, c.size, c.depth) : 0;
       const t = cache.get(key);
       if (t && t.bits === bits) {
         t.used = frameNo;
@@ -324,16 +339,23 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       } else if (t) {
         t.used = frameNo;
         draw.push(key);
-        need.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
+        // Stale snap variant still covers this frame; refresh it only when
+        // near (visible) — far tiles keep serving the old variant silently.
+        if (near) refresh.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
       } else {
         const back = ancestorVariant(c.x0, c.z0, c.size, c.depth);
         if (back) {
           back.used = frameNo;
           draw.push(back.key);
         }
-        need.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
+        fresh.push({ key, x0: c.x0, z0: c.z0, size: c.size, depth: c.depth, d: c.d, bits });
       }
     }
+    // New coverage always wins the budget; variant refresh gets at most 2
+    // builds per frame so travel never starves behind restitching.
+    fresh.sort((a, b) => a.depth - b.depth || a.d - b.d);
+    refresh.sort((a, b) => a.d - b.d);
+    need.push(...fresh, ...refresh.slice(0, 2));
 
     need.sort((a, b) => a.depth - b.depth || a.d - b.d);
     const t0 = performance.now();

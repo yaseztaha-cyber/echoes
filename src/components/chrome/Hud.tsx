@@ -285,6 +285,26 @@ function Veil() {
   return <div className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-[600ms]" style={{ opacity: v, background: tone === "mars" ? "radial-gradient(circle at 50% 60%, #8a5d44, #3a2418 80%)" : "#030406" }} />;
 }
 
+/** GPU context loss blanks the canvas while DOM UI survives — say so plainly. */
+function GpuWatch() {
+  const lost = useEcho((s) => s.gpuLost);
+  useEffect(() => {
+    if (!lost) return;
+    const id = window.setTimeout(() => location.reload(), 4000);
+    return () => window.clearTimeout(id);
+  }, [lost]);
+  if (!lost) return null;
+  return (
+    <div className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-ink-0/95 p-4">
+      <div className="module max-w-md p-6 text-center">
+        <div className="label text-crit">GPU CONTEXT LOST</div>
+        <div className="mt-2 text-lg">RENDERER RECOVERING</div>
+        <p className="mt-2 text-sm text-ash">The graphics device dropped the 3D view. Reloading with the same mission state…</p>
+      </div>
+    </div>
+  );
+}
+
 function Toasts() {
   const toasts = useEcho((s) => s.toasts);
   return (
@@ -405,6 +425,7 @@ export function Hud() {
       <Compare />
       <Decode />
       <Veil />
+      <GpuWatch />
       <Toasts />
       {scene !== "solar" && !cine && (
         <button className="ctl pointer-events-auto absolute left-3 top-[216px] z-10 max-md:hidden" onClick={() => returnToSolarSystem()}>

@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildTile, edgeSnapBits } from "./Terrain";
+import { buildTile, edgeSnapBits, shouldStitch } from "./Terrain";
 import { terrainState } from "./height";
+
+describe("shouldStitch", () => {
+  it("stitches near tiles, leaves far tiles stable (no rebuild churn)", () => {
+    expect(shouldStitch(100, 1024)).toBe(true);
+    expect(shouldStitch(8191, 1024)).toBe(true);
+    expect(shouldStitch(8192, 1024)).toBe(false);
+    expect(shouldStitch(30000, 1024)).toBe(false);
+  });
+});
 
 const RX = 0;
 const RZ = 0;

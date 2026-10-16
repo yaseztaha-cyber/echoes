@@ -76,6 +76,8 @@ export interface EchoState {
   menuOpen: boolean;
   panelOpen: boolean;
   sidePanelHidden: boolean;
+  /** GPU context lost (canvas blank while UI survives). Set by World listeners. */
+  gpuLost: boolean;
   /** Venus globe mode: radar-derived surface vs cloud-covered appearance. */
   venusView: "surface" | "clouds";
 }
@@ -122,6 +124,7 @@ export const useEcho = create<EchoState>(() => ({
   menuOpen: false,
   panelOpen: true,
   sidePanelHidden: false,
+  gpuLost: false,
   venusView: "surface",
 }));
 

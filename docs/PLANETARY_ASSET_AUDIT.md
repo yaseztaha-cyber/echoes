@@ -328,3 +328,8 @@ Defect → cause → fix (all confirmed in code and/or running app):
     coincide. Snap flags ride the cache keys with ancestor-backdrop fallback,
     so coverage never holes. Skirts stay as insurance. Depth jumps >1 across
     one edge remain a documented residual.
+14. Streaming-churn fix (user QA: white-out arrival + stuck 124/248 + drops):
+    far tiles (dist ≥ size×8) build unsnapped once and never refresh; new
+    coverage wins the whole build budget while snap refresh is capped at
+    2/frame near-only. Plus GPU context lost/restored detection with a plain
+    recovery message instead of a mystifying white canvas.
