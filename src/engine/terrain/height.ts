@@ -105,3 +105,31 @@ export function slopeAt(x: number, z: number) {
   const dz = (heightAt(x, z + e) - heightAt(x, z - e)) / (2 * e);
   return Math.atan(Math.hypot(dx, dz)) * (180 / Math.PI);
 }
+
+/**
+ * Footprint grounding for spacecraft. Samples the terrain under the whole
+ * footprint (centre + 4 rim points) and rests the frame on the HIGHEST sample,
+ * so no leg or wheel dives below the surface. Returns a small tilt from the
+ * rim deltas so the frame sits with the slope instead of floating above it.
+ * `settle` sinks the frame slightly (wheels compress soil — physical).
+ */
+export function footprintPose(
+  x: number,
+  z: number,
+  r: number,
+  settle = 0.03
+): { y: number; pitch: number; roll: number } {
+  if (!(r > 0)) {
+    return { y: heightAt(x, z), pitch: 0, roll: 0 };
+  }
+  const c = heightAt(x, z);
+  const e = heightAt(x + r, z);
+  const w = heightAt(x - r, z);
+  const s = heightAt(x, z + r);
+  const n = heightAt(x, z - r);
+  return {
+    y: Math.max(c, e, w, s, n) - settle,
+    pitch: Math.atan2(n - s, 2 * r),
+    roll: Math.atan2(w - e, 2 * r),
+  };
+}

@@ -15,7 +15,12 @@ const tmp = new THREE.Vector3();
  * prefetch at B, release below. The bundled global map (passed to Globe as
  * the base) stays mounted the whole time, so a body is never left blank.
  */
-export function useHiMap(bodyId: string, radius: number, hiUrl: string | null): THREE.Texture | null {
+export function useHiMap(
+  bodyId: string,
+  radius: number,
+  hiUrl: string | null,
+  measure?: (cam: THREE.PerspectiveCamera) => number
+): THREE.Texture | null {
   const [tex, setTex] = useState<THREE.Texture | null>(null);
   const st = useRef({ stage: "A" as DetailStage, n: 0, current: null as string | null });
   const quality = useEcho((s) => s.quality);
@@ -36,7 +41,7 @@ export function useHiMap(bodyId: string, radius: number, hiUrl: string | null): 
     if (s.n % 30 !== 0) return;
     const cam = camera as THREE.PerspectiveCamera;
     const fov = cam.fov ?? 50;
-    const dist = cam.position.distanceTo(presentBodyPos(bodyId, clock.t, tmp));
+    const dist = measure ? measure(cam) : cam.position.distanceTo(presentBodyPos(bodyId, clock.t, tmp));
     s.stage = selectStage(s.stage, screenFraction(radius, dist, fov));
     const q = useEcho.getState().quality;
     void quality;

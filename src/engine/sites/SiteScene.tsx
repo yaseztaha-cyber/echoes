@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Html, Line, useGLTF } from "@react-three/drei";
 import { Terrain } from "@/engine/terrain/Terrain";
 import { RockField } from "@/engine/terrain/Rocks";
-import { heightAt, slopeAt, terrainState } from "@/engine/terrain/height";
+import { heightAt, slopeAt, footprintPose, terrainState } from "@/engine/terrain/height";
 import { ArtifactModel } from "@/engine/spacecraft/models";
 import { MER_OFFICIAL_URL } from "@/engine/spacecraft/merOfficial";
 import { Stars } from "@/engine/world/Stars";
@@ -50,6 +50,9 @@ function SkyDome() {
   );
 }
 
+/** Half-span of each landed frame in metres (footprint grounding radius). */
+const FOOTPRINT: Record<string, number> = { mer: 1.3, sojourner: 0.5, insight: 1.6, apollo: 4.6, voyager: 0 };
+
 function SiteArtifact({ art, sun }: { art: Artifact; sun: THREE.Vector3 }) {
   const g = useRef<THREE.Group>(null);
   const light = useRef<THREE.DirectionalLight>(null);
@@ -68,17 +71,26 @@ function SiteArtifact({ art, sun }: { art: Artifact; sun: THREE.Vector3 }) {
     let d = s.yaw - yaw.current;
     d = Math.atan2(Math.sin(d), Math.cos(d));
     yaw.current += d * 0.12;
-    let y = heightAt(s.x, s.z);
+    // Footprint grounding: rest on the highest sample under the frame so no
+    // wheel, foot or leg dives below the surface; tilt with the local slope.
+    // (The old code used the minimum sample, which buried frames on slopes.)
+    let y: number;
     let pitch = 0;
+    let roll = 0;
     if (rover) {
       const c = Math.cos(yaw.current), sn = -Math.sin(yaw.current);
       const hf = heightAt(s.x + c * 0.55, s.z + sn * 0.55);
       const hr = heightAt(s.x - c * 0.55, s.z - sn * 0.55);
-      y = Math.min(y, hf, hr);
+      y = Math.max(heightAt(s.x, s.z), hf, hr) - 0.03;
       pitch = Math.atan2(hf - hr, 1.1);
+    } else {
+      const pose = footprintPose(s.x, s.z, FOOTPRINT[art.model.kind] ?? 1.0);
+      y = pose.y;
+      pitch = pose.pitch;
+      roll = pose.roll;
     }
     g.current.position.set(s.x, y, s.z);
-    g.current.rotation.set(0, yaw.current, pitch, "YZX");
+    g.current.rotation.set(roll, yaw.current, pitch, "YZX");
     g.current.visible = s.onSurface;
     siteRef.group = g.current;
     siteRef.pos.set(s.x, y + (art.model.kind === "apollo" ? 1.3 : 0.7), s.z);

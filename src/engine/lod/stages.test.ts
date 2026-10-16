@@ -18,18 +18,18 @@ describe("screen fraction", () => {
 describe("stage selection with hysteresis", () => {
   it("climbs A→B→C on approach", () => {
     expect(selectStage("A", 0.001)).toBe("A");
-    expect(selectStage("A", 0.05)).toBe("B");
+    expect(selectStage("A", 0.03)).toBe("B");
     expect(selectStage("B", 0.5)).toBe("C");
   });
   it("does not flap at the boundary", () => {
-    // 0.02 upgrades A→B, but B holds until below 0.012
-    expect(selectStage("A", 0.02)).toBe("B");
-    expect(selectStage("B", 0.015)).toBe("B");
-    expect(selectStage("B", 0.011)).toBe("A");
-    // 0.22 upgrades B→C, but C holds until below 0.13
-    expect(selectStage("B", 0.22)).toBe("C");
-    expect(selectStage("C", 0.15)).toBe("C");
-    expect(selectStage("C", 0.12)).toBe("B");
+    // 0.01 upgrades A→B, but B holds until below 0.006
+    expect(selectStage("A", 0.01)).toBe("B");
+    expect(selectStage("B", 0.008)).toBe("B");
+    expect(selectStage("B", 0.005)).toBe("A");
+    // 0.12 upgrades B→C, but C holds until below 0.07
+    expect(selectStage("B", 0.12)).toBe("C");
+    expect(selectStage("C", 0.09)).toBe("C");
+    expect(selectStage("C", 0.06)).toBe("B");
   });
   it("a lost target falls straight back", () => {
     expect(selectStage("C", 0.001)).toBe("A");

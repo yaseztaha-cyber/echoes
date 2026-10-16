@@ -15,8 +15,8 @@ import type { Quality } from "@/state/store";
 
 export type DetailStage = "A" | "B" | "C";
 
-const UP = { B: 0.02, C: 0.22 } as const; // upgrade when fraction exceeds…
-const DOWN = { B: 0.012, C: 0.13 } as const; // …downgrade only when it falls below
+const UP = { B: 0.01, C: 0.12 } as const; // upgrade when fraction exceeds…
+const DOWN = { B: 0.006, C: 0.07 } as const; // …downgrade only when it falls below
 
 /** Fraction of screen height covered by a sphere: (r/d) / tan(fov/2). */
 export function screenFraction(radius: number, dist: number, fovDeg: number): number {

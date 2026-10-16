@@ -8,6 +8,7 @@ import { VOYAGER_NOW } from "@/data/artifacts/voyager";
 import { env, siteRef } from "./telemetry";
 import { GLOBE_R, RADIUS_KM, lonLatToVec, D2R } from "@/lib/geo";
 import { heightAt } from "./terrain/height";
+import { globeResidency, HI_URLS } from "./textures/manager";
 import { sfx } from "@/lib/audio";
 import { DAY_MS, SOL_MS } from "@/lib/time";
 import type { Artifact } from "@/types";
@@ -155,6 +156,13 @@ export async function travelToBody(id: "mars" | "moon") {
   const k = GLOBE_R / b.radius;
   sfx.confirm();
   if (S().artifactId === "voyager1") exitVoyager();
+  // Commit point: destination known → warm its hi-res texture now so the
+  // approach sharpens instead of arriving blurry (high/ultra tiers only).
+  const hi = HI_URLS[id];
+  if (hi) {
+    const q = S().quality;
+    if (q === "high" || q === "ultra") globeResidency.request(hi, 5);
+  }
   set({ focusBody: id, artifactId: null, camMode: "orbit", instrumentId: null });
   setFollow(null);
   showBanner(b.name, "DISTANCE · APPROACH", 4800);

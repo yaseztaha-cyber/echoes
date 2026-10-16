@@ -25,12 +25,14 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
     let guard = 0;
     while (items.length < count && guard++ < count * 30) {
       const a = r() * Math.PI * 2;
-      const d = 3 + Math.pow(r(), 1.6) * (radius - 3);
+      // Keep the device clearing open: hardware sits near the origin and
+      // close-up inspection must not stare into a boulder.
+      const d = 12 + Math.pow(r(), 1.4) * (radius - 12);
       const x = Math.cos(a) * d;
       const z = Math.sin(a) * d;
-      // near-field discipline: nothing taller than a pebble bed within 8 m of
-      // the rover, so close-up inspection never stares into a boulder
-      const cap = d < 8 ? 0.32 : 1.18;
+      // near-field discipline: modest rocks just outside the clearing, full
+      // sizes only beyond 20 m, so close-up inspection stays readable
+      const cap = d < 20 ? 0.5 : 1.18;
       const s = 0.08 + Math.pow(r(), 2.4) * cap;
       items.push({ x, y: heightAt(x, z) + s * 0.12, z, s, ry: r() * Math.PI * 2, tone: r() });
     }

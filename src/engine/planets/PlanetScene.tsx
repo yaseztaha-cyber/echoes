@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { Atmosphere, Globe } from "./Globe";
+import { HI_URLS } from "@/engine/textures/manager";
+import { useHiMap } from "@/engine/textures/hiGlobe";
 import { Stars } from "@/engine/world/Stars";
 import { artifactsFor } from "@/data/artifacts";
 import { LANDMARKS } from "@/data/locations";
@@ -93,8 +95,13 @@ function PlanetTelemetry({ world }: { world: "mars" | "moon" }) {
   return null;
 }
 
-export function PlanetScene({ world }: { world: "mars" | "moon" }) {
-  const light = useRef<THREE.DirectionalLight>(null);
+/** Planet-scene globe with the same hi-res upgrade as the solar view. */
+function PlanetGlobe({ world }: { world: "mars" | "moon" }) {
+  const hiMap = useHiMap(world, GLOBE_R, HI_URLS[world] ?? null, (cam) => cam.position.length());
+  return <Globe kind={world} radius={GLOBE_R} detail hiMap={hiMap} />;
+}
+
+export function PlanetScene({ world }: { world: "mars" | "moon" }) {  const light = useRef<THREE.DirectionalLight>(null);
   const occ = useRef<THREE.Mesh>(null);
   const sites = artifactsFor(world);
   useFrame(() => light.current?.position.copy(env.sunDir).multiplyScalar(2000));
@@ -104,7 +111,7 @@ export function PlanetScene({ world }: { world: "mars" | "moon" }) {
       <ambientLight intensity={world === "mars" ? 0.06 : 0.015} />
       <directionalLight ref={light} intensity={world === "mars" ? 2.5 : 3.4} />
       <Suspense fallback={null}>
-        <Globe kind={world} radius={GLOBE_R} detail />
+        <PlanetGlobe world={world} />
       </Suspense>
       {world === "mars" && <Atmosphere radius={GLOBE_R} color="#c9906a" strength={0.75} sun={() => env.sunDir} scale={1.045} power={4.5} />}
       <mesh ref={occ}>

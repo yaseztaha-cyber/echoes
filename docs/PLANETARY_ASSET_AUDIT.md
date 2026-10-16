@@ -314,3 +314,10 @@ Defect → cause → fix (all confirmed in code and/or running app):
 10. Process: an edit-tool fuzzy match deleted a SiteScene import (caught by the
     browser, fixed); `tsc --noEmit` added to the validation flow (2 pre-existing
     unused-var errors recorded, untouched).
+11. Approach-sharpness pass (user QA: blurry globes on approach/planet view,
+    diving/floating hardware, rocks crowding devices): hi-res engages from 12%
+    screen fraction (was 22%), destination 4K prefetched at travel commit,
+    planet scene uses the same hi-res upgrade; footprint grounding (max-sample
+    + tilt + soil settle) replaces the burying minimum-sample rule for every
+    landed frame; rock clearing 12 m around devices. (Prior aerial-fog change
+    was reverted on request; range seams remain open.)
