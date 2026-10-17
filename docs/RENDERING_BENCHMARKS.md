@@ -9,9 +9,10 @@ defined machine is still required before any 60 FPS claim.
 
 | Metric | Pre-Phase 4 | Phase 4 | Notes |
 |---|---|---|---|
-| Production bundle (dist/index.html) | 9,267,579 B | — (record on build) | single-file; hi-res excluded by design |
+| Production bundle (dist/index.html) | 9,267,579 B | record per build (see commit log) | single-file; hi-res excluded by design |
 | Bundled globe textures (base64 ≈ ×1.37) | ~2.9 MB baked | unchanged | 2K JPEGs stay resident as fallbacks |
-| Runtime hi-res (public/tex-hi, NOT bundled) | — | earth 1.69 + moon 2.02 + mars 2.72 + pluto 1.41 MB | fetched on demand at stage C, high/ultra only |
+| Runtime hi-res (public/tex-hi) | 4 files, 7.84 MB | **REMOVED (spec §2)** | 2048×1024 is the terminal global-map tier; `HI_URLS` = {} |
+| Star catalogue (src/data/stars/starCatalog.ts) | — | +110 KB source (5,070 naked-eye stars, HYG v4.4 excerpt) | typed-array base64; 1 draw call; spec §18 |
 | Residency cap | — | 96 MiB (~2× 4K RGBA mip chains) | LRU; pinned fallbacks never evicted |
 | Render loops | 1 (R3F) | 1 (no new loops) | stage eval ~2 Hz per body, no setState storms |
 | Draw calls (construction) | +0 | +0 | texture swap reuses mesh/material |
@@ -22,7 +23,7 @@ Decoded-memory math (ESTIMATE method, not GPU measurement): 4096×2048 RGBA =
 ## 2. Repeatable camera paths (run in a GPU browser, all presets)
 
 1. Idle solar overview 10 s (record FPS avg + p95 frame time).
-2. Rapid camera rotation 360° (stutter check during hi-res hold).
+2. Rapid camera rotation 360° (stutter check during streaming; hi-res hold removed — stage C no longer fetches).
 3. Earth approach → close orbit (stage A→B→C transitions, texture pop check).
 4. Mars approach → close orbit (same; marker alignment check).
 5. Jupiter/Saturn approach (representative maps: band continuity, ring response).

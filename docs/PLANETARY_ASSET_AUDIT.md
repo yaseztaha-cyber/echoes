@@ -97,15 +97,28 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 - **Note:** a prior enhancement attempt (granulation + corona shaders) was reverted by
   direction; any new sun work follows this audit + the wavelength-mode rules in spec §7
 
-## 6. STARFIELD — random points (NON-COMPLIANT)
+## 6. STARFIELD — real catalogue excerpt (COMPLIANT)
 
-- **Status:** `NON-COMPLIANT` with spec §18 (seeded PRNG sphere, 650 points, no catalogue)
-- **Required:** astronomy-derived catalogue (Hipparcos or Bright Star Catalogue subset:
-  RA/Dec → direction, magnitude → size/brightness, spectral class → tint), GPU point
-  rendering, magnitude/exposure-driven visibility, spatially coherent under camera flight,
-  no streaks outside a labelled artistic mode
-- **Also required:** restrained Milky Way from a real survey (label survey vs naked-eye),
-  deep-space objects only as deliberate, attributed targets
+- **Status:** `COMPLIANT` with spec §18. `src/data/stars/starCatalog.ts` embeds 5,070
+  naked-eye stars (Vmag ≤ 6.0) generated from HYG v4.4 (Hipparcos + Yale Bright Star +
+  Gliese merge, https://codeberg.org/astronexus/hyg, CC BY-SA 4.0; generator script
+  `scripts/generate-star-catalog.mjs` kept in-repo; filter: mag ≤ 6.0, Sun dropped,
+  brightest-first sort, RA converted hours→degrees).
+- **Mapping (spec-required chain):** ICRS/J2000 RA/Dec → unit direction in the ECHOES
+  frame (equatorial → rotate by ecliptic obliquity 23.439° → Y-up/ecliptic-XZ basis;
+  `starDirection`); apparent magnitude → relative flux 10^(−0.4 m) with gamma 0.55
+  compression (`starBrightness`) drives both brightness and point size; color index
+  B−V → temperature (Ballesteros 2012, anchored at B−V 0.656 → 5,778 K) → blackbody RGB
+  (Tanner Helland approximation) provides the spectral tint (`kelvinToRgb`).
+- **GPU rendering:** custom `ShaderMaterial` point list (additive, depth-tested, no
+  depth write), per-vertex size + color attributes, `uDim` exposure each frame,
+  `uPixelRatio` DPR-aware. Draw calls: 1. Follows the camera (no parallax) and is
+  spatially coherent (positions are fixed catalogue directions, and the mag-sorted
+  excerpt keeps real Milky Way band overrepresentation — locked by test).
+- **No streaks, no dust, no artistic sharpening.** Sky density stays derived from
+  catalogue distributions, not decorative noise.
+- **Remaining (deferred):** survey-built fainter Milky Way layer (must be labelled
+  survey vs naked-eye) and deep-space objects (only as deliberate, attributed targets).
 
 ## 7. MISSION PHOTOGRAPHY — `src/assets/nasa/PIA*.jpg` — APPROVED (with note)
 
@@ -154,7 +167,7 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 | mars.jpg | PROVISIONAL (priority) | Replace with MDIM 2.1 + MOLA; Trek tiles for streaming |
 | Giants/Pluto | MISSING | Verify data (not artistic) maps per body; label class |
 | Sun imagery | MISSING | SDO channel set + wavelength-mode UI rules |
-| Star catalogue | NON-COMPLIANT | Embed real catalogue subset; remove PRNG field |
+| Star catalogue | COMPLIANT | HYG v4.4 naked-eye excerpt embedded (5,070 stars, CC BY-SA, RA/Dec→dir, mag→size, B−V→tint); PRNG field removed |
 | PIA archive | APPROVED (web rendition) | Fetch full-res on demand only |
 | Terrain DEM | SYNTHETIC (labelled) | Real DEM at mission sites (Phase 9) |
 
@@ -169,7 +182,11 @@ streaming pyramid lands.
 Machine manifest: `src/data/assets/manifest.ts`. Pipeline: `scripts/build-globes.py`
 (verify → LANCZOS downsample → sRGB JPEG q90; 2048×1024 bundled + 4096×2048 hi-res
 retained in git-ignored `assets-hi/`; no upscaling anywhere — moon hi-res comes from
-the 4K TIFF, not the 2K JPEG).
+the 4K TIFF, not the 2K JPEG.
+**Runtime hi-res delivery removed per spec §2 (1080p budget): `public/tex-hi/`
+deleted, `HI_URLS` emptied, manifest `hiresUrl` fields dropped — 2048×1024 is now
+the terminal global-map tier by design.** The 4K originals stay in git-ignored
+`assets-hi/` as provenance sources and are NOT deployed.
 
 - **earth.jpg ← BMNG topo.bathy Dec 2004, 5400×2700.** Orientation cross-checked
   against prior map: 0.0° shift, corr 0.93. Seasonal (December) composite — recorded,
@@ -241,9 +258,9 @@ placeholders remain: every globe is a sourced map or a labelled representative.
 - Residency manager: dedup, priority, LRU eviction, refcount + pin protection,
   failure retry, cancel. Fallbacks stay on `useTexture` (always resident, never
   blank). 96 MiB cap ≈ two 4K chains. `src/engine/textures/`.
-- Hi-res delivery: `public/tex-hi/` 4K for earth/moon/mars/pluto only (sources
-  allow it); fetched on demand at stage C on high/ultra, prefetched at B,
-  released below. Small maps have no hi-res tier — recorded, not upscaled.
+- Hi-res delivery: **REMOVED (spec §2)**. Formerly `public/tex-hi/` 4K for
+  earth/moon/mars/pluto; stage-C fetch path is now inert (`HI_URLS = {}`). Small
+  maps keep their earlier decision — recorded, not upscaled.
 - Adaptive stepper: p95-driven, ~3 s to step down, ~20 s to recover toward the
   user's ceiling, 5 s cooldown, single-tier moves. Drives the existing quality
   tiers (= DPR + shadows + terrain + hi-res eligibility), so dynamic render
