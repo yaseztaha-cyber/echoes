@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { Atmosphere, Globe } from "./Globe";
 import { HI_URLS } from "@/engine/textures/manager";
+import { GlobeKind } from "@/data/assets/manifest";
 import { useHiMap } from "@/engine/textures/hiGlobe";
 import { Stars } from "@/engine/world/Stars";
 import { artifactsFor } from "@/data/artifacts";
@@ -55,7 +56,7 @@ function SiteMarker({ id, occ }: { id: string; occ: React.RefObject<THREE.Mesh |
   );
 }
 
-function Landmarks({ world }: { world: "mars" | "moon" }) {
+function Landmarks({ world }: { world: GlobeKind }) {
   const science = useEcho((s) => s.uiMode === "science");
   const items = LANDMARKS.filter((l) => l.world === world);
   const refs = useRef<(HTMLDivElement | null)[]>([]);
@@ -79,10 +80,11 @@ function Landmarks({ world }: { world: "mars" | "moon" }) {
   );
 }
 
-function PlanetTelemetry({ world }: { world: "mars" | "moon" }) {
+function PlanetTelemetry({ world }: { world: GlobeKind }) {
   useFrame(({ camera }) => {
     const l = camera.position.length();
-    const km = RADIUS_KM[world];
+    const km = RADIUS_KM[world as keyof typeof RADIUS_KM];
+    if (!km) return;
     tele.altitudeM = Math.max(0, ((l - GLOBE_R) / GLOBE_R) * km * 1000);
     tele.distanceToFocusM = (l / GLOBE_R) * km * 1000;
     const ll = vecToLonLat(camera.position);
@@ -96,14 +98,14 @@ function PlanetTelemetry({ world }: { world: "mars" | "moon" }) {
 }
 
 /** Planet-scene globe with the same hi-res upgrade as the solar view. */
-function PlanetGlobe({ world }: { world: "mars" | "moon" }) {
-  const hiMap = useHiMap(world, GLOBE_R, HI_URLS[world] ?? null, (cam) => cam.position.length());
+function PlanetGlobe({ world }: { world: GlobeKind }) {
+  const hiMap = useHiMap(world, GLOBE_R, HI_URLS[world as keyof typeof HI_URLS] ?? null, (cam) => cam.position.length());
   return <Globe kind={world} radius={GLOBE_R} detail hiMap={hiMap} />;
 }
 
-export function PlanetScene({ world }: { world: "mars" | "moon" }) {  const light = useRef<THREE.DirectionalLight>(null);
+export function PlanetScene({ world }: { world: GlobeKind }) {  const light = useRef<THREE.DirectionalLight>(null);
   const occ = useRef<THREE.Mesh>(null);
-  const sites = artifactsFor(world);
+  const sites = (world === "mars" || world === "moon") ? artifactsFor(world) : [];
   useFrame(() => light.current?.position.copy(env.sunDir).multiplyScalar(2000));
   return (
     <>

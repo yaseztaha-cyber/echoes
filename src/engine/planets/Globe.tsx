@@ -44,7 +44,7 @@ float vn3(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
 `;
 
 interface GlobeProps {
-  kind: keyof typeof URLS;
+  kind: string;
   radius: number;
   detail?: boolean;
   rough?: number;
@@ -54,7 +54,8 @@ interface GlobeProps {
 
 /** Textured globe. Color maps are published calibrated imagery: sRGB, no material repaint. */
 export function Globe({ kind, radius, detail, rough = 1, hiMap }: GlobeProps) {
-  const base = useTexture(URLS[kind]);
+  const url = (URLS as Record<string, string>)[kind];
+  const base = useTexture(url);
   base.anisotropy = 8;
   base.colorSpace = THREE.SRGBColorSpace;
   const map = hiMap ?? base;

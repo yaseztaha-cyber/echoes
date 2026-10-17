@@ -38,7 +38,7 @@ export const persist = (k: string, v: unknown) => {
 export interface EchoState {
   entered: boolean;
   scene: SceneId;
-  world: "solar" | "moon" | "mars";
+  world: string;
   focusBody: string;
   artifactId: string | null; // selected artifact (site context or highlighted record)
   camMode: CamMode;

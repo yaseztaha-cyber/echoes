@@ -151,7 +151,7 @@ export async function overview() {
 }
 
 /* ------------------------------------------------------------------ planets */
-export async function travelToBody(id: "mars" | "moon") {
+export async function travelToBody(id: string) {
   const b = bodyById(id)!;
   const k = GLOBE_R / b.radius;
   sfx.confirm();
@@ -299,7 +299,7 @@ async function arrive(art: Artifact) {
   set({ arrival: { active: false, label: "" }, camMode: "orbit" });
 }
 
-export async function goToPlanet(world: "mars" | "moon") {
+export async function goToPlanet(world: string) {
   const st = S();
   if (st.scene === "planet" && st.world === world) return;
   if (st.scene === "site") await leaveSite();
@@ -315,7 +315,7 @@ export async function leaveSite() {
   setFollow(null);
   await veil(true, art.destination === "mars" ? "mars" : "dark", 650);
   const n = lonLatToVec(art.location.lon, art.location.lat, 1);
-  set({ scene: "planet", world: art.destination as "mars" | "moon", camMode: "orbit" });
+  set({ scene: "planet", world: art.destination, camMode: "orbit" });
   configureClock({ mode: "solar-system", rate: 3600000, range: null, t: Date.now(), speedIdx: 1, playing: true, dir: 1 });
   setView(n.clone().multiplyScalar(GLOBE_R + 0.8), n.clone().multiplyScalar(GLOBE_R));
   await nextFrames();
@@ -330,7 +330,7 @@ export async function returnToSolarSystem(quick = false) {
   set({ overlay: null });
   if (st.scene === "site") await leaveSite();
   if (S().scene === "planet") {
-    const world = S().world as "mars" | "moon";
+    const world = S().world;
     const b = bodyById(world)!;
     const k = GLOBE_R / b.radius;
     const c = cam.camera!;

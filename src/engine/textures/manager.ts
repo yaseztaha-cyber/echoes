@@ -32,10 +32,11 @@ export const globeResidency: ResidencyManager<THREE.Texture> = createResidencyMa
   now: () => performance.now(),
 });
 
-/** Runtime hi-res URLs served from public/tex-hi (loaded on demand, never bundled). */
-export const HI_URLS: Record<string, string> = {
-  earth: "/tex-hi/earth_4k.jpg",
-  moon: "/tex-hi/moon_4k.jpg",
-  mars: "/tex-hi/mars_4k.jpg",
-  pluto: "/tex-hi/pluto_4k.jpg",
-};
+/** Runtime hi-res URLs served from public/tex-hi.
+ *
+ * DISABLED per spec §2: no 4K globe upgrades in the normal 1080p experience.
+ * The bundled 2K maps (src/assets/tex/) remain the delivery default.
+ * Kept as an empty record so importers don't break; re-enable only when a
+ * verified streaming pipeline with measured GPU budget lands.
+ */
+export const HI_URLS: Record<string, string> = {};
