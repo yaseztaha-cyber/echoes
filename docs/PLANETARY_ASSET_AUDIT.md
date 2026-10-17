@@ -168,11 +168,13 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 
 | Asset | Status | Next action |
 |---|---|---|
-| earth.jpg | PROVISIONAL | Replace with BMNG (+tiles); add clouds/night as separate labelled layers |
-| moon.jpg | PROVISIONAL | Replace with SVS 4720 kit + DEM |
-| mars.jpg | PROVISIONAL (priority) | Replace with MDIM 2.1 + MOLA; Trek tiles for streaming |
-| Giants/Pluto | MISSING | Verify data (not artistic) maps per body; label class |
-| Sun imagery | MISSING | SDO channel set + wavelength-mode UI rules |
+| earth.jpg | APPROVED (BMNG 2004) | DEM at mission sites (Phase 9); streaming tiles |
+| earth clouds | APPROVED (2ndhand, labelled) | Replace with verified direct NASA/SVS composite when found |
+| earth night | APPROVED (VIIRS 2016) | Current-epoch fetch is a later refresh, not a defect |
+| moon.jpg | APPROVED (SVS 2025) | Wire LOLA displacement (later phase) |
+| mars.jpg | APPROVED (MDIM 2.1) | MOLA wiring + Trek tiles for streaming |
+| Giants/Pluto | Saturn/Uranus/Neptune REPRESENTATIVE | Authentic observation views deferred to archive phase; Jupiter/Pluto APPROVED |
+| Sun imagery | APPROVED (HMI recon + flat channels) | On-demand dated fetch for research use |
 | Star catalogue | COMPLIANT | HYG v4.4 naked-eye excerpt embedded (5,070 stars, CC BY-SA, RA/Dec→dir, mag→size, B−V→tint); PRNG field removed |
 | PIA archive | APPROVED (web rendition) | Fetch full-res on demand only |
 | Terrain DEM | SYNTHETIC (labelled) | Real DEM at mission sites (Phase 9) |
@@ -356,3 +358,53 @@ Defect → cause → fix (all confirmed in code and/or running app):
     coverage wins the whole build budget while snap refresh is capped at
     2/frame near-only. Plus GPU context lost/restored detection with a plain
     recovery message instead of a mystifying white canvas.
+
+---
+
+## PHASE 4.3 — EARTH LAYERS RECORD (clouds + night lights, committed)
+
+Earth's base map stays the BMNG 2004 composite; its two missing layers ship as
+separate labelled records so neither can be mistaken for base imagery.
+
+- **Night lights — direct NASA record.** `earth-night-viirs-2016`: NASA Earth
+  Observatory "Black Marble" 2016 annual composite (Suomi NPP VIIRS Day/Night
+  Band, 0.01°/px 3600×1800). Verified URL probe (HTTP 200, 779,638 B) —
+  `eoimages.gsfc.nasa.gov/images/imagerecords/144000/144898/BlackMarble_2016_01deg.jpg`.
+  LANCZOS downsample to 2048×1024 sRGB JPEG q90. Gaps recorded: 2016 epoch;
+  gas flares/boat lights by sensor physics; composite, not a snapshot.
+  Credit line carried verbatim in the record.
+- **Clouds — secondhand, honestly labelled.** No direct cloud-only NASA
+  equirect could be verified (candidate files all 404; Earth Observatory
+  composites are clouds-over-surface). Delivered: the three.js
+  `earth_clouds_1024.png` cloud composite, alpha channel extracted to a
+  grayscale mask (`earth_clouds.jpg`, 112 KB, delivered NATIVE 1024×512 —
+  no upscale). Record `earth-clouds-2ndhand` carries
+  "provenance chain incomplete" + "replace with a direct NASA/SVS product when
+  verified", mirroring the old earth.jpg honesty class.
+- **Pipeline:** `scripts/build-earth-layers.py` (verify source size + 2:1 →
+  alpha extract / LANCZOS downsample → print manifest records; snapshot kept in
+  git-ignored `assets-hi/earth-layers-manifest.json`).
+- **Renderer:** new `EarthLayers` component (Globe.tsx) — untouched base globe;
+  clouds = sibling sphere ×1.004, white `MeshStandardMaterial` with the mask as
+  `alphaMap` (sun-lit, so clouds vanish physically on the night side); night =
+  additive `ShaderMaterial` sphere ×1.002, terminator mask
+  `smoothstep(0.05, −0.10, dot(N, sun))`. Wired in BOTH scenes: solar system
+  (earth body, per-frame `sunFrom` getter) and planet scene (`world ===
+  "earth"`, `env.sunDir`).
+- **Earth planet scene unlocked** (was gated out): World mount gate now allows
+  world "earth"; BodyPanel gains "ENTER EARTH ORBIT →"; exposed wrong-world UI
+  bugs and fixed them — planet panel no longer lists Mars mission sites on
+  Earth orbit; minimap draws the Earth equirect (was Mars) and places no
+  non-Earth site boxes. Earth landmarks remain data-empty by design
+  (`LANDMARKS` is mars/moon only).
+- **Verification (2026-10-17, headless ANGLE/D3D11 1600×1000):** earth planet
+  scene 60.1 FPS / p95 16.8 ms with both layers active, 0 console errors;
+  moon planet scene + Apollo 12 surface journey unchanged (60.1 FPS, 0 errors);
+  84/84 unit tests; first screenshots+DevPanel captures show clouds on the day
+  limb and city lights across the night disc. Bundle: dist/index.html
+  10,062 kB (+305 kB — the two delivered JPEGs).
+
+| Asset | Was | Now |
+|---|---|---|
+| earth clouds | absent | APPROVED `earth-clouds-2ndhand` (labelled secondhand) |
+| earth night | absent | APPROVED `earth-night-viirs-2016` (direct NASA) |

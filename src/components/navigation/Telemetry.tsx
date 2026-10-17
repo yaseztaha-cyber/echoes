@@ -8,6 +8,7 @@ import { clock } from "@/engine/time/clock";
 import { tele, siteRef } from "@/engine/telemetry";
 import { buildPath, artifactStateAt } from "@/engine/missions/pathing";
 import { flyToLocal, flyToLonLat, focusBody } from "@/engine/director";
+import earthUrl from "@/assets/tex/earth.jpg";
 import marsUrl from "@/assets/tex/mars.jpg";
 import moonUrl from "@/assets/tex/moon.jpg";
 
@@ -116,7 +117,7 @@ export function Minimap() {
   useEffect(() => {
     if (scene === "planet") {
       const im = new Image();
-      im.src = world === "moon" ? moonUrl : marsUrl;
+      im.src = world === "moon" ? moonUrl : world === "earth" ? earthUrl : marsUrl;
       imgRef.current = im;
     }
   }, [scene, world]);
@@ -143,7 +144,7 @@ export function Minimap() {
           ctx.globalAlpha = 1;
         }
         const pt = (lon: number, lat: number) => [((((lon + 180) % 360) + 360) % 360) / 360 * W, ((90 - lat) / 180) * H];
-        artifactsFor(world === "moon" ? "moon" : "mars").forEach((a) => {
+        (world === "mars" || world === "moon" ? artifactsFor(world) : []).forEach((a) => {
           const [x, y] = pt(a.location.lon, a.location.lat);
           ctx.strokeStyle = a.id === aid ? "#d8d6ce" : "#d0a45b";
           ctx.strokeRect(x - 3, y - 3, 6, 6);

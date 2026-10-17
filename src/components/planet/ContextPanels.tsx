@@ -52,9 +52,9 @@ function BodyPanel() {
           </>
         )}
         <div className="label mt-2 leading-relaxed">DISTANCES COMPUTED FROM A CIRCULAR-ORBIT MODEL. DISPLAY POSITIONS USE ADJUSTED VISUAL SCALE.</div>
-        {b.destination && (
-          <button className="ctl ctl-primary mt-3 w-full" onClick={() => travelToBody(b.destination!)}>
-            TRAVEL TO {b.name} →
+        {(b.destination || focus === "earth") && (
+          <button className="ctl ctl-primary mt-3 w-full" onClick={() => travelToBody(b.destination ?? "earth")}>
+            {b.destination ? `TRAVEL TO ${b.name} →` : "ENTER EARTH ORBIT →"}
           </button>
         )}
         {b.destination && (
@@ -86,7 +86,7 @@ function PlanetPanel() {
   const world = useEcho((s) => s.world);
   const aid = useEcho((s) => s.artifactId);
   const t = useTele(300);
-  const sites = artifactsFor(world === "moon" ? "moon" : "mars");
+  const sites = world === "mars" || world === "moon" ? artifactsFor(world) : [];
   const sel = artifactById(aid);
   const sim = useEcho((s) => s.sim);
   return (
@@ -94,7 +94,7 @@ function PlanetPanel() {
       <Panel title={world.toUpperCase()} sub="ORBITAL VIEW">
         <Field k="ALTITUDE" v={fmtDist(t.altitudeM)} />
         <Field k="SUB-CAMERA" v={`${fmtLat(t.lat)} ${fmtLon(t.lon)}`} />
-        <div className="label mt-2">SELECT A MISSION SITE ON THE GLOBE OR FROM THE LIST</div>
+        {sites.length > 0 && <div className="label mt-2">SELECT A MISSION SITE ON THE GLOBE OR FROM THE LIST</div>}
         <div className="mt-2">
           {sites.map((a) => (
             <button key={a.id} onClick={() => selectSite(a.id)} data-on={aid === a.id} className={`mono flex w-full items-center justify-between border-t border-[#1d2429] py-1.5 text-left text-[11px] tracking-[0.1em] ${aid === a.id ? "text-amber" : "text-ash hover:text-bone"}`}>

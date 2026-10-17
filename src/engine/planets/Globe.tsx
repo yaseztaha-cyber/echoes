@@ -8,6 +8,8 @@ import moonUrl from "@/assets/tex/moon.jpg";
 import mercuryUrl from "@/assets/tex/mercury.jpg";
 import venusUrl from "@/assets/tex/venus.jpg";
 import venusCloudsUrl from "@/assets/tex/venus_clouds.jpg";
+import earthCloudsUrl from "@/assets/tex/earth_clouds.jpg";
+import earthNightUrl from "@/assets/tex/earth_night.jpg";
 import jupiterUrl from "@/assets/tex/jupiter.jpg";
 import saturnUrl from "@/assets/tex/saturn.jpg";
 import uranusUrl from "@/assets/tex/uranus.jpg";
@@ -139,5 +141,37 @@ export function Atmosphere({ radius, color, strength = 1, sun, scale = 1.09, pow
           gl_FragColor=vec4(uColor*rim*uStrength*(0.12+0.88*lit),1.0);} `}
       />
     </mesh>
+  );
+}
+
+/** Earth's separate labelled layers: sun-lit cloud composite (alphaMap) and VIIRS 2016
+ *  night lights revealed past the dusk terminator. Provenance in the approval ledger. */
+export function EarthLayers({ radius, sun }: { radius: number; sun: () => THREE.Vector3 }) {
+  const cloudTex = useTexture(earthCloudsUrl);
+  const nightTex = useTexture(earthNightUrl);
+  cloudTex.colorSpace = THREE.SRGBColorSpace;
+  nightTex.colorSpace = THREE.SRGBColorSpace;
+  const uni = useMemo(() => ({ uMap: { value: nightTex }, uSun: { value: new THREE.Vector3(1, 0, 0) } }), [nightTex]);
+  useFrame(() => uni.uSun.value.copy(sun()));
+  return (
+    <>
+      <mesh scale={1.004}>
+        <sphereGeometry args={[radius, 96, 64]} />
+        <meshStandardMaterial color="#ffffff" alphaMap={cloudTex} transparent depthWrite={false} roughness={1} />
+      </mesh>
+      <mesh scale={1.002}>
+        <sphereGeometry args={[radius, 96, 64]} />
+        <shaderMaterial
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          uniforms={uni}
+          vertexShader={`varying vec3 vN; varying vec2 vUv; void main(){ vN=normalize(mat3(modelMatrix)*normal); vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);} `}
+          fragmentShader={`varying vec3 vN; varying vec2 vUv; uniform sampler2D uMap; uniform vec3 uSun;
+            void main(){ float m=smoothstep(0.05,-0.10,dot(normalize(vN),normalize(uSun)));
+            gl_FragColor=vec4(texture2D(uMap,vUv).rgb*m,1.0);} `}
+        />
+      </mesh>
+    </>
   );
 }

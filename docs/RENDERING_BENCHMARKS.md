@@ -64,6 +64,7 @@ triangles + TEX RESIDENT/PENDING + TEX GPU EST (all visible in `#/dev`).
 | 2026-10-17 | same | AUTO | Apollo 12 surface (1440×900) after 45 s approach — post-DRS | 60.0 | 16.8 ms | same view pre-DRS ≈ 2–3 FPS; DRS settles above floor |
 | 2026-10-17 | same, 1600×1000 | AUTO | site DevPanel mid-descent, DRS live | 54.0 | 17.5 ms | RENDER SCALE 60 %; 289 draws; 515k tris; tiles 76/171; scale 1.0 was 2 FPS / p95 ≤ 483 ms |
 | 2026-10-17 | same, Intel HD 530 | AUTO | Apollo 12 surface after draw-call refactor (scene dump + DevPanel) | 60.0 | 16.8 ms | **12 draw calls** (was 258); 185,650 tris; tiles 76/171, LOD 7; full journey re-verified: planet scene 52.2 fps unchanged, 0 errors |
+| 2026-10-17 | same, 1440×900 | AUTO | Earth close orbit — cloud alphaMap + VIIRS night-layers active | 60.1 | 16.8 ms | first earth planet-scene run (was gated out); 0 errors; §2 path 3 measured |
 | — | pending discrete-GPU + rapid-travel/soak paths | — | travel, switching, soak | — | — | §2 paths 6–8 unmeasured |
 
 Console (all runs): 0 application errors. 1 benign upstream warning

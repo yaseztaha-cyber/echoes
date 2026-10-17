@@ -2,7 +2,7 @@ import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { Atmosphere, Globe } from "./Globe";
+import { Atmosphere, EarthLayers, Globe } from "./Globe";
 import { HI_URLS } from "@/engine/textures/manager";
 import { GlobeKind } from "@/data/assets/manifest";
 import { useHiMap } from "@/engine/textures/hiGlobe";
@@ -116,6 +116,7 @@ export function PlanetScene({ world }: { world: GlobeKind }) {  const light = us
         <PlanetGlobe world={world} />
       </Suspense>
       {world === "mars" && <Atmosphere radius={GLOBE_R} color="#c9906a" strength={0.75} sun={() => env.sunDir} scale={1.045} power={4.5} />}
+      {world === "earth" && <EarthLayers radius={GLOBE_R} sun={() => env.sunDir} />}
       <mesh ref={occ}>
         <sphereGeometry args={[GLOBE_R * 0.997, 32, 16]} />
         <meshBasicMaterial colorWrite={false} />

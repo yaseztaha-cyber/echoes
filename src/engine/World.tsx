@@ -172,7 +172,7 @@ export function World() {
         <DynamicScale />
         <HotspotProjector />
         {scene === "solar" && <SolarSystem />}
-        {scene === "planet" && (world === "mars" || world === "moon") && <PlanetScene world={world} />}
+        {scene === "planet" && (world === "mars" || world === "moon" || world === "earth") && <PlanetScene world={world} />}
         {scene === "site" && artifactId && <SiteScene key={artifactId} artifactId={artifactId} />}
       </Canvas>
       <div ref={(el) => { htmlLayer.current = el; }} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden={false} />

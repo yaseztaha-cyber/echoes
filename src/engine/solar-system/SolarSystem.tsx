@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, Line } from "@react-three/drei";
 import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_VISUAL_ORBIT, voyagerAU, type Body } from "../frames/frames";
-import { Atmosphere, BandedGlobe, Globe, PlainGlobe } from "@/engine/planets/Globe";
+import { Atmosphere, BandedGlobe, EarthLayers, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
 import { HI_URLS } from "@/engine/textures/manager";
@@ -86,6 +86,7 @@ function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {
         <PlainGlobe color={b.color} radius={b.radius} />
       )}
       {b.id === "earth" && <Atmosphere radius={b.radius} color="#6aa6d4" strength={1.5} sun={sunFrom} scale={1.1} power={3.2} />}
+      {b.id === "earth" && <EarthLayers radius={b.radius} sun={sunFrom} />}
       {b.id === "mars" && <Atmosphere radius={b.radius} color="#c9906a" strength={0.55} sun={sunFrom} scale={1.06} power={4} />}
       {b.id === "venus" && <Atmosphere radius={b.radius} color="#d9c089" strength={0.8} sun={sunFrom} scale={1.07} power={3} />}
       {b.ring && (

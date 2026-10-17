@@ -4,6 +4,11 @@ import { describe, expect, it } from "vitest";
 import { GLOBE_MANIFEST, globeAssetFor, validateManifest } from "./manifest";
 
 const TEX = join(__dirname, "..", "..", "assets", "tex");
+const LAYER_FILES: Record<string, string> = {
+  "venus:clouds": "venus_clouds.jpg",
+  "earth:clouds": "earth_clouds.jpg",
+  "earth:night": "earth_night.jpg",
+};
 
 describe("globe asset manifest", () => {
   it("validates with zero provenance problems", () => {
@@ -38,7 +43,7 @@ describe("globe asset manifest", () => {
     for (const m of GLOBE_MANIFEST) {
       const p = m.flat
         ? join(__dirname, "..", "..", "assets", m.body === "sun" ? "sun" : "nasa", `${m.sourceFile}`)
-        : join(TEX, m.view === "clouds" ? "venus_clouds.jpg" : m.body === "sun" ? "sun.jpg" : `${m.body}.jpg`);
+        : join(TEX, LAYER_FILES[`${m.body}:${m.view}`] ?? (m.body === "sun" ? "sun.jpg" : `${m.body}.jpg`));
       expect(existsSync(p), p).toBe(true);
       expect(statSync(p).size).toBeGreaterThan(4_000);
     }
