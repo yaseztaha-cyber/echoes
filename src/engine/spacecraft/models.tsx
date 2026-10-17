@@ -1,6 +1,7 @@
-import { Component, Suspense, useMemo, type ReactNode } from "react";
+import { Component, Suspense, useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { Html, Line, useGLTF } from "@react-three/drei";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { htmlLayer } from "@/engine/telemetry";
 import { useEcho } from "@/state/store";
 import { focusInstrument } from "@/engine/director";
@@ -12,6 +13,63 @@ import type { Artifact } from "@/types";
  * Hardware hotspots come from the artifact record, so UI and geometry share one source of truth.
  */
 type V = [number, number, number];
+
+/**
+ * Bakes the static primitive reconstruction of an artifact into a handful of
+ * merged meshes — one per material slot — instead of one draw call per part
+ * (an Apollo complex drops from ~60 draw calls to ~10). Geometry is static
+ * (the artifact group moves as one), only Line2 overlays stay unbaked, and
+ * hardware hotspots are DOM overlays in ArtifactModel, unaffected. Re-bakes on
+ * quality tier changes because reconstruction materials are demoted/promoted
+ * between MeshBasic and MeshStandard.
+ */
+function Baked({ children }: { children: ReactNode }) {
+  const holder = useRef<THREE.Group>(null);
+  const quality = useEcho((s) => s.quality);
+  useLayoutEffect(() => {
+    const root = holder.current;
+    if (!root) return;
+    root.updateMatrixWorld(true);
+    const rel = new THREE.Matrix4();
+    const byMat = new Map<THREE.Material, THREE.BufferGeometry[]>();
+    const hidden: THREE.Mesh[] = [];
+    root.traverse((o) => {
+      const me = o as THREE.Mesh;
+      if (!me.isMesh) return;
+      const arr = byMat.get(me.material as THREE.Material) ?? [];
+      const g = me.geometry.clone();
+      rel.copy(root.matrixWorld).invert().multiply(me.matrixWorld);
+      g.applyMatrix4(rel);
+      arr.push(g);
+      byMat.set(me.material as THREE.Material, arr);
+      hidden.push(me);
+    });
+    if (!byMat.size) return;
+    const baked: THREE.Mesh[] = [];
+    for (const [mat, geos] of byMat) {
+      const merged = mergeGeometries(geos);
+      if (!merged) continue;
+      geos.forEach((g) => g.dispose());
+      const mesh = new THREE.Mesh(merged, mat);
+      mesh.name = "baked";
+      root.add(mesh);
+      baked.push(mesh);
+    }
+    if (!baked.length) return;
+    // Same-commit swap: originals hide exactly when the baked meshes show, so
+    // no half-baked frame is ever painted (layout effect precedes paint).
+    for (const m of hidden) m.visible = false;
+    for (const m of baked) m.visible = true;
+    return () => {
+      for (const m of baked) {
+        m.geometry.dispose();
+        root.remove(m);
+      }
+      for (const m of hidden) m.visible = true;
+    };
+  }, [quality]);
+  return <group ref={holder}>{children}</group>;
+}
 
 interface BaseMat { color: string; metalness?: number; roughness?: number; extra?: Partial<THREE.MeshStandardMaterialParameters>; }
 
@@ -408,10 +466,26 @@ export function ArtifactModel({ artifact }: { artifact: Artifact }) {
           </MerBoundary>
         </Suspense>
       ) : null}
-      {kind === "sojourner" && <SojournerRover />}
-      {kind === "insight" && <InSightLander />}
-      {kind === "apollo" && <ApolloSite a={artifact} />}
-      {kind === "voyager" && <VoyagerCraft />}
+      {kind === "sojourner" && (
+        <Baked>
+          <SojournerRover />
+        </Baked>
+      )}
+      {kind === "insight" && (
+        <Baked>
+          <InSightLander />
+        </Baked>
+      )}
+      {kind === "apollo" && (
+        <Baked>
+          <ApolloSite a={artifact} />
+        </Baked>
+      )}
+      {kind === "voyager" && (
+        <Baked>
+          <VoyagerCraft />
+        </Baked>
+      )}
       {(inspect || science) &&
         artifact.hardware.map((h) => (
           <group key={h.id} position={h.pos}>

@@ -21,12 +21,13 @@ function TimeDriver() {
 
 function Perf() {
   const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
   const acc = { n: 0, t: 0 };
   useEffect(() => {
-    if (typeof location !== "undefined" && location.hash.includes("dev")) {
-      (window as typeof window & { __echoesGl?: THREE.WebGLRenderer }).__echoesGl = gl;
-    }
-  }, [gl]);
+    const w = window as typeof window & { __echoesGl?: THREE.WebGLRenderer; __echoesScene?: THREE.Scene };
+    w.__echoesGl = gl;
+    w.__echoesScene = scene;
+  }, [gl, scene]);
   useFrame((_, dt) => {
     const p95 = adaptive.sample(Math.min(dt * 1000, 250));
     tele.frameP95 = p95;

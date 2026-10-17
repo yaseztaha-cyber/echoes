@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { heightAt } from "./height";
 
 /** Seeded PRNG (mulberry-ish). Deterministic scatter, no surveyed positions claimed. */
@@ -76,6 +77,34 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [data]);
 
+  // Slabs baked into two merged geometries (one per tone) — 10 slab meshes
+  // become 2 draw calls instead of 10.
+  const slabGeos = useMemo(() => {
+    const dark: THREE.BufferGeometry[] = [];
+    const upper: THREE.BufferGeometry[] = [];
+    for (const s of slabs) {
+      const w = new THREE.Matrix4().makeTranslation(s.x, s.y, s.z).multiply(
+        new THREE.Matrix4().makeRotationY(s.ry)
+      );
+      const main = new THREE.BoxGeometry(s.w, s.h, s.d);
+      main.applyMatrix4(new THREE.Matrix4().makeTranslation(0, s.h * 0.5, 0).premultiply(w));
+      dark.push(main);
+      const up = new THREE.BoxGeometry(s.w * 0.7, s.h * 0.4, s.d * 0.8);
+      up.applyMatrix4(new THREE.Matrix4().makeTranslation(0.2, s.h + 0.12, -0.1).premultiply(w));
+      upper.push(up);
+    }
+    return {
+      dark: mergeGeometries(dark) ?? undefined,
+      upper: mergeGeometries(upper) ?? undefined,
+    };
+  }, [slabs]);
+  const darkMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#42291d", roughness: 0.97, metalness: 0 }), []);
+  const upperMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#54382a", roughness: 0.97, metalness: 0 }), []);
+  useEffect(() => () => {
+    slabGeos.dark?.dispose();
+    slabGeos.upper?.dispose();
+  }, [slabGeos]);
+
   return (
     <group>
       <instancedMesh ref={rocks} args={[undefined, undefined, data.length]} castShadow receiveShadow frustumCulled={false}>
@@ -83,18 +112,12 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
         {/* white base: per-instance colors carry the tone (a colored base would double-darken) */}
         <meshStandardMaterial color="#ffffff" roughness={0.96} metalness={0} />
       </instancedMesh>
-      {slabs.map((s, i) => (
-        <group key={i} position={[s.x, s.y, s.z]} rotation={[0, s.ry, 0]}>
-          <mesh position={[0, s.h * 0.5, 0]} castShadow receiveShadow>
-            <boxGeometry args={[s.w, s.h, s.d]} />
-            <meshStandardMaterial color="#42291d" roughness={0.97} metalness={0} />
-          </mesh>
-          <mesh position={[0.2, s.h + 0.12, -0.1]} castShadow receiveShadow>
-            <boxGeometry args={[s.w * 0.7, s.h * 0.4, s.d * 0.8]} />
-            <meshStandardMaterial color="#54382a" roughness={0.97} metalness={0} />
-          </mesh>
-        </group>
-      ))}
+      {slabGeos.dark && slabGeos.upper && (
+        <>
+          <mesh geometry={slabGeos.dark} material={darkMat} castShadow receiveShadow />
+          <mesh geometry={slabGeos.upper} material={upperMat} castShadow receiveShadow />
+        </>
+      )}
     </group>
   );
 }

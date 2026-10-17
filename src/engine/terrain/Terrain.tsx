@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { fbm, heightAt, slopeAt, terrainState, type TerrainWorld } from "./height";
@@ -37,6 +37,20 @@ const cache = new Map<string, Tile>();
 const bitsCache = new Map<string, number>();
 let frameNo = 0;
 
+// Growable scratch pools for the merged tile mesh: typed arrays are reused
+// across rebuilds so streaming never churns tens of MB of garbage per frame.
+const pool = {
+  pos: new Float32Array(0),
+  nor: new Float32Array(0),
+  col: new Float32Array(0),
+  uv: new Float32Array(0),
+  idx: new Uint32Array(0),
+};
+const poolF32 = (a: Float32Array<ArrayBuffer>, n: number): Float32Array<ArrayBuffer> =>
+  a.length >= n ? a : new Float32Array(Math.ceil(n * 1.3));
+const poolU32 = (a: Uint32Array<ArrayBuffer>, n: number): Uint32Array<ArrayBuffer> =>
+  a.length >= n ? a : new Uint32Array(Math.ceil(n * 1.3));
+
 function clearCache() {
   cache.forEach((t) => t.geo.dispose());
   cache.clear();
@@ -44,6 +58,57 @@ function clearCache() {
 }
 
 const lin = (v: number) => Math.pow(v, 2.2);
+
+export const V_POLY = (N + 1) * (N + 1);
+export const V_SKIRT = 4 * (N + 1);
+
+/**
+ * Merge drawn tiles into ONE geometry (one draw call). Tile-local vertices are
+ * shifted by the tile origin so the merged mesh sits in world space; the
+ * scratch pools are reused so streaming doesn't allocate per rebuild.
+ * Exported for headless tests.
+ */
+export function mergeTileGeos(tiles: Tile[]): THREE.BufferGeometry {
+  const vps = V_POLY + V_SKIRT;
+  const vc = tiles.length * vps;
+  const pos = (pool.pos = poolF32(pool.pos, vc * 3));
+  const nor = (pool.nor = poolF32(pool.nor, vc * 3));
+  const col = (pool.col = poolF32(pool.col, vc * 3));
+  const uv = (pool.uv = poolF32(pool.uv, vc * 2));
+  let iCount = 0;
+  for (const t of tiles) iCount += t.geo.index ? t.geo.index.count : 0;
+  const idx = (pool.idx = poolU32(pool.idx, iCount));
+  let vo = 0;
+  let io = 0;
+  for (const t of tiles) {
+    const g = t.geo;
+    const gp = g.attributes.position.array as Float32Array;
+    const gn = g.attributes.normal.array as Float32Array;
+    const gc = g.attributes.color.array as Float32Array;
+    const gu = g.attributes.uv.array as Float32Array;
+    pos.set(gp, vo * 3);
+    nor.set(gn, vo * 3);
+    col.set(gc, vo * 3);
+    uv.set(gu, vo * 2);
+    for (let i = 0; i < vps; i++) {
+      const p = (vo + i) * 3;
+      pos[p] += t.cx;
+      pos[p + 2] += t.cz;
+    }
+    const gi = g.index!;
+    const ga = gi.array as ArrayLike<number>;
+    for (let i = 0; i < gi.count; i++) idx[io + i] = ga[i] + vo;
+    io += gi.count;
+    vo += vps;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos.subarray(0, vc * 3), 3));
+  geo.setAttribute("normal", new THREE.BufferAttribute(nor.subarray(0, vc * 3), 3));
+  geo.setAttribute("color", new THREE.BufferAttribute(col.subarray(0, vc * 3), 3));
+  geo.setAttribute("uv", new THREE.BufferAttribute(uv.subarray(0, vc * 2), 2));
+  geo.setIndex(new THREE.BufferAttribute(idx.subarray(0, iCount), 1));
+  return geo;
+}
 
 /**
  * Stitching is only worth rebuild churn where cracks are visible: near tiles.
@@ -156,8 +221,8 @@ export function buildTile(world: TerrainWorld, x0: number, z0: number, size: num
   };
   snapEdge(0); snapEdge(1); snapEdge(2); snapEdge(3);
   const cx = x0 + size / 2, cz = z0 + size / 2;
-  const V = (N + 1) * (N + 1);
-  const S = 4 * (N + 1);
+  const V = V_POLY;
+  const S = V_SKIRT;
   const pos = new Float32Array((V + S) * 3);
   const nor = new Float32Array((V + S) * 3);
   const col = new Float32Array((V + S) * 3);
@@ -251,9 +316,10 @@ interface Props {
 
 export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
   const { camera } = useThree();
-  const [drawn, setDrawn] = useState<string[]>([]);
+  const merged = useRef<THREE.Mesh>(null);
   const sig = useRef("");
   const stat = useRef("");
+  const lastMerge = useRef(0);
   const tex = useMemo(detailTexture, []);
   const mat = useMemo(
     () => new THREE.MeshBasicMaterial({ vertexColors: true, map: tex, side: THREE.DoubleSide }),
@@ -264,12 +330,24 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     terrainState.world = world;
     terrainState.seed = seed;
     clearCache();
+    sig.current = "";
+    lastMerge.current = 0;
     // Synchronous root tile: guaranteed coverage on the first frame while the
     // correct snap variants stream in through the budget loop.
     const rx0 = center[0] - rootSize / 2, rz0 = center[1] - rootSize / 2;
     cache.set(`0/${rx0}/${rz0}`, buildTile(world, rx0, rz0, rootSize, `0/${rx0}/${rz0}`));
-    sig.current = "";
+    const m = merged.current;
+    if (m) {
+      const t = cache.get(`0/${rx0}/${rz0}`);
+      if (t) {
+        const g = mergeTileGeos([t]);
+        const old = m.geometry as THREE.BufferGeometry | undefined;
+        m.geometry = g;
+        if (old) old.dispose();
+      }
+    }
     return () => clearCache();
+    // center/rootSize are constants of the mounted site (same for every render).
   }, [world, seed]);
 
   useFrame(() => {
@@ -392,10 +470,26 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
       }
     }
 
+    // One merged mesh carries the whole drawn set (≈1 draw call replaces the
+    // per-tile mesh list, which drifted from the frame loop and piled up stale
+    // draws). Rebuilt when the draw-set changes, throttled to every 3rd frame
+    // so streaming doesn't re-upload per frame.
     const s = draw.join("|");
-    if (s !== sig.current) {
+    const m = merged.current;
+    if (m && s !== sig.current && frameNo - lastMerge.current >= 3) {
       sig.current = s;
-      setDrawn(draw);
+      lastMerge.current = frameNo;
+      const tiles: Tile[] = [];
+      for (const k of draw) {
+        const t = cache.get(k);
+        if (t) tiles.push(t);
+      }
+      if (tiles.length) {
+        const g = mergeTileGeos(tiles);
+        const old = m.geometry as THREE.BufferGeometry | undefined;
+        m.geometry = g;
+        if (old) old.dispose();
+      }
     }
     tele.tilesDrawn = draw.length;
     tele.tilesCached = cache.size;
@@ -408,13 +502,7 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
   });
 
   return (
-    <group>
-      {drawn.map((k) => {
-        const t = cache.get(k);
-        if (!t) return null;
-        return <mesh key={k} geometry={t.geo} material={mat} position={[t.cx, 0, t.cz]} />;
-      })}
-    </group>
+    <mesh ref={merged} material={mat} frustumCulled={false} />
   );
 }
 
