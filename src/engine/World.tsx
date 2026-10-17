@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from "react";
+import { Component, useEffect, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -10,6 +10,7 @@ import { tick } from "./time/clock";
 import { siteRef, tele, htmlLayer } from "./telemetry";
 import { useEcho, persist } from "@/state/store";
 import { adaptive } from "./performance/adaptive";
+import { createDynamicRes } from "./performance/resolution";
 import { globeResidency } from "./textures/manager";
 import { artifactById } from "@/data/artifacts";
 
@@ -21,6 +22,11 @@ function TimeDriver() {
 function Perf() {
   const gl = useThree((s) => s.gl);
   const acc = { n: 0, t: 0 };
+  useEffect(() => {
+    if (typeof location !== "undefined" && location.hash.includes("dev")) {
+      (window as typeof window & { __echoesGl?: THREE.WebGLRenderer }).__echoesGl = gl;
+    }
+  }, [gl]);
   useFrame((_, dt) => {
     const p95 = adaptive.sample(Math.min(dt * 1000, 250));
     tele.frameP95 = p95;
@@ -42,6 +48,38 @@ function Perf() {
       tele.texResident = rs.resident;
       tele.texPending = rs.pending;
       tele.texBytesEst = rs.bytesEstimate;
+    }
+  });
+  return null;
+}
+
+/**
+ * Dynamic render backing scale (spec §5): the frame-time p95 the quality
+ * stepper consumes also drives a bounded backing-store scale. Visibility is
+ * identical at every scale — only sharpness moves — so the tier contract
+ * "visibility never changes" holds by construction.
+ */
+function DynamicScale() {
+  const gl = useThree((s) => s.gl);
+  const quality = useEcho((s) => s.quality);
+  const base = useRef(1);
+  const last = useRef(1);
+  const dr = useRef(createDynamicRes());
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      base.current = gl.getPixelRatio();
+      dr.current.reset();
+      last.current = 1;
+      tele.renderScale = 1;
+    });
+    return () => cancelAnimationFrame(id);
+  }, [gl, quality]);
+  useFrame((_, dt) => {
+    const s = dr.current.feed(adaptive.p95(), Math.min(dt, 0.25));
+    if (s !== last.current) {
+      last.current = s;
+      gl.setPixelRatio(base.current * s);
+      tele.renderScale = s;
     }
   });
   return null;
@@ -130,6 +168,7 @@ export function World() {
         <TimeDriver />
         <CameraRig />
         <Perf />
+        <DynamicScale />
         <HotspotProjector />
         {scene === "solar" && <SolarSystem />}
         {scene === "planet" && (world === "mars" || world === "moon") && <PlanetScene world={world} />}

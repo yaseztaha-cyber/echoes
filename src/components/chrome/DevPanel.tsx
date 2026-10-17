@@ -28,6 +28,7 @@ export function DevPanel() {
     ["ARTIFACT", art?.id ?? "—"],
     ["SOURCE IDS", art?.sources.map((x) => x.sourceId).join(", ") ?? "—"],
     ["QUALITY", `${s.quality}${s.autoQuality ? " (AUTO ≤ " + s.qualityCeiling + ")" : " (MANUAL)"}`],
+    ["RENDER SCALE", `${(t.renderScale * 100).toFixed(0)} %`],
   ];
   return (
     <div className="module pointer-events-auto absolute bottom-3 left-3 z-50 w-[360px] p-3">

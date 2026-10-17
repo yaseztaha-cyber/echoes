@@ -25,6 +25,7 @@ export const tele = {
   tilesDrawn: 0,
   maxDepth: 0,
   modelsLoaded: 0,
+  renderScale: 1,
   speedScale: 1,
   focusRealKm: 0,
   sunDistAU: 0,

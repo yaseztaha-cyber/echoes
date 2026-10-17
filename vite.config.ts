@@ -16,4 +16,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  test: {
+    // git worktrees used for bisect runs sit inside the repo dir; never test them
+    exclude: ["**/node_modules/**", "**/.bisect/**"],
+  },
 });
