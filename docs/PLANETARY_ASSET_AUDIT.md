@@ -8,6 +8,12 @@ Renderer baseline (verified in-tree): three.js 0.186.1 (WebGL2), React Three Fib
 ACESFilmic tone mapping, manual quality tiers (ultra/high/medium/low) driving DPR and
 shadows. No KTX2/Basis pipeline, no texture tile pyramid, no automatic adaptive quality.
 `renderer.info` draw calls / triangles are already sampled (`engine/World.tsx` → Perf).
+Site-level draw budget (spec target ≤150) is met by construction (measured 12 at a
+settled Apollo 12 site): terrain renders as ONE merged mesh rebuilt from the live
+quadtree draw set (`engine/terrain/Terrain.tsx` `mergeTileGeos`, pooled scratch
+buffers), artifact reconstructions bake into merged meshes per material slot
+(`engine/spacecraft/models.tsx` `Baked`), and outcrop slabs merge into two calls;
+rocks were already one instanced call.
 Terrain uses a procedural quadtree with quality budgets (`engine/terrain/Terrain.tsx`) —
 elevation is **synthetic noise, not a real DEM** (see §8). Scene changes are discrete
 swaps (solar → planet → site), not one continuous metric frame (see §9).

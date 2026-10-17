@@ -16,6 +16,7 @@ ESTIMATE is labelled as such. Discrete-GPU + soak rows remain pending.
 | Residency cap | — | 96 MiB (~2× 4K RGBA mip chains) | LRU; pinned fallbacks never evicted |
 | Render loops | 1 (R3F) | 1 (no new loops) | stage eval ~2 Hz per body, no setState storms |
 | Draw calls (construction) | +0 | +0 | texture swap reuses mesh/material |
+| Site-scene draw calls (settled Apollo 12) | 258 in flight / 389 tile-mesh objects (scene dump) | **12** | terrain = 1 merged mesh (live draw set, pooled rebuild); artifact ≈ 6 baked material meshes; slabs 2; rocks 1 instanced; stars 1; route line 1 |
 
 Decoded-memory math (ESTIMATE method, not GPU measurement): 4096×2048 RGBA =
 32 MiB, +mipmaps ≈ 43 MiB per hi-res globe. Two resident ≈ 86 MiB ≤ 96 MiB cap.
@@ -62,6 +63,7 @@ triangles + TEX RESIDENT/PENDING + TEX GPU EST (all visible in `#/dev`).
 | 2026-10-17 | same | AUTO | moon planet scene (1440×900), 7 s | 54.8 | 33.3 ms | p99 50 ms; streaming spikes; DRS correctly stays at scale 1.0 — unchanged vs pre-DRS |
 | 2026-10-17 | same | AUTO | Apollo 12 surface (1440×900) after 45 s approach — post-DRS | 60.0 | 16.8 ms | same view pre-DRS ≈ 2–3 FPS; DRS settles above floor |
 | 2026-10-17 | same, 1600×1000 | AUTO | site DevPanel mid-descent, DRS live | 54.0 | 17.5 ms | RENDER SCALE 60 %; 289 draws; 515k tris; tiles 76/171; scale 1.0 was 2 FPS / p95 ≤ 483 ms |
+| 2026-10-17 | same, Intel HD 530 | AUTO | Apollo 12 surface after draw-call refactor (scene dump + DevPanel) | 60.0 | 16.8 ms | **12 draw calls** (was 258); 185,650 tris; tiles 76/171, LOD 7; full journey re-verified: planet scene 52.2 fps unchanged, 0 errors |
 | — | pending discrete-GPU + rapid-travel/soak paths | — | travel, switching, soak | — | — | §2 paths 6–8 unmeasured |
 
 Console (all runs): 0 application errors. 1 benign upstream warning
