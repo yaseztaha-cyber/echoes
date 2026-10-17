@@ -1,9 +1,9 @@
 # RENDERING BENCHMARKS — ECHOES Phase 4
 
-Honesty header: this environment has **no GPU-enabled browser**, so frame-time,
-FPS-distribution and screenshot rows are procedures + static budgets, not measured
-results. Anything marked ESTIMATE is labelled as such. In-browser validation on a
-defined machine is still required before any 60 FPS claim.
+Honesty header: measured rows come from a real browser (headless ANGLE/D3D11 on
+**Intel HD 530**, Playwright Chromium/Edge) — an integrated GPU, so numbers are
+conservative for discrete-GPU machines but not universal. Anything marked
+ESTIMATE is labelled as such. Discrete-GPU + soak rows remain pending.
 
 ## 1. Static budgets (measured headless, Phase 4 commit)
 
@@ -36,9 +36,19 @@ triangles + TEX RESIDENT/PENDING + TEX GPU EST (all visible in `#/dev`).
 
 ## 3. Target frame budget
 
-16.67 ms (60 FPS). Auto stepper: downgrade after ~3 s of p95 ≥ 20 ms, recover
-after ~20 s of p95 ≤ 9 ms toward the user's ceiling, 5 s cooldown. Visibility
-(bodies, markers, travel range) is identical across tiers by construction.
+16.67 ms (60 FPS), enforced two ways:
+- Per-preset DPR ceiling (unchanged). Visibility (bodies, markers, travel range)
+  is identical across tiers by construction.
+- **Dynamic render scale (spec §5, shipped):** bounded backing-store scale in
+  [0.45, 1.0] applied as `gl.setPixelRatio(base × scale)`. Stair down 0.1 after
+  1.2 s of frame-p95 > 24 ms; recover 0.06 per 1.0 s after 4 s of p95 < 14 ms;
+  1.0 s cooldown; quality-tier switch resets the stepper. Exposed in `#/dev`
+  as RENDER SCALE. Sharpness may drop on bandwidth-bound scenes; visibility
+  never changes.
+- Measured on-site (1600×1000, DPR 1, Intel HD 530): site scene at scale 1.0 =
+  2 FPS / p95 483 ms; DRS settles at scale 0.60 → 54 FPS / p95 17.5 ms. Same
+  scene, same state (ablation): pixelRatio 0.4 → 30–35 FPS / p95 34–50 ms —
+  cost is super-linear in fragments (texture-bandwidth-bound, not draw calls).
 
 ## 4. Results log
 
@@ -48,6 +58,10 @@ after ~20 s of p95 ≤ 9 ms toward the user's ceiling, 5 s cooldown. Visibility
 | 2026-10-15 | same | high (auto) | Mars close orbit, 240f | 60.1 | 17.0 ms | p99 19.7 ms; MDIM globe, markers, minimap |
 | 2026-10-15 | same | high (auto) | Opportunity site, 240f | 60.2 | 16.8 ms | p99 17.6 ms; terrain + rover + timeline |
 | 2026-10-15 | same | high (auto) | Opportunity site rebuilt (rocks, official rover, new wash), console + screenshots | — | — | 0 app errors across full journey; inspect close-up verified |
+| 2026-10-17 | same, Edge headless (playwright-core), DPR 1.0, 1600×1000 | AUTO | solar overview → entered sim, 7 s each | 60.1 / 57.7 | 16.8 | full-journey harness; 0 app/page errors |
+| 2026-10-17 | same | AUTO | moon planet scene (1440×900), 7 s | 54.8 | 33.3 ms | p99 50 ms; streaming spikes; DRS correctly stays at scale 1.0 — unchanged vs pre-DRS |
+| 2026-10-17 | same | AUTO | Apollo 12 surface (1440×900) after 45 s approach — post-DRS | 60.0 | 16.8 ms | same view pre-DRS ≈ 2–3 FPS; DRS settles above floor |
+| 2026-10-17 | same, 1600×1000 | AUTO | site DevPanel mid-descent, DRS live | 54.0 | 17.5 ms | RENDER SCALE 60 %; 289 draws; 515k tris; tiles 76/171; scale 1.0 was 2 FPS / p95 ≤ 483 ms |
 | — | pending discrete-GPU + rapid-travel/soak paths | — | travel, switching, soak | — | — | §2 paths 6–8 unmeasured |
 
 Console (all runs): 0 application errors. 1 benign upstream warning
