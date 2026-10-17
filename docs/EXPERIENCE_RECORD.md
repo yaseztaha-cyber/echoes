@@ -30,3 +30,24 @@ audit: what was built, what was verified, what stays honest. Commit per stage.
   with the panel control live; moon planet scene + Apollo 12 regression
   unchanged (60 FPS, 0 errors); 84/84 unit tests; screenshot set
   shots2/e5-dusk, e6-midnight, e7-noon.
+
+## STAGE 2 — AUTO-FILLING ARCHIVE (visited-state feedback) — committed
+
+- **What:** the ARCHIVE manifest is no longer a static list. Every artifact the
+  player actually reaches gets marked in the journal: a persisted `visits[]`
+  in the store (localStorage `echoes.visits`), a cyan `●` marker + "(visited)"
+  on visited rows, a live header count ("N ARTIFACTS ON RECORD · N PERSONALLY
+  VISITED"), a second HUD console row ("VISITS LOGGED nn / NN" with cyan
+  bars under the amber ARCHIVE PROGRESS row), and an "ARCHIVE ENTRY
+  LOGGED <designation> · NN RECORDS VISITED" toast the first time a site
+  arrival is logged.
+- **How:** `markVisit(artifactId, name)` (dedupe + persist) called from
+  `descendToSite` after each `arrive()` — i.e. only real 3D surface descents
+  count, archive clicks alone never forge a visit — and from `goVoyager`
+  (deep-space flyin is a real visit to the record). Revisits update the
+  toast count but don't duplicate rows.
+- **Verification:** headless journey drives descent to Apollo 12 → archive
+  screenshot shows "1 PERSONALLY VISITED", the ● on APOLLO 12 and
+  "VISITS LOGGED 01 / 10" in the HUD; tsc clean (2 pre-existing warnings),
+  84/84 tests, build green (10,064 kB, +0.06 from the feature).
+
