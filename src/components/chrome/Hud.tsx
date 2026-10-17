@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useEcho, persist, type CamMode } from "@/state/store";
-import { artifactById, ALL_QUESTIONS } from "@/data/artifacts";
+import { artifactById, ALL_QUESTIONS, ARTIFACTS } from "@/data/artifacts";
 import { bodyById } from "@/engine/frames/frames";
 import { setCamMode, returnToSolarSystem } from "@/engine/director";
 import { stopDemo } from "@/features/exploration/demo";
@@ -28,6 +28,7 @@ function MissionConsole() {
   const aid = useEcho((s) => s.artifactId);
   const sim = useEcho((s) => s.sim);
   const progress = useEcho((s) => s.progress);
+  const visits = useEcho((s) => s.visits);
   const art = artifactById(aid);
   const t = useTele(400);
   const total = ALL_QUESTIONS.length;
@@ -76,6 +77,15 @@ function MissionConsole() {
       <div className="mt-1 flex gap-[3px]" aria-hidden>
         {Array.from({ length: total }).map((_, i) => (
           <div key={i} className={`h-[3px] flex-1 ${i < progress.length ? "bg-amber" : "bg-iron"}`} />
+        ))}
+      </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="label">VISITS LOGGED</span>
+        <span className="mono text-[11px] text-bone">{pad2(visits.length)} / {pad2(ARTIFACTS.length)}</span>
+      </div>
+      <div className="mt-1 flex gap-[3px]" aria-hidden>
+        {Array.from({ length: ARTIFACTS.length }).map((_, i) => (
+          <div key={i} className={`h-[3px] flex-1 ${i < visits.length ? "bg-cyan" : "bg-iron"}`} />
         ))}
       </div>
     </div>

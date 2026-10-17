@@ -63,6 +63,8 @@ export interface EchoState {
   demo: { active: boolean; caption: string };
   activeEventId: string | null;
   progress: string[];
+  /** Artifact records the user has personally visited (goToArtifact/descend). Persisted. */
+  visits: string[];
   last: LastLocation | null;
   quality: Quality;
   /** Auto stepper may degrade below the ceiling and recover up to it, never above. */
@@ -112,6 +114,7 @@ export const useEcho = create<EchoState>(() => ({
   demo: { active: false, caption: "" },
   activeEventId: null,
   progress: load<string[]>("echoes.progress", []),
+  visits: load<string[]>("echoes.visits", []),
   last: load<LastLocation | null>("echoes.last", null),
   quality: load<Quality>("echoes.quality", "high"),
   qualityCeiling: load<Quality>("echoes.ceiling", "high"),
@@ -155,3 +158,15 @@ export const unlockRecord = (questionId: string, name: string) => {
   useEcho.setState({ progress });
   toast("SCIENCE RECORD UNLOCKED", name);
 };
+
+/** Log a personal visit into the archive (once per artifact, persisted). */
+export const markVisit = (artifactId: string, name: string) => {
+  const s = useEcho.getState();
+  if (s.visits.includes(artifactId)) return;
+  const visits = [...s.visits, artifactId];
+  persist("echoes.visits", visits);
+  useEcho.setState({ visits });
+  toast("ARCHIVE ENTRY LOGGED", `${name} · ${padTravel(visits.length)} RECORDS VISITED`);
+};
+
+const padTravel = (n: number) => String(n).padStart(2, "0");

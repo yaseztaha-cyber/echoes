@@ -27,9 +27,10 @@ function Shell({ title, sub, children }: { title: string; sub: string; children:
 export function Archive() {
   const [q, setQ] = useState("");
   const [w, setW] = useState("all");
+  const visits = useEcho((s) => s.visits);
   const rows = ARTIFACTS.filter((a) => (w === "all" || a.destination === w) && (a.name + a.designation + a.location.region + a.missionName).toLowerCase().includes(q.toLowerCase()));
   return (
-    <Shell title="ARCHIVE" sub={`${ARTIFACTS.length} ARTIFACTS ON RECORD · SELECT TO ENTER THE 3D EXPERIENCE`}>
+    <Shell title="ARCHIVE" sub={`${ARTIFACTS.length} ARTIFACTS ON RECORD · ${visits.length} PERSONALLY VISITED · SELECT TO ENTER THE 3D EXPERIENCE`}>
       <div className="flex flex-wrap gap-2 border-b border-[#1d2429] px-5 py-3">
         <input className="mono min-w-[200px] flex-1 border border-iron bg-ink-1 px-3 py-2 text-[12px] tracking-[0.1em] text-bone outline-none focus:border-amber" placeholder="FILTER ARCHIVE…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter archive" />
         {["all", "moon", "mars", "deep-space"].map((k) => (
@@ -45,10 +46,12 @@ export function Archive() {
           </tr>
         </thead>
         <tbody>
-          {rows.map((a) => (
+          {rows.map((a) => {
+            const visited = visits.includes(a.id);
+            return (
             <tr key={a.id} className="mono group cursor-pointer border-t border-[#1d2429] text-[12px] tracking-[0.08em] hover:bg-ink-3 focus-within:bg-ink-3" onClick={() => goToArtifact(a.id)}>
               <td className="px-5 py-2.5 text-amber">
-                <button className="text-left" onClick={(e) => { e.stopPropagation(); goToArtifact(a.id); }} aria-label={`Enter ${a.name}`}>{a.designation}</button>
+                <button className="text-left" onClick={(e) => { e.stopPropagation(); goToArtifact(a.id); }} aria-label={`Enter ${a.name}${visited ? " (visited)" : ""}`}>{a.designation}{visited && <span className="ml-1.5 text-[9px] text-cyan" title="You have visited this record in 3D">●</span>}</button>
               </td>
               <td className="px-5 py-2.5 text-bone">{a.name}</td>
               <td className="px-5 py-2.5 uppercase text-ash">{a.destination}</td>
@@ -57,7 +60,8 @@ export function Archive() {
               <td className="px-5 py-2.5 text-ash max-md:hidden">{fmtDate(a.dates.launch)}</td>
               <td className="px-5 py-2.5 text-slate max-md:hidden">{a.location.region}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       {rows.length === 0 && <div className="label p-6">NO RECORDS MATCH</div>}

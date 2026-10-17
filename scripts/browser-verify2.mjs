@@ -88,6 +88,12 @@ try {
     results.apollo12Surface = await measure(page, "apollo12-surface");
     await page.screenshot({ path: `${outDir}/13-apollo12-surface.png` });
     console.log("site url:", page.url());
+    // archive visit feedback check
+    await clickText(page, "ARCHIVE", false);
+    await sleep(2500);
+    await page.screenshot({ path: `${outDir}/14-archive.png` });
+    await clickText(page, "CLOSE · ESC", true);
+    await sleep(1200);
   } catch (e) {
     results.apollo12Surface = { error: String(e).slice(0, 300) };
     await page.screenshot({ path: `${outDir}/13-apollo12-FAILED.png` });
