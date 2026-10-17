@@ -36,3 +36,8 @@ Thumbs.db
 
 # phase 3 hi-res delivery (regenerate with scripts/build-globes.py)
 assets-hi/
+
+# measurement harness output + bisect worktree
+shots/
+shots2/
+.bisect/
