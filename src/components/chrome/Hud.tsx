@@ -13,7 +13,8 @@ import { Timeline, TimeControls, ReplayCard } from "@/components/timeline/Timeli
 import { ContextPanel } from "@/components/planet/ContextPanels";
 import { InstrumentPanel, Compare, Decode } from "@/components/artifact/InstrumentPanel";
 import { ScienceChain, SignalLink } from "@/components/science/ScienceChain";
-import { Archive, GroundTruth, Search } from "@/components/sources/Overlays";
+import { Archive, GroundTruth, Search, Film } from "@/components/sources/Overlays";
+import { requestPhoto } from "@/state/store";
 import { MissionLab } from "@/components/lab/MissionLab";
 import { Remains, Finale } from "@/components/mission/Remains";
 import { Evidence } from "@/components/evidence/EvidenceTrace";
@@ -135,7 +136,7 @@ function Settings() {
       <div className="label mt-3 leading-relaxed">
         MOUSE · LEFT DRAG ORBIT / LOOK · RIGHT DRAG PAN · WHEEL ZOOM
         <br />
-        KEYS · WASD MOVE · Q/E VERTICAL · SHIFT FAST · F FOCUS · I INSPECT · T TIMELINE · M MINIMAP · G SCIENCE · ESC CLOSE
+        KEYS · WASD MOVE · Q/E VERTICAL · SHIFT FAST · F FOCUS · I INSPECT · C FRAME · T TIMELINE · M MINIMAP · G SCIENCE · ESC CLOSE
       </div>
       <div className="mt-3 flex gap-1">
         <a className="ctl flex-1 text-center" href="#/dev">DEV</a>
@@ -143,6 +144,11 @@ function Settings() {
       </div>
     </div>
   );
+}
+
+function FilmCount() {
+  const n = useEcho((s) => s.photos.length);
+  return <>{pad2(n)}</>;
 }
 
 function TopRight() {
@@ -162,6 +168,7 @@ function TopRight() {
         <div className="flex flex-wrap justify-end gap-1">
           <button className="ctl" onClick={() => setO("search")}>SEARCH</button>
           <button className="ctl" onClick={() => setO("archive")}>ARCHIVE</button>
+          <button className="ctl" onClick={() => setO("film")}>FILM <FilmCount /></button>
           <button className="ctl" onClick={() => setO("sources")}>GROUND TRUTH</button>
           <button className="ctl" onClick={() => setO("lab")}>MISSION LAB</button>
           <button className="ctl" aria-expanded={sys} onClick={() => setSys(!sys)}>SYS</button>
@@ -315,6 +322,12 @@ function GpuWatch() {
   );
 }
 
+function Flash() {
+  const f = useEcho((s) => s.flash);
+  if (!f) return null;
+  return <div key={f} className="anim-flash pointer-events-none absolute inset-0 z-30 bg-bone" />;
+}
+
 function Toasts() {
   const toasts = useEcho((s) => s.toasts);
   return (
@@ -415,7 +428,10 @@ export function Hud() {
           <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex flex-wrap items-end gap-3 bg-gradient-to-t from-ink-0/90 to-transparent px-3 pb-3 pt-6 max-md:gap-2">
             <div className="flex flex-col gap-1.5 max-md:w-full">
               <Compass />
-              <CamModes />
+              <div className="flex items-center gap-1.5">
+                <CamModes />
+                <button className="ctl shrink-0" onClick={requestPhoto} aria-label="Capture frame">FRAME</button>
+              </div>
             </div>
             <div className="min-w-[220px] flex-1 max-md:order-last max-md:basis-full">{hasTimeline && <Timeline />}</div>
             <TimeControls />
@@ -424,6 +440,7 @@ export function Hud() {
       )}
 
       {overlay === "archive" && <Archive />}
+      {overlay === "film" && <Film />}
       {overlay === "sources" && <GroundTruth />}
       {overlay === "search" && <Search />}
       {overlay === "lab" && <MissionLab />}
@@ -435,6 +452,7 @@ export function Hud() {
       <Compare />
       <Decode />
       <Veil />
+      <Flash />
       <GpuWatch />
       <Toasts />
       {scene !== "solar" && !cine && (

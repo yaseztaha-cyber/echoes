@@ -44,4 +44,8 @@ export const sfx = {
   },
   event: () => tone(440, 0.4, 0.035, "sine", 0, 330),
   source: () => tone(740, 0.1, 0.025, "triangle", 0, 980),
+  shutter: () => {
+    tone(2000, 0.04, 0.02, "square");
+    tone(1200, 0.06, 0.015, "square", 0.06);
+  },
 };

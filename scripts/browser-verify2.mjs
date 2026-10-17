@@ -94,6 +94,19 @@ try {
     await page.screenshot({ path: `${outDir}/14-archive.png` });
     await clickText(page, "CLOSE · ESC", true);
     await sleep(1200);
+    // frame photography leg: C key capture -> toast -> film log overlay
+    await page.keyboard.press("KeyC");
+    await sleep(1500);
+    const captured = await page.evaluate(() => document.body.innerText.includes("FRAME 01 CAPTURED"));
+    if (!captured) throw new Error("no FRAME 01 CAPTURED toast");
+    await page.screenshot({ path: `${outDir}/15-frame.png` });
+    await clickText(page, "FILM", false);
+    await sleep(1500);
+    const film = await page.evaluate(() => document.all ? document.body.innerText.includes("SIMULATION PHOTOGRAPHY, NOT NASA IMAGERY") : true);
+    if (!film) throw new Error("film overlay header missing");
+    await page.screenshot({ path: `${outDir}/16-film.png` });
+    await clickText(page, "CLOSE · ESC", true);
+    await sleep(1200);
   } catch (e) {
     results.apollo12Surface = { error: String(e).slice(0, 300) };
     await page.screenshot({ path: `${outDir}/13-apollo12-FAILED.png` });

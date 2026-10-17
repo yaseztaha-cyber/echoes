@@ -2,8 +2,9 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useEcho } from "@/state/store";
 import { ARTIFACTS, ALL_QUESTIONS } from "@/data/artifacts";
 import { SOURCES } from "@/data/sources";
-import { Status } from "@/components/chrome/ui";
+import { Status, pad2 } from "@/components/chrome/ui";
 import { goToArtifact, inspectHardware, focusInstrument, openScience } from "@/engine/director";
+import { clearPhotos } from "@/state/store";
 import { fmtDate } from "@/lib/time";
 import { sfx } from "@/lib/audio";
 
@@ -129,6 +130,43 @@ export function GroundTruth() {
           </div>
         );
       })}
+    </Shell>
+  );
+}
+
+/** Session film roll: captured simulation frames with honest labelling. */
+export function Film() {
+  const photos = useEcho((s) => s.photos);
+  return (
+    <Shell title="FRAME LOG" sub={`${photos.length} CAPTURED ${photos.length === 1 ? "VIEW" : "VIEWS"} THIS SESSION · SIMULATION PHOTOGRAPHY, NOT NASA IMAGERY`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-3">
+        <div className="label leading-relaxed text-slate">
+          FRAMES ARE READBACKS OF THE LIVE SIMULATION VIEW — RENDERED, FOR STUDY.
+          {" "}
+          PRESS C OR THE FRAME BUTTON ANYTIME. SESSION-ONLY IN MEMORY; SAVE TO DISK PER FRAME.
+        </div>
+        {photos.length > 0 && <button className="ctl shrink-0" onClick={clearPhotos}>CLEAR FILM · FREES MEMORY</button>}
+      </div>
+      {photos.length === 0 ? (
+        <div className="label p-6 text-ash">NO FRAMES YET. CAPTURE THE CURRENT VIEW FROM ANY SCENE — SOLAR, ORBIT OR SURFACE.</div>
+      ) : (
+        <div className="grid gap-4 p-5 md:grid-cols-3">
+          {photos
+            .slice()
+            .reverse()
+            .map((p) => (
+              <figure key={p.id} className="module overflow-hidden">
+                <img src={p.url} alt={`ECHOES rendered frame — ${p.caption}`} className="block w-full" />
+                <figcaption className="flex items-center justify-between gap-2 px-3 py-2">
+                  <span className="label truncate">{p.caption}</span>
+                  <a className="ctl shrink-0" href={p.url} download={`echoes-frame-${pad2(p.id)}.jpg`}>
+                    SAVE
+                  </a>
+                </figcaption>
+              </figure>
+            ))}
+        </div>
+      )}
     </Shell>
   );
 }

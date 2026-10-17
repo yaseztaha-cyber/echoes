@@ -13,6 +13,7 @@ import { adaptive } from "./performance/adaptive";
 import { createDynamicRes } from "./performance/resolution";
 import { globeResidency } from "./textures/manager";
 import { artifactById } from "@/data/artifacts";
+import { CaptureAgent } from "./CaptureAgent";
 
 function TimeDriver() {
   useFrame((_, dt) => tick(Math.min(dt, 0.1)));
@@ -171,6 +172,7 @@ export function World() {
         <Perf />
         <DynamicScale />
         <HotspotProjector />
+        <CaptureAgent />
         {scene === "solar" && <SolarSystem />}
         {scene === "planet" && (world === "mars" || world === "moon" || world === "earth") && <PlanetScene world={world} />}
         {scene === "site" && artifactId && <SiteScene key={artifactId} artifactId={artifactId} />}

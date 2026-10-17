@@ -173,6 +173,18 @@ canvas {
   animation: fadeUp 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+@keyframes flash1 {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.anim-flash {
+  animation: flash1 0.5s ease-out both;
+}
+
 .reduced * {
   animation-duration: 0.01ms !important;
   transition-duration: 0.01ms !important;

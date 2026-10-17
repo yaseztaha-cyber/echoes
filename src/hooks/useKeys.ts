@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { cam } from "@/engine/cameras/controller";
 import { useEcho } from "@/state/store";
+import { requestPhoto } from "@/state/store";
 import { exitInspect, focusBody, inspectHardware, setCamMode, anchor, flyAnchor } from "@/engine/director";
 import { stopDemo } from "@/features/exploration/demo";
 import { unlockAudio } from "@/lib/audio";
@@ -47,6 +48,7 @@ export function useKeys() {
       if (code === "keyt") return useEcho.setState({ timelineOpen: !st.timelineOpen });
       if (code === "keyi") return st.camMode === "inspect" ? exitInspect() : st.scene === "site" || st.artifactId === "voyager1" ? inspectHardware() : undefined;
       if (code === "keyg") return useEcho.setState({ uiMode: st.uiMode === "science" ? "cinematic" : "science" });
+      if (code === "keyc") return requestPhoto();
       if (code === "digit1") return setCamMode("orbit");
       void anchor;
     };

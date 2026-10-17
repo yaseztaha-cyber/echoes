@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type SceneId = "solar" | "planet" | "site";
 export type CamMode = "orbit" | "free" | "follow" | "surface" | "inspect" | "cinematic" | "overview";
-export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama";
+export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama" | "film";
 export type Quality = "ultra" | "high" | "medium" | "low";
 export type SimMode = "solar-system" | "mission" | "historical";
 export type Level = "explore" | "understand" | "technical";
@@ -84,6 +84,12 @@ export interface EchoState {
   venusView: "surface" | "clouds";
   /** Simulated time-of-day scrub (radians 0..2pi, 0 = real arrival sun). Study mode only, never persisted. */
   sunPhase: number;
+  /** Session film roll (renderer readbacks). In-memory only — frames are too big for localStorage. */
+  photos: { id: number; url: string; caption: string }[];
+  /** Increment to request a capture; handled inside the Canvas by CaptureAgent. */
+  photoReq: number;
+  /** Key of the last frame for the shutter-flash overlay. */
+  flash: number;
 }
 
 export const useEcho = create<EchoState>(() => ({
@@ -132,6 +138,9 @@ export const useEcho = create<EchoState>(() => ({
   gpuLost: false,
   venusView: "surface",
   sunPhase: 0,
+  photos: [],
+  photoReq: 0,
+  flash: 0,
 }));
 
 let bannerKey = 0;
@@ -170,3 +179,15 @@ export const markVisit = (artifactId: string, name: string) => {
 };
 
 const padTravel = (n: number) => String(n).padStart(2, "0");
+
+/** Ask the in-canvas agent to capture the current view. Fired by the C key / FRAME button. */
+export const requestPhoto = () => useEcho.setState((s) => ({ photoReq: s.photoReq + 1 }));
+
+/** Log a captured frame (called by CaptureAgent after renderer readback). */
+export const addPhoto = (url: string, caption: string) => {
+  const n = useEcho.getState().photos.length + 1;
+  useEcho.setState((s) => ({ photos: [...s.photos, { id: n, url, caption }], flash: n }));
+  toast(`FRAME ${padTravel(n)} CAPTURED`, caption);
+};
+
+export const clearPhotos = () => useEcho.setState({ photos: [] });
