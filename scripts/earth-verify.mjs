@@ -66,6 +66,18 @@ try {
   console.log("earth-planet-scene: " + JSON.stringify(r));
   await page.screenshot({ path: "shots2/e1-planet.png" });
   console.log("e1 planet scene captured");
+  await clickText(page, "DUSK", true);
+  await sleep(2500);
+  await page.screenshot({ path: "shots2/e5-dusk.png" });
+  console.log("e5 dusk scrub captured");
+  await clickText(page, "MIDNIGHT", true);
+  await sleep(2500);
+  await page.screenshot({ path: "shots2/e6-midnight.png" });
+  console.log("e6 midnight scrub captured");
+  await clickText(page, "NOON", true);
+  await sleep(2500);
+  await page.screenshot({ path: "shots2/e7-noon.png" });
+  console.log("e7 noon scrub captured");
   for (let i = 2; i < 5; i++) {
     await sleep(5000);
     await page.screenshot({ path: `shots2/e${i}-orbit.png` });

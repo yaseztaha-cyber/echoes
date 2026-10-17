@@ -85,15 +85,44 @@ function BodyPanel() {
 function PlanetPanel() {
   const world = useEcho((s) => s.world);
   const aid = useEcho((s) => s.artifactId);
+  const sunPhase = useEcho((s) => s.sunPhase);
   const t = useTele(300);
   const sites = world === "mars" || world === "moon" ? artifactsFor(world) : [];
   const sel = artifactById(aid);
   const sim = useEcho((s) => s.sim);
+  const setPhase = (v: number) => useEcho.setState({ sunPhase: v });
+  const chips: [string, number][] = [
+    ["NOON", 0],
+    ["DUSK", Math.PI / 2],
+    ["MIDNIGHT", Math.PI],
+    ["DAWN", (3 * Math.PI) / 2],
+  ];
   return (
     <div className="pointer-events-auto flex w-full flex-col gap-3">
       <Panel title={world.toUpperCase()} sub="ORBITAL VIEW">
         <Field k="ALTITUDE" v={fmtDist(t.altitudeM)} />
         <Field k="SUB-CAMERA" v={`${fmtLat(t.lat)} ${fmtLon(t.lon)}`} />
+        <div className="mt-3">
+          <div className="label mb-1">SUN PHASE · SIMULATED TIME OF DAY</div>
+          <input
+            type="range"
+            min={0}
+            max={Math.PI * 2}
+            step={0.01}
+            value={sunPhase}
+            onChange={(e) => setPhase(+e.target.value)}
+            className="my-1 w-full accent-[#d0a45b]"
+            aria-label="Sun phase scrub, simulated time of day"
+          />
+          <div className="flex gap-1">
+            {chips.map(([name, v]) => (
+              <button key={name} className="ctl flex-1 px-1 text-[9.5px]" data-on={Math.abs(((sunPhase - v + Math.PI * 2) % (Math.PI * 2)) - 0) < 0.06 || sunPhase === v} onClick={() => setPhase(v)}>
+                {name}
+              </button>
+            ))}
+          </div>
+          <div className="label mt-1 leading-relaxed">TIME-OF-DAY IS SIMULATED FOR STUDY · 0 = REAL ARRIVAL SUN GEOMETRY</div>
+        </div>
         {sites.length > 0 && <div className="label mt-2">SELECT A MISSION SITE ON THE GLOBE OR FROM THE LIST</div>}
         <div className="mt-2">
           {sites.map((a) => (

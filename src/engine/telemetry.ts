@@ -43,6 +43,8 @@ export const siteRef = {
 /** Environment shared between scenes. */
 export const env = {
   sunDir: new THREE.Vector3(1, 0.25, 0.5).normalize(),
+  /** Arrival-true sun direction; sunPhase scrubs a copy around local up. */
+  sunBase: new THREE.Vector3(1, 0.25, 0.5).normalize(),
   siteLit: false,
 };
 

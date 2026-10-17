@@ -65,6 +65,9 @@ export function Globe({ kind, radius, detail, rough = 1, hiMap }: GlobeProps) {
   const mat = useMemo(() => {
     // Phase 3: calibrated source maps (MDIM 2.1, LROC, BMNG) — no tint repaint.
     const m = new THREE.MeshStandardMaterial({ map, roughness: rough, metalness: 0, color: "#ffffff" });
+    // Room-env PMREM would ghost-light the night side during sun scrub;
+    // planet surfaces take their light from the sun, not the room.
+    m.envMapIntensity = 0.22;
     if (detail) {
       m.onBeforeCompile = (sh) => {
         sh.uniforms.uDetail = u.current.uDetail;
@@ -157,7 +160,7 @@ export function EarthLayers({ radius, sun }: { radius: number; sun: () => THREE.
     <>
       <mesh scale={1.004}>
         <sphereGeometry args={[radius, 96, 64]} />
-        <meshStandardMaterial color="#ffffff" alphaMap={cloudTex} transparent depthWrite={false} roughness={1} />
+        <meshStandardMaterial color="#ffffff" alphaMap={cloudTex} transparent depthWrite={false} roughness={1} envMapIntensity={0.22} />
       </mesh>
       <mesh scale={1.002}>
         <sphereGeometry args={[radius, 96, 64]} />

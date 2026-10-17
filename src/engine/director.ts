@@ -177,7 +177,8 @@ export async function travelToBody(id: string) {
   // swap into the planet frame with identical apparent size, direction and sunlight
   const rel = c.position.clone().sub(bodyPos(id, clock.t)).multiplyScalar(k);
   env.sunDir.copy(sunDir);
-  set({ scene: "planet", world: id });
+  env.sunBase.copy(sunDir);
+  set({ scene: "planet", world: id, sunPhase: 0 });
   setView(rel, V());
   await nextFrames();
   showBanner(b.name.toUpperCase(), "ORBITAL INSERTION", 3800);

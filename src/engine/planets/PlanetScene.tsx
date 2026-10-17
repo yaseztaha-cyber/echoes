@@ -103,6 +103,17 @@ function PlanetGlobe({ world }: { world: GlobeKind }) {
   return <Globe kind={world} radius={GLOBE_R} detail hiMap={hiMap} />;
 }
 
+/** Simulated time-of-day scrub: rotates the arrival-true sun around local up. 0 = real geometry. */
+function SunScrub() {
+  const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  useFrame(() => {
+    const p = useEcho.getState().sunPhase;
+    env.sunDir.copy(env.sunBase);
+    if (p !== 0) env.sunDir.applyAxisAngle(up, p);
+  });
+  return null;
+}
+
 export function PlanetScene({ world }: { world: GlobeKind }) {  const light = useRef<THREE.DirectionalLight>(null);
   const occ = useRef<THREE.Mesh>(null);
   const sites = (world === "mars" || world === "moon") ? artifactsFor(world) : [];
@@ -113,8 +124,9 @@ export function PlanetScene({ world }: { world: GlobeKind }) {  const light = us
       <ambientLight intensity={world === "mars" ? 0.06 : 0.015} />
       <directionalLight ref={light} intensity={world === "mars" ? 2.5 : 3.4} />
       <Suspense fallback={null}>
-        <PlanetGlobe world={world} />
+      <PlanetGlobe world={world} />
       </Suspense>
+      <SunScrub />
       {world === "mars" && <Atmosphere radius={GLOBE_R} color="#c9906a" strength={0.75} sun={() => env.sunDir} scale={1.045} power={4.5} />}
       {world === "earth" && <EarthLayers radius={GLOBE_R} sun={() => env.sunDir} />}
       <mesh ref={occ}>

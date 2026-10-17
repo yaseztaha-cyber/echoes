@@ -80,6 +80,8 @@ export interface EchoState {
   gpuLost: boolean;
   /** Venus globe mode: radar-derived surface vs cloud-covered appearance. */
   venusView: "surface" | "clouds";
+  /** Simulated time-of-day scrub (radians 0..2pi, 0 = real arrival sun). Study mode only, never persisted. */
+  sunPhase: number;
 }
 
 export const useEcho = create<EchoState>(() => ({
@@ -126,6 +128,7 @@ export const useEcho = create<EchoState>(() => ({
   sidePanelHidden: false,
   gpuLost: false,
   venusView: "surface",
+  sunPhase: 0,
 }));
 
 let bannerKey = 0;
