@@ -51,3 +51,27 @@ audit: what was built, what was verified, what stays honest. Commit per stage.
   "VISITS LOGGED 01 / 10" in the HUD; tsc clean (2 pre-existing warnings),
   84/84 tests, build green (10,064 kB, +0.06 from the feature).
 
+## STAGE 3 — FRAME PHOTOGRAPHY (session film log) — committed
+
+- **What:** any scene (solar / planet orbit / surface) can be captured: C key
+  or the FRAME button in the bottom strip. Each capture flashes a shutter
+  overlay, plays a two-blip shutter sound, drops a toast
+  ("FRAME NN CAPTURED" + caption) and files the view in a FRAME LOG overlay
+  (FILM button next to ARCHIVE) as a thumbnail with a SAVE link
+  (echoes-frame-NN.jpg) and a CLEAR FILM action.
+- **How:** `CaptureAgent` lives inside the R3F Canvas; `requestPhoto()`
+  bumps `photoReq`, the agent renders one fresh frame (`gl.render`) then
+  `toDataURL("image/jpeg", 0.92)` in the same task — no
+  `preserveDrawingBuffer` cost on the live loop. Frames are session-only in
+  memory (dataURLs would blow the 5 MB localStorage budget); the honest
+  caption carries scene context (e.g. "A12 · MOON SURFACE · 1969-11-19
+  06:54", plus "· SIM SUN n°" whenever the sun-phase scrub is non-zero).
+- **Honesty rule:** the log is statically headed "SIMULATION PHOTOGRAPHY,
+  NOT NASA IMAGERY" — captured frames can never be confused with the real
+  archival photography the app cites.
+- **Verification:** headless journey pressed C at Apollo 12 surface → toast +
+  film log screenshot (15-frame, 16-film); surface measure unchanged
+  (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2 pre-existing warnings),
+  build +3.2 kB.
+
+
