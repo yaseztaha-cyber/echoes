@@ -78,13 +78,21 @@ try {
   console.log("planet scene url:", page.url());
 
   // into an apollo site: descend, wait out the approach cinematic, then measure ON the surface
-  await clickText(page, "APOLLO 12", false);
-  await sleep(4000);
-  await clickText(page, "DESCEND TO SITE", false);
-  await sleep(45000);
-  results.apollo12Surface = await measure(page, "apollo12-surface");
-  await page.screenshot({ path: `${outDir}/13-apollo12-surface.png` });
-  console.log("site url:", page.url());
+  try {
+    await clickText(page, "APOLLO 12", false);
+    console.log("clicked: APOLLO 12");
+    await sleep(4000);
+    await clickText(page, "DESCEND TO SITE", false);
+    console.log("clicked: DESCEND TO SITE");
+    await sleep(45000);
+    results.apollo12Surface = await measure(page, "apollo12-surface");
+    await page.screenshot({ path: `${outDir}/13-apollo12-surface.png` });
+    console.log("site url:", page.url());
+  } catch (e) {
+    results.apollo12Surface = { error: String(e).slice(0, 300) };
+    await page.screenshot({ path: `${outDir}/13-apollo12-FAILED.png` });
+    console.log("APOLLO LEG FAILED:", String(e).slice(0, 300));
+  }
 
   await writeFile(`${outDir}/summary.json`, JSON.stringify({ results, errors }, null, 2));
   console.log("ERRORS:", errors.length ? errors.join(" | ").slice(0, 800) : "none");
