@@ -95,6 +95,7 @@ describe("star property mapping", () => {
     expect(starBrightness(-1.44)).toBeGreaterThan(starBrightness(0));
     expect(starBrightness(0)).toBeGreaterThan(starBrightness(6));
     expect(starBrightness(-1.44)).toBeGreaterThan(1.4);
+    expect(starBrightness(6)).toBeGreaterThanOrEqual(0.13);
   });
 
   it("color index -> kelvin stays in the O..M spectral band", () => {
@@ -127,7 +128,7 @@ describe("star property mapping", () => {
   it("built data caps count and sizes stay small (px budget)", () => {
     const { positions, sizes } = buildStarGeometryData(100);
     expect(positions.length).toBe(300);
-    expect(sizes[0]).toBeGreaterThan(3);
-    for (const s of sizes) expect(s).toBeLessThanOrEqual(3.6);
+    expect(sizes[0]).toBeGreaterThan(3.5);
+    for (const s of sizes) expect(s).toBeLessThanOrEqual(3.9);
   });
 });

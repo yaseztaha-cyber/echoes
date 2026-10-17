@@ -46,10 +46,14 @@ export function starDirection(raDeg: number, decDeg: number, out: [number, numbe
   return out;
 }
 
-/** Apparent flux relative to a mag-0 star: 10^(-0.4 m), gamma-compressed for display. */
+/**
+ * Display flux from apparent magnitude: 10^(-0.4 m) with gamma compression for
+ * display, a visibility floor for naked-eye faint stars (mag ~6 must stay
+ * readable through additive falloff), and a cap so Sirius doesn't bloom.
+ */
 export function starBrightness(mag: number) {
   const s = Math.pow(10, -0.4 * mag);
-  return Math.min(Math.pow(s, 0.55), 1.6);
+  return Math.min(Math.max(Math.pow(s, 0.55) * 1.35, 0.13), 1.6);
 }
 
 /**
@@ -96,7 +100,7 @@ export function buildStarGeometryData(keep = Infinity): StarGeometryData {
     const [r, g, bl] = kelvinToRgb(colorIndexToKelvin(data[o + 3]));
     col.set([r * b, g * b, bl * b], i * 3);
     const t = Math.max(0, Math.min(1, (5 - data[o + 2]) / 6.46));
-    size[i] = 1.15 + 2.4 * Math.pow(t, 1.5);
+    size[i] = 1.2 + 2.6 * Math.pow(t, 1.5);
   }
   return { positions: pos, colors: col, sizes: size };
 }
