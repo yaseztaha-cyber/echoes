@@ -74,4 +74,25 @@ audit: what was built, what was verified, what stays honest. Commit per stage.
   (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2 pre-existing warnings),
   build +3.2 kB.
 
+## STAGE 4 — SITE VIGNETTES (sourced mission quotes) — committed
+
+- **What:** shortly after each surface arrival (and the Voyager flyin) a
+  "MISSION VIGNETTE" card appears with one verbatim, sourced line from the
+  real mission — attribution, date/context and source on every card. Once per
+  site per session; dismissible immediately, auto-dismissed after 18 s.
+- **Quotes (all verified verbatim against sources this session, nothing
+  invented):** Conrad A12 + Shepard A14 + Scott A15 + Duke A16 + Cernan A17
+  (Apollo Lunar Surface Journal); Muirhead MPF (JPL press kit, pre-landing
+  context labelled); Manning Spirit + Lewicki Opportunity ("Two for two… One
+  dozen wheels on soil") + Szalai InSight ("Touchdown confirmed…") mission
+  transcripts; Sagan on the Golden Record for Voyager 1.
+- **How:** `src/data/vignettes.ts` (Record keyed by artifact id);
+  `queueVignette(id)` fired from `descendToSite` and `goVoyager` — sessions
+  track via in-memory `vignettesSeen`; static data + UI = +5 kB.
+- **Verification:** harness asserts the card at Apollo 12 arrival (text check
+  + screenshot 13a-vignette with the Conrad card on the surface); surface
+  perf unchanged (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2 pre-existing
+  warnings); 84/84 tests.
+
+
 
