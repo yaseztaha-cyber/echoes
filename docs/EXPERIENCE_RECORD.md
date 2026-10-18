@@ -94,5 +94,30 @@ audit: what was built, what was verified, what stays honest. Commit per stage.
   perf unchanged (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2 pre-existing
   warnings); 84/84 tests.
 
+## STAGE 5 — AMBIENT AUDIO (generated beds, honesty-first) — committed
+
+- **What:** a quiet generated ambient bed follows the scene: interstellar /
+  solar space = faint observatory drone (two detuned 55 Hz sines through a
+  lowpass); planet orbit = warm drone; Mars surface = a low bandpass noise
+  wind with slow drift; airless (moon) surface = NO artificial wind — only
+  the in-suit life-support pulse a wearer would actually hear (soft 96→48 Hz
+  thud every 3.4 s). Master level sits well below UI tones; nothing loops
+  distractingly.
+- **Honesty rules (in code header + Settings):** ambience is generated
+  interface audio, never a recording; the Settings AUDIO block now states
+  "AIRLESS WORLDS GET THE IN-SUIT PULSE ONLY; MARS GETS A WIND STAND-IN."
+  The InSight wind recording is real but is not used here — no confusion
+  between synthesis and the actual NASA capture.
+- **How:** `src/lib/ambience.ts` on the shared AudioContext (audio.ts), pink-
+  ish smoothed looped noise + LFO filter-drift; scene→kind wiring in Hud
+  (useEffect on scene/world/audioOn); audio-unlock ordering solved by a
+  first-gesture `rearm` listener that re-syncs the bed after the context
+  exists. Respect the AUDIO toggle (kind = off).
+- **Verification:** harness asserts `__echoesAmb` transitions: solar → void,
+  moon orbit → orbit, Apollo 12 surface → moon (airless = pulse only);
+  surface perf unchanged (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2
+  pre-existing warnings); 84/84 tests.
+
+
 
 
