@@ -6,6 +6,7 @@ import { setCamMode, returnToSolarSystem } from "@/engine/director";
 import { stopDemo } from "@/features/exploration/demo";
 import { Field, Status, stateAt, useTele, pad2 } from "./ui";
 import { setAudioEnabled, sfx } from "@/lib/audio";
+import { setAmbience, type AmbienceKind } from "@/lib/ambience";
 import { solOf, fmtUTC } from "@/lib/time";
 import { fmtDist } from "@/lib/geo";
 import { Telemetry, Compass, Minimap } from "@/components/navigation/Telemetry";
@@ -134,6 +135,7 @@ function Settings() {
           AUDIO {audio ? "ON" : "OFF"}
         </button>
       </div>
+      <div className="label mt-1 leading-relaxed text-slate">AMBIENCE IS GENERATED INTERFACE AUDIO — NOT A RECORDING. AIRLESS WORLDS GET THE IN-SUIT PULSE ONLY; MARS GETS A WIND STAND-IN.</div>
       <div className="label mt-3 leading-relaxed">
         MOUSE · LEFT DRAG ORBIT / LOOK · RIGHT DRAG PAN · WHEEL ZOOM
         <br />
@@ -381,6 +383,7 @@ export function Hud() {
   const mode = useEcho((s) => s.camMode);
   const demo = useEcho((s) => s.demo);
   const scene = useEcho((s) => s.scene);
+  const world = useEcho((s) => s.world);
   const aid = useEcho((s) => s.artifactId);
   const overlay = useEcho((s) => s.overlay);
   const minimap = useEcho((s) => s.minimap);
@@ -389,6 +392,7 @@ export function Hud() {
   const eventOpen = useEcho((s) => s.activeEventId !== null);
   const scienceOpen = useEcho((s) => s.scienceOpen);
   const reduced = useEcho((s) => s.reducedMotion);
+  const audioOn = useEcho((s) => s.audioOn);
   const art = artifactById(aid);
   const cine = mode === "cinematic";
   const hasTimeline = !!art && (scene === "site" || aid === "voyager1");
@@ -397,6 +401,17 @@ export function Hud() {
     document.documentElement.classList.toggle("reduced", reduced);
   }, [reduced]);
   useEffect(() => setAudioEnabled(useEcho.getState().audioOn), []);
+
+  // Ambient bed follows the scene: void drone in space, Mars wind only on
+  // Mars, in-suit pulse on airless sites. Never a recording.
+  useEffect(() => {
+    const st = useEcho.getState();
+    let kind: AmbienceKind = "void";
+    if (!st.audioOn) kind = "off";
+    else if (st.scene === "planet") kind = "orbit";
+    else if (st.scene === "site") kind = st.world === "mars" ? "mars" : st.world === "moon" ? "moon" : "void";
+    setAmbience(kind);
+  }, [scene, world, aid, audioOn]);
 
   if (!entered) return null;
   const dim = flying ? "opacity-[0.18]" : "opacity-100";

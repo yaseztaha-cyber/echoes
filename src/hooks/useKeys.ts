@@ -5,6 +5,7 @@ import { requestPhoto } from "@/state/store";
 import { exitInspect, focusBody, inspectHardware, setCamMode, anchor, flyAnchor } from "@/engine/director";
 import { stopDemo } from "@/features/exploration/demo";
 import { unlockAudio } from "@/lib/audio";
+import { setAmbience } from "@/lib/ambience";
 
 const MOVE = new Set(["keyw", "keya", "keys", "keyd", "keyq", "keye", "space", "shiftleft", "shiftright", "controlleft", "arrowup", "arrowdown", "arrowleft", "arrowright"]);
 
@@ -54,10 +55,21 @@ export function useKeys() {
     };
     const up = (e: KeyboardEvent) => cam.keys.delete(e.code.toLowerCase());
     const blur = () => cam.keys.clear();
+    // The AudioContext exists only after a gesture; the initial ambience call
+    // can precede it. First pointer/keypress unlocks, then re-syncs the bed.
+    const rearm = () => {
+      unlockAudio();
+      const k = (window as any).__echoesAmb;
+      if (k) setAmbience(k);
+    };
+    window.addEventListener("pointerdown", rearm, { once: true });
+    window.addEventListener("keydown", rearm, { once: true });
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", blur);
     return () => {
+      window.removeEventListener("pointerdown", rearm);
+      window.removeEventListener("keydown", rearm);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);

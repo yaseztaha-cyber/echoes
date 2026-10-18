@@ -13,6 +13,10 @@ export function unlockAudio() {
     /* audio unavailable */
   }
 }
+/** Shared context for subsystems (ambience). Null until the first gesture unlocks it. */
+export function sharedCtx(): AudioContext | null {
+  return ctx;
+}
 
 function tone(freq: number, dur: number, vol: number, type: OscillatorType = "sine", delay = 0, to?: number) {
   if (!enabled || !ctx) return;

@@ -68,12 +68,18 @@ try {
   await sleep(3500);
   await clickText(page, "ENTER SIMULATION", false);
   await sleep(5000);
+  const amb1 = await page.evaluate(() => window.__echoesAmb);
+  if (amb1 !== "void") throw new Error(`ambience solar expected void, got ${amb1}`);
+  console.log("ambience: solar = void");
 
   await clickText(page, "MOON", true);
   await sleep(5000);
   await clickText(page, "TRAVEL TO MOON", false);
   await sleep(9000);
   results.moonPlanetScene = await measure(page, "moon-planet-scene");
+  const amb2 = await page.evaluate(() => window.__echoesAmb);
+  if (amb2 !== "orbit") throw new Error(`ambience orbit expected orbit, got ${amb2}`);
+  console.log("ambience: moon orbit = orbit");
   await page.screenshot({ path: `${outDir}/10-moon-planet.png` });
   console.log("planet scene url:", page.url());
 
@@ -85,6 +91,9 @@ try {
     await clickText(page, "DESCEND TO SITE", false);
     console.log("clicked: DESCEND TO SITE");
     await sleep(45000);
+    const amb3 = await page.evaluate(() => window.__echoesAmb);
+    if (amb3 !== "moon") throw new Error(`ambience site expected moon pulse, got ${amb3}`);
+    console.log("ambience: apollo site = moon (suit pulse, airless)");
     const vig = await page.evaluate(() => document.body.innerText.includes("MISSION VIGNETTE") && document.body.innerText.includes("small one for Neil"));
     if (!vig) throw new Error("no arrival vignette shown");
     console.log("vignette shown at arrival");
