@@ -118,6 +118,34 @@ audit: what was built, what was verified, what stays honest. Commit per stage.
   surface perf unchanged (60.1 FPS / p95 16.8 / 0 errors); tsc clean (2
   pre-existing warnings); 84/84 tests.
 
+## PHASE 9 — REAL SITE TERRAIN (LOLA / MOLA DEM patches) — committed
+
+- **What:** the 9 mission sites now build their macro relief from real NASA
+  laser-altimeter data: LOLA GDR LDEM_128 for the five Apollo sites, MOLA MEGDR
+  128-ppd radial tiles for MPF / Spirit / Opportunity / InSight. Patches cover
+  +-0.25 deg around each landing point (7.4-15 km) as 256x256 16-bit PNGs
+  (Int16 metres, 1 m/step, per-patch offset). Extraction re-runs offline via
+  `scripts/build-site-dems.py` (row-wise HTTP byte-range reads of the PDS
+  products — never the full 2.1 GB; Trek's 8-bit grayscale DEMs were rejected:
+  62.7 m/step vertical quantization would destroy site relief).
+- **Honesty rules§8:** data window = DEM; outside it = procedural
+  reconstruction (seeded value-noise + documented site features), faded over a
+  blend band so no seam shows. `DataResolution` says which is which per site
+  ("NASA DEM PATCH" + `LOLA DEM ACTIVE · 237 m NATIVE / 60 m SHOWN · MACRO
+  RELIEF REAL` note, falling back to "VISUALIZATION" when no patch exists or a
+  load fails). Site relief sanity-checked against real geography: A17
+  Taurus-Littrow walls 2002 m, A15 Hadley 1335 m, A12 mare 123 m, mars sites
+  118-299 m.
+- **How:** `engine/terrain/dem.ts` (manual 16-bit PNG decode via
+  DecompressionStream — canvas would truncate to 8-bit) + `heightAt`
+  micro/macro split; `Terrain`, `RockField` and `MissionRoute` re-ground when
+  the patch lands; store `demNote` drives the label. Patches add ~284 kB
+  (~380 kB base64) — bundle 10,074 -> 10,438 kB.
+- **Verification:** harness leg asserts `__echoesDemInfo` ready + siteId
+  `apollo-12` + LOLA note text at the site; journey passed end to end
+  (ambient/vignette/photography intact); surface perf unchanged (60.1 FPS /
+  p95 16.9 / 0 errors); tsc clean (2 pre-existing warnings); 90/90 tests.
+
 
 
 

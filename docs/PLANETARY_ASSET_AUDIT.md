@@ -136,13 +136,27 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
   full-resolution** (TIFFs available at Photojournal; fetch on demand, do not bundle)
 - **Status:** `APPROVED` for in-app archive use
 
-## 8. TERRAIN ELEVATION — synthetic (must not be mistaken for data)
+## 8. TERRAIN ELEVATION — real DEM patches at mission sites + procedural elsewhere (labelled)
 
-- `engine/terrain/height.ts` + `Terrain.tsx` generateInvoker: seeded value-noise heightfield.
-  It is **not** MOLA, LOLA, or any DEM. It must never be described as measured terrain.
-- Milestone rule: mission-site terrain work (Phase 9) replaces/augments this with real
-  elevation (MOLA/HiRISE DTM, LOLA) while keeping the noise field only where no data
-  exists — and the UI must say which is which (existing `DataResolution` component).
+- `engine/terrain/dem.ts` (Phase 9) brings **real elevation** to the 9 mission
+  sites: LOLA GDR LDEM_128 (Moon, `LRO-L-LOLA-4-GDR-V1.0`) and MOLA MEGDR 128-ppd
+  radial tiles (Mars, `MGS-M-MOLA-5-MEGDR-L3-V1.0`), extracted at build time by
+  `scripts/build-site-dems.py` over HTTP byte-ranges (the full 2.1 GB products are
+  never downloaded) and shipped as 256x256 16-bit grayscale PNG patches
+  (+-0.25 deg windows, `src/assets/terrain/dem`, provenance in
+  `SITE_DEM_MANIFEST` + `demCatalog.ts`). Vertical quantization is Int16 at
+  1 m/step (patch-relative); horizontal is a ~4x bilinear upsample of the native
+  236.9 m (Moon) / 463.1 m (Mars) ground sample — recorded per record, never
+  claimed as sharper.
+- `heightAt` blends: inside the window core the DEM **is** the macro relief
+  (site-anchored, metres); documented site features (MER bowls) and
+  sub-wavelength texture stay procedural; approaching the patch edge the DEM
+  fades over a band back to the seeded value-noise field (`height.ts`), which
+  still generates all terrain that has no data (beyond the windows, planet
+  scale, whole-Globe displacement-free).
+- It must never be described as measured terrain outside the patches; the
+  `DataResolution` component states per-site which mode is active ("NASA DEM
+  PATCH" + native-vs-shown sample note, or "VISUALIZATION" without a patch).
 
 ## 9. COORDINATE / SCALE SYSTEM — current state (input to Phase 2)
 
@@ -168,7 +182,7 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 
 | Asset | Status | Next action |
 |---|---|---|
-| earth.jpg | APPROVED (BMNG 2004) | DEM at mission sites (Phase 9); streaming tiles |
+| earth.jpg | APPROVED (BMNG 2004) | DEM at mission sites DONE (Phase 9); streaming tiles |
 | earth clouds | APPROVED (2ndhand, labelled) | Replace with verified direct NASA/SVS composite when found |
 | earth night | APPROVED (VIIRS 2016) | Current-epoch fetch is a later refresh, not a defect |
 | moon.jpg | APPROVED (SVS 2025) | Wire LOLA displacement (later phase) |
@@ -177,7 +191,7 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 | Sun imagery | APPROVED (HMI recon + flat channels) | On-demand dated fetch for research use |
 | Star catalogue | COMPLIANT | HYG v4.4 naked-eye excerpt embedded (5,070 stars, CC BY-SA, RA/Dec→dir, mag→size, B−V→tint); PRNG field removed |
 | PIA archive | APPROVED (web rendition) | Fetch full-res on demand only |
-| Terrain DEM | SYNTHETIC (labelled) | Real DEM at mission sites (Phase 9) |
+| Terrain DEM | REAL PATCHES + procedural (labelled) | DONE (Phase 9, LOLA/MOLA at 9 mission sites) — globe displacement wiring later |
 
 No asset above may be described in-app at a resolution or fidelity beyond what this
 document records. Globe textures are single-LOD visualization aids until the Phase 5
