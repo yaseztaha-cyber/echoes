@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { fbm, heightAt, slopeAt, terrainState, type TerrainWorld } from "./height";
+import { onDemReady } from "@/engine/terrain/dem";
 import { useEcho } from "@/state/store";
 import { tele } from "@/engine/telemetry";
 
@@ -349,6 +350,14 @@ export function Terrain({ world, seed, rootSize, center, maxDepth }: Props) {
     return () => clearCache();
     // center/rootSize are constants of the mounted site (same for every render).
   }, [world, seed]);
+
+  // Phase 9: when the site's real DEM patch lands, cached tiles were built from
+  // the procedural field — drop them so the streamer rebuilds on the DEM relief.
+  useEffect(() => onDemReady(() => {
+    clearCache();
+    sig.current = "";
+    lastMerge.current = 0;
+  }), []);
 
   useFrame(() => {
     frameNo++;

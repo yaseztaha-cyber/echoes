@@ -94,6 +94,8 @@ export interface EchoState {
   vignetteId: string | null;
   /** Vignettes already shown this session (once per site). */
   vignettesSeen: string[];
+  /** Data-resolution note for the current site terrain (LOLA/MOLA vs procedural); empty off-site. */
+  demNote: string;
 }
 
 export const useEcho = create<EchoState>(() => ({
@@ -147,6 +149,7 @@ export const useEcho = create<EchoState>(() => ({
   flash: 0,
   vignetteId: null,
   vignettesSeen: [],
+  demNote: "",
 }));
 
 let bannerKey = 0;

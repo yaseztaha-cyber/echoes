@@ -94,6 +94,17 @@ try {
     const amb3 = await page.evaluate(() => window.__echoesAmb);
     if (amb3 !== "moon") throw new Error(`ambience site expected moon pulse, got ${amb3}`);
     console.log("ambience: apollo site = moon (suit pulse, airless)");
+    // Phase 9: real LOLA DEM patch must be active at the Apollo site
+    const dem = await page.evaluate(() => ({
+      info: window.__echoesDemInfo ? window.__echoesDemInfo() : { siteId: null, ready: false },
+      note: window.__echoesDemNote ? window.__echoesDemNote() : "",
+    }));
+    if (!dem.info.ready || dem.info.siteId !== "apollo-12") {
+      throw new Error(`LOLA DEM not ready at apollo-12: ${JSON.stringify(dem.info)}`);
+    }
+    if (!/LOLA DEM ACTIVE/.test(dem.note)) throw new Error(`unexpected dem note: ${dem.note}`);
+    results.dem = dem;
+    console.log("DEM: apollo-12 = LOLA patch ready, note:", dem.note);
     const vig = await page.evaluate(() => document.body.innerText.includes("MISSION VIGNETTE") && document.body.innerText.includes("small one for Neil"));
     if (!vig) throw new Error("no arrival vignette shown");
     console.log("vignette shown at arrival");

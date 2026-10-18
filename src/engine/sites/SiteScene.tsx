@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html, Line, useGLTF } from "@react-three/drei";
 import { Terrain } from "@/engine/terrain/Terrain";
 import { RockField } from "@/engine/terrain/Rocks";
 import { heightAt, slopeAt, footprintPose, terrainState } from "@/engine/terrain/height";
+import { loadSiteDem, clearSiteDem, onDemReady } from "@/engine/terrain/dem";
 import { ArtifactModel } from "@/engine/spacecraft/models";
 import { MER_OFFICIAL_URL } from "@/engine/spacecraft/merOfficial";
 import { Stars } from "@/engine/world/Stars";
@@ -121,7 +122,10 @@ function MissionRoute({ art }: { art: Artifact }) {
   const simT = useEcho((s) => s.sim.t);
   const science = useEcho((s) => s.uiMode === "science");
   const wps = art.missionPath?.waypoints ?? [];
-  const lift = (x: number, z: number): [number, number, number] => [x, heightAt(x, z) + 1.2, z];
+  // DEM landing shifts the ground plane — recompute route line heights on arrival.
+  const [demTick, setDemTick] = useState(0);
+  useEffect(() => onDemReady(() => setDemTick((v) => v + 1)), []);
+  const lift = useCallback((x: number, z: number): [number, number, number] => [x, heightAt(x, z) + 1.2, z], [demTick]);
   const lastWp = wps.filter((w) => w.t <= simT).length - 1;
   const legStart = useMemo(() => {
     if (lastWp < 0) return 0;
@@ -129,8 +133,8 @@ function MissionRoute({ art }: { art: Artifact }) {
     const i = path.findIndex((p) => p.t >= t);
     return Math.max(0, i);
   }, [lastWp, path, wps]);
-  const dim = useMemo(() => path.slice(0, legStart + 1).map((p) => lift(p.x, p.z)), [path, legStart]);
-  const bright = useMemo(() => path.slice(legStart, idx + 2).map((p) => lift(p.x, p.z)), [path, legStart, idx]);
+  const dim = useMemo(() => path.slice(0, legStart + 1).map((p) => lift(p.x, p.z)), [path, legStart, demTick]);
+  const bright = useMemo(() => path.slice(legStart, idx + 2).map((p) => lift(p.x, p.z)), [path, legStart, idx, demTick]);
   if (path.length < 2) return null;
   return (
     <>
@@ -210,6 +214,12 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
   const sun = useMemo(() => sunVector(art.sun.el, art.sun.az), [art]);
   env.sunDir.copy(sun);
   const fog = useMemo(() => new THREE.FogExp2(HORIZON.getHex(), 0.00002), []);
+  // Phase 9: real LOLA/MOLA relief for mission sites (no-op for sites without a
+  // patch — the note stays procedural in that case).
+  useEffect(() => {
+    loadSiteDem(art.id, world);
+    return () => clearSiteDem();
+  }, [art.id, world]);
   useEffect(() => {
     // Start the official rover geometry early so inspection rarely waits.
     if (art.model.kind === "mer") useGLTF.preload(MER_OFFICIAL_URL);

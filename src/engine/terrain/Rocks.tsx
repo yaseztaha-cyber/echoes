@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { heightAt } from "./height";
+import { onDemReady } from "./dem";
 
 /** Seeded PRNG (mulberry-ish). Deterministic scatter, no surveyed positions claimed. */
 function rng(seed: number) {
@@ -20,6 +21,9 @@ function rng(seed: number) {
  */
 export function RockField({ seed, radius = 150, count = 240 }: { seed: number; radius?: number; count?: number }) {
   const rocks = useRef<THREE.InstancedMesh>(null);
+  // DEM landing can shift heights by metres â€” reground the scatter when it arrives.
+  const [demTick, setDemTick] = useState(0);
+  useEffect(() => onDemReady(() => setDemTick((t) => t + 1)), []);
   const data = useMemo(() => {
     const r = rng(seed * 31 + 7);
     const items: { x: number; y: number; z: number; s: number; ry: number; tone: number }[] = [];
@@ -38,7 +42,7 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
       items.push({ x, y: heightAt(x, z) + s * 0.12, z, s, ry: r() * Math.PI * 2, tone: r() });
     }
     return items;
-  }, [seed, radius, count]);
+  }, [seed, radius, count, demTick]);
   const slabs = useMemo(() => {
     const r = rng(seed * 57 + 3);
     const out: { x: number; z: number; y: number; w: number; h: number; d: number; ry: number }[] = [];
@@ -50,7 +54,7 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
       out.push({ x, z, y: heightAt(x, z) - 0.15, w: 3 + r() * 5, h: 0.3 + r() * 0.45, d: 1.5 + r() * 2.5, ry: r() * Math.PI });
     }
     return out;
-  }, [seed]);
+  }, [seed, demTick]);
 
   // Static scatter: compose once, not per frame.
   useEffect(() => {
@@ -77,7 +81,7 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [data]);
 
-  // Slabs baked into two merged geometries (one per tone) — 10 slab meshes
+  // Slabs baked into two merged geometries (one per tone) â€” 10 slab meshes
   // become 2 draw calls instead of 10.
   const slabGeos = useMemo(() => {
     const dark: THREE.BufferGeometry[] = [];

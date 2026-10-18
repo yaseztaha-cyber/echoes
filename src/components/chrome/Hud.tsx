@@ -275,14 +275,24 @@ function DataResolution() {
   const scene = useEcho((s) => s.scene);
   const ui = useEcho((s) => s.uiMode);
   const aud = useEcho((s) => s.audience);
+  const demNote = useEcho((s) => s.demNote);
+  const demActive = demNote.includes("DEM ACTIVE");
   if (scene !== "site" || (ui !== "science" && aud !== "student")) return null;
   return (
     <div className="module w-64 p-3 max-md:hidden">
       <div className="label mb-1">DATA RESOLUTION</div>
       <Field k="GLOBAL" v="MEDIUM · NASA/USGS IMAGERY" tone="text-ok" />
       <Field k="REGIONAL" v="VISUALIZATION" tone="text-warn" />
-      <Field k="MISSION SITE" v="VISUALIZATION" tone="text-warn" />
-      <div className="label mt-2 leading-relaxed text-slate">RECONSTRUCTED VISUALIZATION. Anchored to documented crater and waypoint positions. Surface relief is procedural pending surveyed terrain integration.</div>
+      {demActive
+        ? <Field k="MISSION SITE" v="NASA DEM PATCH" tone="text-ok" />
+        : <Field k="MISSION SITE" v="VISUALIZATION" tone="text-warn" />}
+      <div className="label mt-2 leading-relaxed text-slate">
+        {demActive
+          ? <>Anchored to documented crater and waypoint positions; macro relief is real laser altimeter data whose native ground sample size is larger than the patch grid (bilinear upsampling). Sub-metre site detail stays procedural.</>
+          : <>RECONSTRUCTED VISUALIZATION. Anchored to documented crater and waypoint positions. Surface relief is procedural pending surveyed terrain integration.</>}
+      </div>
+      {demNote && <div className="label mt-2 leading-relaxed text-cyan">{demNote}</div>}
+      {!demNote && <div className="label mt-2 leading-relaxed text-slate">No DEM patch for this site — terrain is procedural reconstruction.</div>}
     </div>
   );
 }

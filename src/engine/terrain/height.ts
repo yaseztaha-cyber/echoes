@@ -1,4 +1,13 @@
-/** Procedural terrain height. Deterministic, shared by the tile streamer, rover placement and walking. */
+import { demSample } from "@/engine/terrain/dem";
+
+/** Procedural terrain height. Deterministic, shared by the tile streamer, rover placement and walking.
+ *
+ *  Phase 9: mission sites with a real DEM patch (dem.ts, LOLA/MOLA) take their
+ *  macro relief from the patch — heightAt returns dem + procedural micro detail
+ *  (documented site features and sub-wavelength texture stay procedural), and
+ *  fades over the blend band back to the fully procedural field (with its
+ *  original landing-area flattening) outside the data window. Everything is
+ *  labelled honestly in the UI (DataResolution). */
 export type TerrainWorld = "mars" | "moon";
 export const terrainState = { world: "mars" as TerrainWorld, seed: 7 };
 
@@ -67,17 +76,38 @@ const MER_FEATURES: [number, number, number, number, number][] = [
 
 export function heightAt(x: number, z: number): number {
   const { world, seed } = terrainState;
+  const ds = demSample(x, z);
+  if (ds) {
+    const micro = microHeight(world, seed, x, z);
+    if (ds.w >= 0.999) return ds.h + micro;
+    return ds.w * (ds.h + micro) + (1 - ds.w) * fullProcedural(world, seed, x, z);
+  }
+  return fullProcedural(world, seed, x, z);
+}
+
+/** Procedural micro field: sub-wavelength texture + documented site features that
+ *  survive WITH the DEM (anything below the DEM's ~4x-resampled ground sample). */
+function microHeight(world: TerrainWorld, seed: number, x: number, z: number): number {
   if (world === "mars") {
-    let h = (fbm(x / 3200, z / 3200, 4, seed) - 0.5) * 18;
-    h += (fbm(x / 160, z / 160, 3, seed + 3) - 0.5) * 2.2;
+    let m = (fbm(x / 160, z / 160, 3, seed + 3) - 0.5) * 2.2;
     // wind ripples
     const w = fbm(x / 600, z / 600, 2, seed + 9) * 6;
-    h += 0.16 * Math.sin((x * 0.74 + z * 0.31) / 3.2 + w) * (0.4 + fbm(x / 90, z / 90, 2, seed + 11));
-    h += craters(x, z, 55, 0.2, seed + 20, 0.22);
+    m += 0.16 * Math.sin((x * 0.74 + z * 0.31) / 3.2 + w) * (0.4 + fbm(x / 90, z / 90, 2, seed + 11));
+    m += craters(x, z, 55, 0.2, seed + 20, 0.22);
+    if (seed === 7) for (const f of MER_FEATURES) m += bowl(x, z, f[0], f[1], f[2], f[3], f[4]);
+    return m;
+  }
+  return (fbm(x / 140, z / 140, 3, seed + 3) - 0.5) * 3.5 + craters(x, z, 28, 0.2, seed + 20, 0.5) + craters(x, z, 110, 0.2, seed + 30, 0.5);
+}
+
+/** Procedural macro field: basin-scale noise + crater cells + Endeavour rim.
+ *  Dropped inside the DEM core (the real relief is the measured terrain there). */
+function macroHeight(world: TerrainWorld, seed: number, x: number, z: number): number {
+  if (world === "mars") {
+    let h = (fbm(x / 3200, z / 3200, 4, seed) - 0.5) * 18;
     h += craters(x, z, 260, 0.2, seed + 30, 0.3);
     h += craters(x, z, 1400, 0.14, seed + 40, 0.4);
     if (seed === 7) {
-      for (const f of MER_FEATURES) h += bowl(x, z, f[0], f[1], f[2], f[3], f[4]);
       // Endeavour crater rim (≈22 km) — centre placed so the rim passes through the documented waypoints
       const d = Math.hypot(x - 15800, z - 19500) / 11000;
       if (d < 1.4) {
@@ -89,14 +119,18 @@ export function heightAt(x: number, z: number): number {
     return h;
   }
   let h = (fbm(x / 3000, z / 3000, 4, seed) - 0.5) * 60;
-  h += (fbm(x / 140, z / 140, 3, seed + 3) - 0.5) * 3.5;
-  h += craters(x, z, 28, 0.2, seed + 20, 0.5);
-  h += craters(x, z, 110, 0.2, seed + 30, 0.5);
   h += craters(x, z, 480, 0.17, seed + 40, 0.5);
   h += craters(x, z, 2400, 0.13, seed + 50, 0.55);
-  // keep the immediate landing area gentle
-  const k = Math.min(1, Math.hypot(x, z) / 90);
-  return h * (0.35 + 0.65 * k * k);
+  return h;
+}
+
+function fullProcedural(world: TerrainWorld, seed: number, x: number, z: number): number {
+  // bit-exact with the legacy single-sum field (k scales the whole moon sum)
+  if (world === "moon") {
+    const k = Math.min(1, Math.hypot(x, z) / 90);
+    return (microHeight(world, seed, x, z) + macroHeight(world, seed, x, z)) * (0.35 + 0.65 * k * k);
+  }
+  return microHeight(world, seed, x, z) + macroHeight(world, seed, x, z);
 }
 
 export function slopeAt(x: number, z: number) {
