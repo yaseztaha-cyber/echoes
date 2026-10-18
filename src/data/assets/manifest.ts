@@ -493,3 +493,112 @@ export function validateManifest(list: GlobeAsset[]): string[] {
   }
   return problems;
 }
+
+/* -------------------------------------------------------------------------
+ * Phase 9 — site DEM patches. Real elevation (LOLA / MOLA) at the 9 mission
+ * sites, extracted at build time by scripts/build-site-dems.py and shipped as
+ * 256x256 16-bit grayscale PNGs (src/assets/terrain/dem). Height data, not
+ * color imagery: the sRGB validation above therefore does not apply here.
+ * Vertical: Int16 metres, 1 m/step (patch-relative, see hOffsetM in
+ * demCatalog.ts). Horizontal: 0.5-deg patch bilinearly resampled from 128-ppd
+ * native grids — a 4x upsample of the real ground sample distance, stated per
+ * record. Macro relief comes from the DEM; sub-resolution detail stays
+ * procedural and is labelled in the UI (DataResolution).
+ * ---------------------------------------------------------------------- */
+
+export interface SiteDemAsset {
+  id: string;
+  artifactId: string;
+  world: "moon" | "mars";
+  class: string;
+  epoch: string;
+  org: string;
+  product: string;
+  sourceUrl: string;
+  sourceFile: string;
+  nativePpd: number;
+  nativeGspM: number;
+  deliveredGspM: number;
+  patchHalfDeg: number;
+  deliveredPx: [number, number];
+  file: string;
+  processing: string;
+  gaps: string;
+  credit: string;
+  vertical: string;
+  status: "APPROVED";
+}
+
+const LOLA_SITE = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_128.img";
+const MOLA = (tile: string) =>
+  `https://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg128/${tile}.img`;
+
+function demRecord(
+  artifactId: string,
+  world: "moon" | "mars",
+  tile: string,
+  product: string,
+  nativeGspM: number,
+  deliveredGspM: number,
+): SiteDemAsset {
+  return {
+    id: `dem-${artifactId}`,
+    artifactId,
+    world,
+    class: "OBSERVED (laser altimeter DEM, build-time bilinear resample)",
+    epoch: world === "moon" ? "LRO LOLA GDR LDEM_128 V1.0 (LRO mission data)" : "MGS MOLA MEGDR 128-ppd V1.0 (MGS mission data)",
+    org: world === "moon" ? "NASA / MIT / GSFC (LRO LOLA team)" : "NASA / GSFC (MGS MOLA team)",
+    product,
+    sourceUrl: world === "moon" ? LOLA_SITE : MOLA(tile),
+    sourceFile: world === "moon" ? "ldem_128.img (+.lbl)" : `${tile}.img (+.lbl)`,
+    nativePpd: 128,
+    nativeGspM,
+    deliveredGspM,
+    patchHalfDeg: 0.25,
+    deliveredPx: [256, 256],
+    file: `dem-${artifactId}.png`,
+    processing: "HTTP-range row-window extraction, bilinear resample to 256x256, Int16 metres (1 m/step, per-patch offset in demCatalog.ts); 16-bit grayscale PNG",
+    gaps: "Macro relief only above ~59 m (moon) / ~116 m (mars) delivered ground sample; sub-resolution site detail remains procedural and is labelled as such in UI",
+    credit: "NASA / LOLA / MOLA teams (PDS Geosciences)",
+    vertical: "Int16, 1 m quantization; patch-relative to floor(min) - 128 m offset",
+    status: "APPROVED",
+  };
+}
+
+export const SITE_DEM_MANIFEST: SiteDemAsset[] = [
+  demRecord("apollo-12", "moon", "", "LOLA GDR LDEM_128 (LRO-L-LOLA-4-GDR-V1.0)", 236.9, 59.5),
+  demRecord("apollo-14", "moon", "", "LOLA GDR LDEM_128 (LRO-L-LOLA-4-GDR-V1.0)", 236.9, 59.5),
+  demRecord("apollo-15", "moon", "", "LOLA GDR LDEM_128 (LRO-L-LOLA-4-GDR-V1.0)", 236.9, 59.5),
+  demRecord("apollo-16", "moon", "", "LOLA GDR LDEM_128 (LRO-L-LOLA-4-GDR-V1.0)", 236.9, 59.5),
+  demRecord("apollo-17", "moon", "", "LOLA GDR LDEM_128 (LRO-L-LOLA-4-GDR-V1.0)", 236.9, 59.5),
+  demRecord("sojourner", "mars", "megr44n270hb", "MOLA MEGDR 128-ppd radial tile megr44n270hb (MGS-M-MOLA-5-MEGDR-L3-V1.0)", 463.1, 116.2),
+  demRecord("spirit", "mars", "megr00n090hb", "MOLA MEGDR 128-ppd radial tile megr00n090hb (MGS-M-MOLA-5-MEGDR-L3-V1.0)", 463.1, 116.2),
+  demRecord("opportunity", "mars", "megr00n270hb", "MOLA MEGDR 128-ppd radial tile megr00n270hb (MGS-M-MOLA-5-MEGDR-L3-V1.0)", 463.1, 116.2),
+  demRecord("insight", "mars", "megr44n090hb", "MOLA MEGDR 128-ppd radial tile megr44n090hb (MGS-M-MOLA-5-MEGDR-L3-V1.0)", 463.1, 116.2),
+];
+
+/** Structural validation for DEM records (height data, not color imagery). */
+export function validateDemManifest(list: SiteDemAsset[]): string[] {
+  const problems: string[] = [];
+  const required: (keyof SiteDemAsset)[] = [
+    "id", "artifactId", "world", "class", "epoch", "org", "product", "sourceUrl", "sourceFile",
+    "nativePpd", "nativeGspM", "deliveredGspM", "patchHalfDeg", "deliveredPx", "file",
+    "processing", "gaps", "credit", "vertical", "status",
+  ];
+  for (const m of list) {
+    for (const k of required) {
+      const v = m[k];
+      if (v === undefined || v === null || v === "" || (Array.isArray(v) && v.some((n) => !(n > 0)))) {
+        problems.push(`${m.id || m.artifactId}: missing/invalid '${k}'`);
+      }
+    }
+    if (m.sourceUrl && !m.sourceUrl.startsWith("https://")) problems.push(`${m.id}: sourceUrl not https`);
+    // resample factor: native GSP / delivered GSP must stay inside [1..5] —
+    // record states ~4x bilinear upsample; anything beyond it would be fake detail
+    const factor = m.nativeGspM / m.deliveredGspM;
+    if (!(factor >= 1 && factor <= 5)) {
+      problems.push(`${m.id}: delivered/native sample factor ${factor.toFixed(2)} outside [1..5]`);
+    }
+  }
+  return problems;
+}
