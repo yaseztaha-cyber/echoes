@@ -14,7 +14,8 @@ import { ContextPanel } from "@/components/planet/ContextPanels";
 import { InstrumentPanel, Compare, Decode } from "@/components/artifact/InstrumentPanel";
 import { ScienceChain, SignalLink } from "@/components/science/ScienceChain";
 import { Archive, GroundTruth, Search, Film } from "@/components/sources/Overlays";
-import { requestPhoto } from "@/state/store";
+import { requestPhoto, dismissVignette } from "@/state/store";
+import { VIGNETTES as MISSION_VIGNETTES } from "@/data/vignettes";
 import { MissionLab } from "@/components/lab/MissionLab";
 import { Remains, Finale } from "@/components/mission/Remains";
 import { Evidence } from "@/components/evidence/EvidenceTrace";
@@ -328,6 +329,33 @@ function Flash() {
   return <div key={f} className="anim-flash pointer-events-none absolute inset-0 z-30 bg-bone" />;
 }
 
+/** Arrival vignette: one sourced line from the real mission. Session-once per site. */
+function MissionVignette() {
+  const id = useEcho((s) => s.vignetteId);
+  useEffect(() => {
+    if (!id) return;
+    const t = setTimeout(dismissVignette, 18000);
+    return () => clearTimeout(t);
+  }, [id]);
+  if (!id) return null;
+  const v = MISSION_VIGNETTES[id];
+  if (!v) return null;
+  return (
+    <div className="pointer-events-auto module anim-up absolute bottom-[168px] left-1/2 z-20 max-w-md -translate-x-1/2 border-l-2 border-l-cyan p-4 px-5 pb-3.5 max-md:inset-x-4 max-md:max-w-none">
+      <div className="flex items-center justify-between gap-3">
+        <span className="label text-cyan">MISSION VIGNETTE</span>
+        <button className="label text-slate hover:text-bone" onClick={dismissVignette} aria-label="Dismiss vignette">✕</button>
+      </div>
+      <blockquote className="mt-2 text-[14px] italic leading-relaxed text-bone">“{v.quote}”</blockquote>
+      <div className="mono mt-2 text-[10px] tracking-[0.14em] text-amber">{v.who}</div>
+      <div className="mono mt-0.5 flex flex-wrap items-center justify-between gap-2 text-[9.5px] tracking-[0.12em] text-slate">
+        <span>{v.when}</span>
+        <span className="text-[9px] text-ash">{v.source}</span>
+      </div>
+    </div>
+  );
+}
+
 function Toasts() {
   const toasts = useEcho((s) => s.toasts);
   return (
@@ -375,6 +403,7 @@ export function Hud() {
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
       <Vignette />
+      <MissionVignette />
       <Banner />
       <Arrival />
       <SignalLink />

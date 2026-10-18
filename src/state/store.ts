@@ -90,6 +90,10 @@ export interface EchoState {
   photoReq: number;
   /** Key of the last frame for the shutter-flash overlay. */
   flash: number;
+  /** Site vignette currently on stage (artifact id) — session-scoped, never persisted. */
+  vignetteId: string | null;
+  /** Vignettes already shown this session (once per site). */
+  vignettesSeen: string[];
 }
 
 export const useEcho = create<EchoState>(() => ({
@@ -141,6 +145,8 @@ export const useEcho = create<EchoState>(() => ({
   photos: [],
   photoReq: 0,
   flash: 0,
+  vignetteId: null,
+  vignettesSeen: [],
 }));
 
 let bannerKey = 0;
@@ -191,3 +197,12 @@ export const addPhoto = (url: string, caption: string) => {
 };
 
 export const clearPhotos = () => useEcho.setState({ photos: [] });
+
+/** Show a site vignette on arrival — once per site per session. No data = silent. */
+export const queueVignette = (artifactId: string) => {
+  const s = useEcho.getState();
+  if (s.vignettesSeen.includes(artifactId)) return;
+  useEcho.setState({ vignetteId: artifactId, vignettesSeen: [...s.vignettesSeen, artifactId] });
+};
+
+export const dismissVignette = () => useEcho.setState({ vignetteId: null });

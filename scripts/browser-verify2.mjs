@@ -85,6 +85,10 @@ try {
     await clickText(page, "DESCEND TO SITE", false);
     console.log("clicked: DESCEND TO SITE");
     await sleep(45000);
+    const vig = await page.evaluate(() => document.body.innerText.includes("MISSION VIGNETTE") && document.body.innerText.includes("small one for Neil"));
+    if (!vig) throw new Error("no arrival vignette shown");
+    console.log("vignette shown at arrival");
+    await page.screenshot({ path: `${outDir}/13a-vignette.png` });
     results.apollo12Surface = await measure(page, "apollo12-surface");
     await page.screenshot({ path: `${outDir}/13-apollo12-surface.png` });
     console.log("site url:", page.url());

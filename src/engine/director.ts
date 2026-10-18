@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useEcho, showBanner, persist, type CamMode } from "@/state/store";
-import { markVisit } from "@/state/store";
+import { markVisit, queueVignette } from "@/state/store";
 import { cam, fly, flyTo, setView, setFollow, wait, smoother, easeInOut, easeOut } from "./cameras/controller";
 import { clock, configureClock, setT } from "./time/clock";
 import { bodyById, bodyPos } from "./frames/frames";
@@ -98,6 +98,7 @@ export async function goVoyager() {
   await flyTo(() => vp().add(off), vp, 9, smoother);
   setFollow(vp);
   markVisit("voyager1", "VOYAGER 1 · INTERSTELLAR SPACECRAFT");
+  queueVignette("voyager1");
 }
 
 function exitVoyager() {
@@ -273,6 +274,7 @@ export async function descendToSite(id: string, startT?: number) {
   await veil(false, "dark", 800);
   await arrive(art);
   markVisit(id, art.designation || art.name);
+  queueVignette(id);
   saveLast(art);
 }
 
