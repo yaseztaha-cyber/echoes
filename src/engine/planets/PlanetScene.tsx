@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { Atmosphere, EarthLayers, Globe } from "./Globe";
-import { HI_URLS } from "@/engine/textures/manager";
+import { HI_TIERS } from "@/engine/textures/manager";
 import { GlobeKind } from "@/data/assets/manifest";
 import { useHiMap } from "@/engine/textures/hiGlobe";
 import { Stars } from "@/engine/world/Stars";
@@ -99,7 +99,7 @@ function PlanetTelemetry({ world }: { world: GlobeKind }) {
 
 /** Planet-scene globe with the same hi-res upgrade as the solar view. */
 function PlanetGlobe({ world }: { world: GlobeKind }) {
-  const hiMap = useHiMap(world, GLOBE_R, HI_URLS[world as keyof typeof HI_URLS] ?? null, (cam) => cam.position.length());
+  const hiMap = useHiMap(world, GLOBE_R, HI_TIERS[world] ?? null, (cam) => cam.position.length());
   return <Globe kind={world} radius={GLOBE_R} detail hiMap={hiMap} />;
 }
 

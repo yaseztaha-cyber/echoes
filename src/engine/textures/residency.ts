@@ -167,7 +167,12 @@ export function createResidencyManager<T>(opts: {
     return null;
   }
 
-  return { request, pin, acquire, release, cancel, stats, get };
+  /** Debug introspection: per-entry state (harness probes + DevPanel). */
+  function describe(): Array<{ url: string; status: Entry<T>["status"]; bytes: number }> {
+    return [...entries.values()].map((e) => ({ url: e.url, status: e.status, bytes: e.bytes }));
+  }
+
+  return { request, pin, acquire, release, cancel, stats, get, describe };
 }
 
 export type ResidencyManager<T> = ReturnType<typeof createResidencyManager<T>>;

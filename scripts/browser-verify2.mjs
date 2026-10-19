@@ -82,6 +82,12 @@ try {
   console.log("ambience: moon orbit = orbit");
   await page.screenshot({ path: `${outDir}/10-moon-planet.png` });
   console.log("planet scene url:", page.url());
+  // Phase R1: the moon KTX2 hi tier must be resident by now (8K stream mounted)
+  const ktx = await page.evaluate(() => window.__echoesTexStats ? window.__echoesTexStats() : null);
+  const moonTier = ktx?.entries?.find?.((e) => e.url === "/tex-hi/moon.ktx2" && e.status === "ready");
+  if (!moonTier) throw new Error(`moon KTX2 tier not resident: ${JSON.stringify(ktx)}`);
+  results.ktx = { moon: moonTier.bytes, total: ktx.bytesEstimate };
+  console.log(`KTX tiers: moon tier resident (${(moonTier.bytes / 1e6).toFixed(2)} MB), total ${(ktx.bytesEstimate / 1e6).toFixed(2)} MB`);
 
   // into an apollo site: descend, wait out the approach cinematic, then measure ON the surface
   try {

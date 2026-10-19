@@ -12,6 +12,7 @@ import { useEcho, persist } from "@/state/store";
 import { adaptive } from "./performance/adaptive";
 import { createDynamicRes } from "./performance/resolution";
 import { globeResidency } from "./textures/manager";
+import { initKtx } from "./textures/ktx";
 import { artifactById } from "@/data/artifacts";
 import { CaptureAgent } from "./CaptureAgent";
 
@@ -146,6 +147,7 @@ export function World() {
         onCreated={({ gl, scene }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.05;
+          initKtx(gl);
           // Neutral studio reflections so PBR metals (official spacecraft
           // models) read as metal instead of black. Low intensity: rough
           // planetary surfaces are barely affected; lights still dominate.

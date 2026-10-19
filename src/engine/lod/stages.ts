@@ -55,3 +55,19 @@ export function wantHiRes(stage: DetailStage, quality: Quality, hiAvailable: boo
 export function prefetchHiRes(stage: DetailStage, quality: Quality, hiAvailable: boolean): boolean {
   return hiAvailable && stage === "B" && hiResAllowed(quality);
 }
+
+/**
+ * Rich-Universe Phase 1 — tier state machine above the A/B/C stages.
+ * "hi" = the KTX2 hi tier is mounted (near bodies); "none" = bundled map only
+ * (far bodies, which is exactly the "far at 1080, near at 4K/8K" contract).
+ * Hysteresis bounds differ so a body hovering at the boundary cannot flap.
+ */
+export type HiTierState = "none" | "hi";
+
+const TIER_UP = 0.12; // upgrade once the disc covers ≥ % of screen height
+const TIER_DOWN = 0.07; // downgrade only when it falls below
+
+export function selectHiTier(prev: HiTierState, fraction: number): HiTierState {
+  if (prev === "none") return fraction >= TIER_UP ? "hi" : "none";
+  return fraction < TIER_DOWN ? "none" : "hi";
+}

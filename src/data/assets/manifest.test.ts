@@ -3,9 +3,11 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   GLOBE_MANIFEST,
+  HI_TIER_MANIFEST,
   SITE_DEM_MANIFEST,
   globeAssetFor,
   validateDemManifest,
+  validateHiTierManifest,
   validateManifest,
 } from "./manifest";
 import { SITE_DEM_CATALOG } from "../terrain/demCatalog";
@@ -57,10 +59,44 @@ describe("globe asset manifest", () => {
     }
   });
 
-  it("hi-res runtime delivery is disabled (spec §2: bundled ≤2048px maps only)", () => {
-    const hi = GLOBE_MANIFEST.filter((m) => "hiresUrl" in m);
-    expect(hi).toEqual([]);
-    expect(existsSync(join(__dirname, "..", "..", "..", "public", "tex-hi"))).toBe(false);
+  it("hi tiers hold real, on-disk KTX2 streams (approved user change, supersedes the old bundled-only rule)", () => {
+    // public/tex-hi exists now by design; keep the no-upcaling and no-bundling bars.
+    const hiDir = join(__dirname, "..", "..", "..", "public", "tex-hi");
+    expect(existsSync(hiDir)).toBe(true);
+    for (const m of HI_TIER_MANIFEST) {
+      const p = join(hiDir, m.file);
+      expect(existsSync(p), p).toBe(true);
+      const size = statSync(p).size;
+      // ETC1S keeps compressed bytes ~ GPU bytes; ranges guard against accidentally
+      // packing an upscaled or truncated file that still carries the old name
+      expect(size).toBeGreaterThan(m.bytes * 0.9);
+      expect(size).toBeLessThan(m.bytes * 1.1);
+    }
+  });
+
+  it("hi tier provenance validates and never upscales", () => {
+    expect(validateHiTierManifest(HI_TIER_MANIFEST)).toEqual([]);
+    expect(HI_TIER_MANIFEST.map((m) => m.body).sort()).toEqual(["earth", "mars", "moon"]);
+    expect(HI_TIER_MANIFEST.every((m) => m.streamUrl.startsWith("/tex-hi/"))).toBe(true);
+    for (const m of HI_TIER_MANIFEST) {
+      expect(m.deliveredPx[0]).toBeLessThanOrEqual(m.sourcePx[0]);
+      expect(m.deliveredPx[1]).toBeLessThanOrEqual(m.sourcePx[1]);
+    }
+  });
+
+  it("hi tiers cover exactly the top-tier worlds and match manager wiring", () => {
+    // The loader keys: solar scene by globe kind, planet scene by world.
+    // These three are the RS-lite set shipped in Phase 1; others stay on bundled maps.
+    const bodies = new Set(HI_TIER_MANIFEST.map((m) => m.body));
+    expect(bodies.has("earth")).toBe(true);
+    expect(bodies.has("moon")).toBe(true);
+    expect(bodies.has("mars")).toBe(true);
+    for (const m of HI_TIER_MANIFEST) {
+      expect(m.status).toBe("APPROVED");
+      expect(m.format).toContain("KTX2");
+      expect(m.class).not.toBe("");
+      expect(m.gaps).not.toBe("");
+    }
   });
 
   it("every entry carries an explicit scientific classification", () => {

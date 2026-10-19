@@ -6,7 +6,7 @@ import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_V
 import { Atmosphere, BandedGlobe, EarthLayers, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
-import { HI_URLS } from "@/engine/textures/manager";
+import { HI_TIERS } from "@/engine/textures/manager";
 import { useHiMap } from "@/engine/textures/hiGlobe";
 import sunUrl from "@/assets/tex/sun.jpg";
 import { clock } from "@/engine/time/clock";
@@ -72,8 +72,8 @@ function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {
   const sunFrom = () => sun;
   const venusView = useEcho((s) => s.venusView);
   const kind = b.id === "venus" && venusView === "clouds" ? "venus_clouds" : b.tex;
-  // Phase 4: hi-res upgrade only for bodies with runtime 4K delivery.
-  const hiMap = useHiMap(b.id, b.radius, kind && HI_URLS[kind] ? HI_URLS[kind] : null);
+  // Phase 4: hi-res upgrade only for bodies with runtime KTX2 tiers.
+  const hiMap = useHiMap(b.id, b.radius, kind ? HI_TIERS[kind] ?? null : null);
   return (
     <>
       {kind ? (

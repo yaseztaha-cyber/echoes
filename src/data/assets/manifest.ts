@@ -602,3 +602,125 @@ export function validateDemManifest(list: SiteDemAsset[]): string[] {
   }
   return problems;
 }
+
+/* -------------------------------------------------------------------------
+ * Rich-Universe Phase 1 — KTX2 streaming hi tiers. Real NASA imagery at (or
+ * POT-downsampled from) native resolution, transcoded offline by
+ * scripts/fetch-hi-textures.mjs to GPU-compressed ETC1S/BasisLZ .ktx2 files in
+ * public/tex-hi/. NEVER bundled: single-file index.html stays text-only; tiers
+ * stream on demand when a body fills the screen (lod/stages.ts tier machine).
+ * The anachronism test "hi-res disabled (spec §2)" in manifest.test.ts is
+ * superseded by user approval: no upscaling rule stays absolute.
+ * ---------------------------------------------------------------------- */
+
+export interface GlobeHiTierAsset {
+  id: string;
+  body: string;
+  tier: "max";
+  class: string;
+  epoch: string;
+  org: string;
+  product: string;
+  sourceUrl: string;
+  sourcePx: [number, number];
+  deliveredPx: [number, number];
+  streamUrl: string; // starts with /tex-hi/, served from public, never bundled
+  file: string;
+  bytes: number;
+  format: string;
+  processing: string;
+  gaps: string;
+  credit: string;
+  orientation: string;
+  status: "APPROVED";
+}
+
+export const HI_TIER_MANIFEST: GlobeHiTierAsset[] = [
+  {
+    id: "earth-4k-ktx2",
+    body: "earth",
+    tier: "max",
+    class: "ENHANCED (same BMNG topo+bathy source as the bundled map)",
+    epoch: "December 2004 base composite",
+    org: "NASA Earth Observatory",
+    product: "Blue Marble Next Generation Topography+Bathymetry 4096x2048 KTX2 stream tier",
+    sourceUrl: "https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg",
+    sourcePx: [5400, 2700],
+    deliveredPx: [4096, 2048],
+    streamUrl: "/tex-hi/earth.ktx2",
+    file: "earth.ktx2",
+    bytes: 911_527,
+    format: "KTX2 ETC1S/BasisLZ (GPU-compressed; runtime transcode via Basis universal, mips included)",
+    processing: "toktx --encode etc1s c4 q220 --resize 4096x2048 (KTX-Software 4.4.2). POT downsample of the 5400px native mosaic, never an upsample",
+    gaps: "Same December-composite caveats as the bundled map; tier serves color depth, not newer data",
+    credit: "NASA Earth Observatory / Blue Marble",
+    orientation: "Standard equirectangular (source as published)",
+    status: "APPROVED",
+  },
+  {
+    id: "moon-8k-ktx2",
+    body: "moon",
+    tier: "max",
+    class: "MOSAIC (white-balanced LROC WAC bands; polar fill interpolated)",
+    epoch: "LROC 2009-; SVS 2025 reprocessing used as-is at native px",
+    org: "NASA Scientific Visualization Studio (LRO camera teams)",
+    product: "CGI Moon Kit color map, 8192x4096 KTX2 stream tier",
+    sourceUrl: "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_8k.tif",
+    sourcePx: [8192, 4096],
+    deliveredPx: [8192, 4096],
+    streamUrl: "/tex-hi/moon.ktx2",
+    file: "moon.ktx2",
+    bytes: 4_370_869,
+    format: "KTX2 ETC1S/BasisLZ (GPU-compressed; runtime transcode via Basis universal, mips included)",
+    processing: "WIC 16-bit tif -> RGB png, toktx --encode etc1s c4 q220 at native 8192x4096 (no resize needed)",
+    gaps: "Same SVS polar-fill caveats as the bundled map (albedo fill beyond ±70 deg); ETC1S quantization may slightly soften faint linework",
+    credit: "NASA SVS / LRO / Arizona State University",
+    orientation: "Standard equirectangular, centered 0 deg lon (matches bundled map)",
+    status: "APPROVED",
+  },
+  {
+    id: "mars-4k-ktx2",
+    body: "mars",
+    tier: "max",
+    class: "MOSAIC (MOLA topography composition — elevation-colored, ALLOWED color convention differs from the bundled Viking map)",
+    epoch: "MOLA 1997-2001; SVS GMM-3 era composition",
+    org: "NASA Scientific Visualization Studio (MOLA science team)",
+    product: "MOLA cylindrical color topography, 4096x2048 KTX2 stream tier",
+    sourceUrl: "https://svs.gsfc.nasa.gov/vis/a000000/a004400/a004436/mars_cyl_topo2.jpg",
+    sourcePx: [5760, 2880],
+    deliveredPx: [4096, 2048],
+    streamUrl: "/tex-hi/mars.ktx2",
+    file: "mars.ktx2",
+    bytes: 1_461_575,
+    format: "KTX2 ETC1S/BasisLZ (GPU-compressed; runtime transcode via Basis universal, mips included)",
+    processing: "toktx --encode etc1s c4 q220 --resize 4096x2048 (POT downsample of the 5760px native map)",
+    gaps: "Elevation-derived coloring, not Viking photo-mosaic color: the 4K class therefore looks different from the bundled 2K surface map, and DataResolution must state this",
+    credit: "NASA SVS / MOLA",
+    orientation: "Standard equirectangular (source as published)",
+    status: "APPROVED",
+  },
+];
+
+/** Structural validation for the streaming hi tiers (imagery record — same honesty bar). */
+export function validateHiTierManifest(list: GlobeHiTierAsset[]): string[] {
+  const problems: string[] = [];
+  const required: (keyof GlobeHiTierAsset)[] = [
+    "id", "body", "tier", "class", "epoch", "org", "product", "sourceUrl", "sourcePx",
+    "deliveredPx", "streamUrl", "file", "bytes", "format", "processing", "gaps", "credit",
+    "orientation", "status",
+  ];
+  for (const m of list) {
+    for (const k of required) {
+      const v = m[k];
+      if (v === undefined || v === null || v === "" || (Array.isArray(v) && v.some((n) => !(n > 0)))) {
+        problems.push(`${m.id}: missing/invalid '${k}'`);
+      }
+    }
+    if (m.sourceUrl && !m.sourceUrl.startsWith("https://")) problems.push(`${m.id}: sourceUrl not https`);
+    if (m.streamUrl && !m.streamUrl.startsWith("/tex-hi/")) problems.push(`${m.id}: streamUrl outside /tex-hi/`);
+    if (m.deliveredPx[0] > m.sourcePx[0] || m.deliveredPx[1] > m.sourcePx[1]) {
+      problems.push(`${m.id}: delivered px exceeds source px — upscaling forbidden`);
+    }
+  }
+  return problems;
+}

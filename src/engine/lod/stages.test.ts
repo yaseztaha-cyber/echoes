@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { screenFraction, selectStage, wantHiRes, prefetchHiRes, hiResAllowed } from "./stages";
+import { screenFraction, selectStage, wantHiRes, prefetchHiRes, hiResAllowed, selectHiTier } from "./stages";
 
 describe("screen fraction", () => {
   it("grows as the camera closes in", () => {
@@ -52,5 +52,22 @@ describe("hi-res gating", () => {
     expect(prefetchHiRes("B", "medium", true)).toBe(false);
     expect(prefetchHiRes("C", "high", true)).toBe(false);
     expect(prefetchHiRes("A", "ultra", true)).toBe(false);
+  });
+});
+
+describe("KTX2 tier machine (rich-universe)", () => {
+  it("stays on the bundled map for far bodies", () => {
+    expect(selectHiTier("none", 0.001)).toBe("none");
+    expect(selectHiTier("none", 0.05)).toBe("none");
+  });
+  it("mounts the hi tier when the body fills the screen", () => {
+    expect(selectHiTier("none", 0.12)).toBe("hi");
+    expect(selectHiTier("hi", 0.9)).toBe("hi");
+  });
+  it("does not flap at the boundary", () => {
+    // upgrades at 0.12 but only falls back below 0.07
+    expect(selectHiTier("hi", 0.08)).toBe("hi");
+    expect(selectHiTier("hi", 0.06)).toBe("none");
+    expect(selectHiTier("none", 0.11)).toBe("none");
   });
 });
