@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { STAR_COUNT, STAR_MAG_MAX } from "@/data/stars/starCatalog";
 import {
   buildStarGeometryData,
+  buildStarGeometryFromFlat,
   colorIndexToKelvin,
   decodeStars,
   kelvinToRgb,
   starBrightness,
   starDirection,
 } from "@/engine/world/starsData";
+import { deepStarCount } from "@/engine/world/starsDeep";
 
 describe("star catalogue (HYG v4.4 excerpt)", () => {
   const data = decodeStars();
@@ -130,5 +132,34 @@ describe("star property mapping", () => {
     expect(positions.length).toBe(300);
     expect(sizes[0]).toBeGreaterThan(3.5);
     for (const s of sizes) expect(s).toBeLessThanOrEqual(3.9);
+  });
+});
+
+describe("streamed deep catalogue builder (rich-universe phase)", () => {
+  it("maps arbitrary flat payloads through the same astronomy pipeline", () => {
+    const flat = new Float32Array([101.287, -16.716, -1.44, 0.0, 10.0, 20.0, 8.5, 1.6]);
+    const { positions, colors, sizes } = buildStarGeometryFromFlat(flat, Infinity, "deep");
+    expect(positions.length).toBe(6);
+    const out: [number, number, number] = [0, 0, 0];
+    starDirection(101.287, -16.716, out);
+    expect(positions[0]).toBeCloseTo(out[0], 5);
+    expect(positions[1]).toBeCloseTo(out[1], 5);
+    expect(positions[2]).toBeCloseTo(out[2], 5);
+    // deep profile: faint brightness cap, small sizes — the sky's outer texture
+    expect(sizes[0]).toBeGreaterThan(0.7);
+    expect(sizes[0]).toBeLessThanOrEqual(1.7);
+    const b0 = Math.hypot(colors[0], colors[1], colors[2]);
+    expect(b0).toBeLessThan(1.0); // deep profile caps at 0.5 x rgb-norm (~1.6)
+    expect(b0).toBeGreaterThan(0.5);
+    const b1 = Math.hypot(colors[3], colors[4], colors[5]);
+    expect(b1).toBeLessThan(b0);
+    // brightness floor keeps even mag 8.5+ readable at display gamma
+    expect(b1).toBeGreaterThan(0.02);
+  });
+
+  it("deepStarCount floors malformed payload lengths", () => {
+    expect(deepStarCount(new Float32Array(9))).toBe(2);
+    expect(deepStarCount(new Float32Array(8))).toBe(2);
+    expect(deepStarCount(new Float32Array(0))).toBe(0);
   });
 });

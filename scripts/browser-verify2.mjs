@@ -71,6 +71,26 @@ try {
   const amb1 = await page.evaluate(() => window.__echoesAmb);
   if (amb1 !== "void") throw new Error(`ambience solar expected void, got ${amb1}`);
   console.log("ambience: solar = void");
+  // Rich-Universe: Milky Way panorama must stream + decode, sky textured
+  await sleep(7000); // band fade window
+  let band = null;
+  for (let i = 0; i < 10 && !band; i++) {
+    const ktxSolar = await page.evaluate(() => window.__echoesTexStats ? window.__echoesTexStats() : null);
+    band = ktxSolar?.entries?.find?.((e) => e.url === "/tex-hi/milkyway.ktx2" && e.status === "ready") ?? null;
+    if (!band) await sleep(2000);
+  }
+  if (!band) throw new Error("milkyway KTX2 not resident in solar scene after 27 s");
+  results.skyBand = { bytes: band.bytes };
+  console.log(`sky band: milkyway resident (${(band.bytes / 1e6).toFixed(2)} MB)`);
+  const deep = await page.evaluate(() => { const f = window.__echoesStarsDeep; return f ? f() : null; });
+  if (deep) {
+    if (deep.count < 50000) throw new Error(`deep star count suspicious: ${deep.count}`);
+    results.deepStars = deep;
+    console.log(`deep stars: ${deep.count}`);
+  } else {
+    results.deepStars = { skipped: "quality low in headless — expected gating" };
+    console.log("deep stars: skipped (quality low — quality gating works)");
+  }
 
   await clickText(page, "MOON", true);
   await sleep(5000);

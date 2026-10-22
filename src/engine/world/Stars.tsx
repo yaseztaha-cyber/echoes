@@ -1,20 +1,36 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { buildStarGeometryData } from "@/engine/world/starsData";
+import { buildStarGeometryData, buildStarGeometryFromFlat, type StarGeometryData } from "@/engine/world/starsData";
+import { loadDeepStars } from "@/engine/world/starsDeep";
+import { MilkyWay } from "@/engine/world/MilkyWay";
+import { useEcho } from "@/state/store";
 
 /**
- * Catalogue-backed naked-eye starfield (spec A18). Static, no motion, no dust.
- * Follows the camera so it never parallaxes. GPU-side brightness in uDim.
+ * Catalogue-backed naked-eye starfield (spec A18) + streamed deep population
+ * (rich-universe phase). Two Points layers share one shader: the bundled
+ * naked-eye set always draws; the 61k-star HYG deep excerpt streams once from
+ * public/stars-deep.bin and appends when ready (high/medium tiers; low tier
+ * never fetches — performance first, exactly the tiering contract). Sky is
+ * static, follows the camera, GPU-side brightness in uDim.
  */
+
+function makeGeometry(g: StarGeometryData): THREE.BufferGeometry {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(g.positions, 3));
+  geo.setAttribute("aColor", new THREE.BufferAttribute(g.colors, 3));
+  geo.setAttribute("aSize", new THREE.BufferAttribute(g.sizes, 1));
+  return geo;
+}
+
 export function Stars({ radius, count = Infinity, dim = 1 }: { radius: number; count?: number; dim?: number }) {
-  const ref = useRef<THREE.Points>(null);
+  const coreRef = useRef<THREE.Points>(null);
+  const deepRef = useRef<THREE.Points>(null);
+  const quality = useEcho((s) => s.quality);
+  const [deep, setDeep] = useState<StarGeometryData | null>(null);
+
   const { geo, mat } = useMemo(() => {
-    const { positions, colors, sizes } = buildStarGeometryData(count);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    g.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
-    g.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+    const g = makeGeometry(buildStarGeometryData(count));
     const m = new THREE.ShaderMaterial({
       uniforms: { uDim: { value: dim }, uPixelRatio: { value: 1 } },
       vertexShader: `
@@ -45,11 +61,33 @@ export function Stars({ radius, count = Infinity, dim = 1 }: { radius: number; c
     });
     return { geo: g, mat: m };
   }, [dim, count]);
+
+  useEffect(() => {
+    if (quality === "low") return;
+    let alive = true;
+    void loadDeepStars().then((data) => {
+      if (alive && data) setDeep(buildStarGeometryFromFlat(data, Infinity, "deep"));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [quality]);
+
+  const deepGeo = useMemo(() => (deep ? makeGeometry(deep) : null), [deep]);
+
   useFrame(({ camera, gl }) => {
     mat.uniforms.uPixelRatio.value = gl.getPixelRatio();
-    ref.current?.position.copy(camera.position);
+    coreRef.current?.position.copy(camera.position);
+    deepRef.current?.position.copy(camera.position);
   });
+
   return (
-    <points ref={ref} geometry={geo} material={mat} frustumCulled={false} renderOrder={-10} scale={radius} />
+    <>
+      <MilkyWay radius={radius} dim={dim} />
+      <points ref={coreRef} geometry={geo} material={mat} frustumCulled={false} renderOrder={-10} scale={radius} />
+      {deepGeo && (
+        <points ref={deepRef} geometry={deepGeo} material={mat} frustumCulled={false} renderOrder={-10} scale={radius} />
+      )}
+    </>
   );
 }

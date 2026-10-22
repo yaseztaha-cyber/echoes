@@ -71,6 +71,21 @@ const RECORDS = [
     convertToPng: false,
     target: null,
   },
+  {
+    id: "milkyway",
+    label: "Milky Way panorama",
+    credit: "ESO/S. Brunier — The Milky Way panorama (GigaGalaxy Zoom), CC BY 4.0",
+    urlBase: "https://cdn.eso.org",
+    probeRange: [1_000_000, 40_000_000],
+    candidates: [
+      "https://cdn.eso.org/images/large/eso0932a.jpg",
+      "https://cdn.eso.org/images/wallpaper4/eso0932a.jpg",
+    ],
+    tier: "max",
+    convertToPng: false,
+    target: null,
+    native: true, // 6000x3000 2:1 — the largest source on ESO's CDN; never upscale
+  },
 ];
 
 /** JPEG SOF0/1/2 dimension parse (no deps). Returns {w,h} or null. */
@@ -206,18 +221,38 @@ for (const rec of RECORDS) {
     results.push({ id: rec.id, skipped: true, reason: "bad source" });
     continue;
   }
-  const tgt = toPegelTarget(dims.w, dims.h, rec.target);
-  const args = [
-    "--encode", "etc1s",
-    "--clevel", "4",
-    "--qlevel", "220",
-    "--threads", "4",
-    outKtx,
-    imgFile,
-  ];
-  if (tgt) args.splice(args.length - 2, 0, "--resize", `${tgt[0]}x${tgt[1]}`);
-  console.log(`  toktx ${dims.w}x${dims.h} -> ${tgt ? `${tgt[0]}x${tgt[1]}` : "native POT"}`);
-  runToktx(args);
+  const tgt = rec.native ? null : toPegelTarget(dims.w, dims.h, rec.target);
+  const mkArgs = (resize) => {
+    const args = [
+      "--encode", "etc1s",
+      "--clevel", "4",
+      "--qlevel", "220",
+      "--threads", "4",
+      outKtx,
+      imgFile,
+    ];
+    if (resize) args.splice(args.length - 2, 0, "--resize", `${resize[0]}x${resize[1]}`);
+    return args;
+  };
+  let delivered = tgt ?? [dims.w, dims.h];
+  if (tgt) {
+    console.log(`  toktx ${dims.w}x${dims.h} -> ${tgt[0]}x${tgt[1]}`);
+    runToktx(mkArgs(tgt));
+  } else if (rec.native) {
+    console.log(`  toktx ${dims.w}x${dims.h} -> native (no upscale)`);
+    try {
+      runToktx(mkArgs(null));
+    } catch (err) {
+      // ETC1S can reject odd sizes; fall back to a power-of-two half-res downscale, never upscale.
+      let W = 1; while (W * 2 <= Math.min(dims.w, 8192)) W *= 2;
+      delivered = [W, W / 2];
+      console.log(`  native encode rejected; retrying at ${delivered[0]}x${delivered[1]} (downscale only)\n  ${String(err).slice(0, 400)}`);
+      runToktx(mkArgs(delivered));
+    }
+  } else {
+    console.log(`  toktx ${dims.w}x${dims.h} -> native POT`);
+    runToktx(mkArgs(null));
+  }
 
   const bytes = fs.statSync(outKtx).size;
   const meta = {
@@ -226,7 +261,7 @@ for (const rec of RECORDS) {
     tier: rec.tier,
     url: src,
     sourcePx: [dims.w, dims.h],
-    deliveredPx: tgt ?? [dims.w, dims.h],
+    deliveredPx: delivered,
     format: "KTX2 ETC1S BasisLZ (GPU-compressed, runtime transcode via Basis universal)",
     bytes,
     credit: rec.credit,

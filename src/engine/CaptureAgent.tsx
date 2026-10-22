@@ -35,6 +35,8 @@ export function CaptureAgent() {
   const camera = useThree((s) => s.camera);
   const last = useRef(useEcho.getState().photoReq);
   useEffect(() => {
+    const w = window as typeof window & { __echoesCam?: unknown };
+    w.__echoesCam = camera;
     return useEcho.subscribe((s) => {
       if (s.photoReq === last.current) return;
       last.current = s.photoReq;

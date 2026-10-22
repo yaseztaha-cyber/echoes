@@ -84,10 +84,23 @@ export interface StarGeometryData {
   sizes: Float32Array;
 }
 
-/** Unit directions + dpr-normalized point sizes + tinted colors for every catalogue star. */
-export function buildStarGeometryData(keep = Infinity): StarGeometryData {
-  const data = decodeStars();
-  const n = Math.min(STAR_COUNT, Math.max(1, Math.floor(keep)));
+/**
+ * Rich-universe phase — two rendering profiles over the same real catalogue rows:
+ *   "core" — naked-eye set (bundled, mag <= 6), readability floor for 6th-mag stars.
+ *   "deep" — streamed population (mag <= 8.5), faint by design so it reads as the
+ *            outermost texture of the sky instead of noise.
+ */
+export type StarProfile = "core" | "deep";
+
+function deepBrightness(mag: number): number {
+  const s = Math.pow(10, -0.4 * mag);
+  return Math.min(Math.max(Math.pow(s, 0.5) * 0.55, 0.028), 0.5);
+}
+
+/** Unit directions + dpr-normalized point sizes + tinted colors for catalogue rows. */
+export function buildStarGeometryFromFlat(data: Float32Array, keep = Infinity, profile: StarProfile = "core"): StarGeometryData {
+  const records = Math.floor(data.length / STAR_FIELD_LEN);
+  const n = Math.min(records, Math.max(1, Math.floor(keep)));
   const pos = new Float32Array(n * 3);
   const col = new Float32Array(n * 3);
   const size = new Float32Array(n);
@@ -96,11 +109,17 @@ export function buildStarGeometryData(keep = Infinity): StarGeometryData {
     const o = i * STAR_FIELD_LEN;
     starDirection(data[o], data[o + 1], dir);
     pos.set(dir, i * 3);
-    const b = starBrightness(data[o + 2]);
+    const mag = data[o + 2];
+    const b = profile === "deep" ? deepBrightness(mag) : starBrightness(mag);
     const [r, g, bl] = kelvinToRgb(colorIndexToKelvin(data[o + 3]));
     col.set([r * b, g * b, bl * b], i * 3);
-    const t = Math.max(0, Math.min(1, (5 - data[o + 2]) / 6.46));
-    size[i] = 1.2 + 2.6 * Math.pow(t, 1.5);
+    const t = Math.max(0, Math.min(1, (5 - mag) / 6.46));
+    size[i] = profile === "deep" ? 0.7 + 1.0 * Math.pow(t, 1.5) : 1.2 + 2.6 * Math.pow(t, 1.5);
   }
   return { positions: pos, colors: col, sizes: size };
+}
+
+/** Unit directions + dpr-normalized point sizes + tinted colors for every bundled catalogue star. */
+export function buildStarGeometryData(keep = Infinity): StarGeometryData {
+  return buildStarGeometryFromFlat(decodeStars(), keep, "core");
 }

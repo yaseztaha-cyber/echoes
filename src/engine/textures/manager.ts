@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createResidencyManager, type ResidencyManager } from "./residency";
 import { getKtxLoader, estimateCompressedBytes } from "./ktx";
-import { HI_TIER_MANIFEST } from "@/data/assets/manifest";
+import { HI_TIER_MANIFEST, SKY_BAND_MANIFEST } from "@/data/assets/manifest";
 
 /**
  * Shared texture residency. Budget 96 MiB; with KTX2/Basis textures the bytes
@@ -17,6 +17,17 @@ function prepTexture(t: THREE.Texture) {
   // 4× anisotropy: 8× costs significant iGPU fill-rate at close zoom
   // for imperceptible sharpness gain over 4× on these maps.
   t.anisotropy = 4;
+  // Single-mip compressed encodes (the Milky Way panorama ships one mip on
+  // purpose) are an incomplete texture under a mipmap minFilter — WebGL then
+  // samples constant black. Clamp the filter mode when there is no mip chain.
+  if ((t as THREE.CompressedTexture).isCompressedTexture === true) {
+    const mips = (t as THREE.CompressedTexture).mipmaps.length;
+    if (mips <= 1) {
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = false;
+    }
+  }
   return t;
 }
 
@@ -61,7 +72,7 @@ function streamedBytes(url: string): number | null {
 /** KTX2 textures should report their real on-disk bytes (manifest is the truth). */
 export function ktxBytesFor(url: string): number | null {
   const file = url.split("/").pop() ?? "";
-  const known = HI_TIER_MANIFEST.find((m) => m.file === file);
+  const known = HI_TIER_MANIFEST.find((m) => m.file === file) ?? SKY_BAND_MANIFEST.find((m) => m.file === file);
   return known ? known.bytes : null;
 }
 

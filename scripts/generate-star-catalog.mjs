@@ -3,28 +3,36 @@
  *
  * Source: HYG v4.4 database (Hipparcos + Yale Bright Star + Gliese merge),
  *   https://codeberg.org/astronexus/hyg  (CC BY-SA 4.0)
- * Usage: node scripts/generate-star-catalog.mjs <path/to/hyg_v44.csv.gz>
- * Output: src/data/stars/starCatalog.ts (base64 Float32Array, fields RA[deg], DEC[deg], VMAG, B-V)
+ * Usage:
+ *   node scripts/generate-star-catalog.mjs <hyg_v44.csv.gz> [--mag 6.0] [--out src/data/stars/starCatalog.ts]
+ *   --out ending in .ts   -> typed module with base64 payload (bundled catalog)
+ *   --out ending in .bin  -> raw little-endian Float32 file in public/ (streamed
+ *                            deep catalog, never bundled; fetched lazily at runtime)
+ * Output fields (Float32 x4 per record): RA[deg], DEC[deg], VMAG, B-V
  *
- * Filter, per spec A18 (naked-eye visible, restrained point count):
+ * Filter, per spec A18 (naked-eye visible, restrained point count) and the
+ * rich-universe phase (deep population, still real catalogue rows only):
  *   - 2000.0 epoch equatorial coordinates
- *   - apparent visual magnitude mag <= 6.0
+ *   - apparent visual magnitude mag <= --mag (default 6.0 naked-eye)
  *   - drops proper name "Sol" (the Sun itself)
  *   - rows without mag or ra/dec are dropped
  * Rows are sorted brightest-first so a caller may cap with a lower `count`.
  */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, statSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 
-const [, , inPath] = process.argv;
+const args = process.argv.slice(2);
+const inPath = args[0];
 if (!inPath) {
-  console.error("usage: generate-star-catalog.mjs <hyg_v44.csv.gz>");
+  console.error("usage: generate-star-catalog.mjs <hyg_v44.csv.gz> [--mag 6.0] [--out <file>]");
   process.exit(1);
 }
-
-const MAG_MAX = 6.0;
-const OUT = fileURLToPath(new URL("../src/data/stars/starCatalog.ts", import.meta.url));
+const magIdx = args.indexOf("--mag");
+const MAG_MAX = magIdx >= 0 ? Number(args[magIdx + 1]) : 6.0;
+const outIdx = args.indexOf("--out");
+const OUT = outIdx >= 0 ? fileURLToPath(new URL(`../${args[outIdx + 1]}`, import.meta.url)) : fileURLToPath(new URL("../src/data/stars/starCatalog.ts", import.meta.url));
 
 function splitCsvLine(line) {
   const out = [];
@@ -78,11 +86,22 @@ stars.sort((a, b) => a[2] - b[2]); // brightest first
 
 const flat = new Float32Array(stars.length * 4);
 stars.forEach((s, i) => flat.set(s, i * 4));
-const b64 = Buffer.from(flat.buffer, flat.byteOffset, flat.byteLength).toString("base64");
-
-mkdirSync(fileURLToPath(new URL("../src/data/stars", import.meta.url)), { recursive: true });
 
 const year = new Date().toISOString().slice(0, 10);
+
+if (OUT.endsWith(".bin")) {
+  // Streamed deep catalog: raw little-endian Float32, served from public/,
+  // fetched + decoded lazily at runtime. Never enters the single-file bundle.
+  mkdirSync(dirname(OUT), { recursive: true });
+  writeFileSync(OUT, Buffer.from(flat.buffer, flat.byteOffset, flat.byteLength));
+  const bytes = statSync(OUT).size;
+  console.log(`deep stars: ${stars.length} rows -> ${OUT} (${(bytes / 1e6).toFixed(2)} MB raw)`);
+  console.log(`min mag: ${stars[0][2]}, max mag: ${stars[stars.length - 1][2]}`);
+  process.exit(0);
+}
+
+const b64 = Buffer.from(flat.buffer, flat.byteOffset, flat.byteLength).toString("base64");
+mkdirSync(fileURLToPath(new URL("../src/data/stars", import.meta.url)), { recursive: true });
 const banner = `/**
  * Naked-eye star catalogue excerpt - GENERATED FILE, do not edit by hand.
  *

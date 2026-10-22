@@ -724,3 +724,72 @@ export function validateHiTierManifest(list: GlobeHiTierAsset[]): string[] {
   }
   return problems;
 }
+
+/* -------------------------------------------------------------------------
+ * Rich-Universe Phase 2 — Milky Way panorama. A REAL wide-field photograph
+ * (ESO GigaGalaxy Zoom, S. Brunier), not a generated skybox. Galactic
+ * equirectangular 2:1 at the largest native size ESO's CDN serves; streamed
+ * on demand from public/tex-hi like the globe tiers, never bundled. Star
+ * positions in the photo and the HYG catalogue share the J2000 frame via the
+ * fixed galactic->equatorial rotation in src/engine/world/galactic.ts.
+ * ---------------------------------------------------------------------- */
+
+export interface SkyBandAsset {
+  id: string;
+  url: string;
+  file: string;
+  bytes: number;
+  sourceUrl: string;
+  sourcePx: [number, number];
+  deliveredPx: [number, number];
+  impression: string;
+  projection: string;
+  alignment: string;
+  license: string;
+  credit: string;
+  gaps: string;
+  status: "APPROVED";
+}
+
+export const SKY_BAND_MANIFEST: SkyBandAsset[] = [
+  {
+    id: "milkyway-eso-6k-ktx2",
+    url: "/tex-hi/milkyway.ktx2",
+    file: "milkyway.ktx2",
+    bytes: 2_308_276,
+    sourceUrl: "https://cdn.eso.org/images/large/eso0932a.jpg",
+    sourcePx: [6000, 3000],
+    deliveredPx: [6000, 3000],
+    impression: "PHOTOGRAPH (real sky, wide-field mosaic)",
+    projection: "Equirectangular 2:1 across the whole sky; horizontal axis runs along the galactic equator",
+    alignment:
+      "Placed in the ECHOES sky with the J2000 galactic->equatorial->scene rotation (galactic.ts), then checked against catalogue anchors (Sgr A* bulge, LMC/SMC density peaks)",
+    license: "CC BY 4.0 — ESO/S. Brunier, The Milky Way panorama (GigaGalaxy Zoom)",
+    credit: "ESO/S. Brunier",
+    gaps:
+      "The largest source ESO serves is 6000x3000 (no 8K original publicly available; nothing is upsampled). Photographic mosaic — not a photometric survey: bright-star blooming and processing can exaggerate apparent sizes, and the panorama predates Gaia-era precision. Deep-sky labels elsewhere on the sky are selected objects, not a survey.",
+    status: "APPROVED",
+  },
+];
+
+export function validateSkyBandManifest(list: SkyBandAsset[]): string[] {
+  const problems: string[] = [];
+  const required: (keyof SkyBandAsset)[] = [
+    "id", "url", "file", "bytes", "sourceUrl", "sourcePx", "deliveredPx", "impression",
+    "projection", "alignment", "license", "credit", "gaps", "status",
+  ];
+  for (const m of list) {
+    for (const k of required) {
+      const v = m[k];
+      if (v === undefined || v === null || v === "" || (Array.isArray(v) && v.some((n) => !(n > 0)))) {
+        problems.push(`${m.id}: missing/invalid '${k}'`);
+      }
+    }
+    if (m.sourceUrl && !m.sourceUrl.startsWith("https://")) problems.push(`${m.id}: sourceUrl not https`);
+    if (m.url && !m.url.startsWith("/tex-hi/")) problems.push(`${m.id}: url outside /tex-hi/`);
+    if (m.deliveredPx[0] > m.sourcePx[0] || m.deliveredPx[1] > m.sourcePx[1]) {
+      problems.push(`${m.id}: delivered px exceeds source px — upscaling forbidden`);
+    }
+  }
+  return problems;
+}
