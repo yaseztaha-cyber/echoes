@@ -66,6 +66,11 @@ What shipped:
   verified against real anchors (bulge at texture center, LMC/SMC mapped at
   80.9°/303° galactic longitudes — `src/engine/world/galactic.ts` +
   `galactic.test.ts` anchors for center/pole/LMC).
+- **Zodiacal haze** — faint warm additive disc in the ecliptic plane at the
+  Sun (interplanetary-dust scattering is plane-concentrated; reads as the
+  classic band edge-on). Canvas radial gradient, DoubleSide, skipped on the
+  low quality tier (`SolarSystem.tsx::Sun` + `zodiacalTexture`, probe
+  `scripts/probe-zodiac.mjs`).
 - All of it gated, streamed, and Tai-directed (`docs/RENDERING_BENCHMARKS.md`
   carries the measured numbers; tests now 106/106 with the galactic anchors).
 

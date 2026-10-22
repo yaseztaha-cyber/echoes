@@ -33,6 +33,24 @@ function glowTexture() {
   return new THREE.CanvasTexture(c);
 }
 
+function zodiacalTexture() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const g = c.getContext("2d")!;
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  const stops: [number, string][] = [
+    [0, "rgba(242,230,198,0.5)"],
+    [0.18, "rgba(238,224,190,0.16)"],
+    [0.42, "rgba(232,220,188,0.07)"],
+    [0.72, "rgba(228,216,186,0.028)"],
+    [1, "rgba(226,214,184,0)"],
+  ];
+  stops.forEach(([o, col]) => gr.addColorStop(o, col));
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+
 function ringTexture() {
   const c = document.createElement("canvas");
   c.width = c.height = 256;
@@ -46,7 +64,9 @@ function ringTexture() {
 }
 
 function Sun() {
+  const quality = useEcho((s) => s.quality);
   const tex = useMemo(glowTexture, []);
+  const zodiac = useMemo(zodiacalTexture, []);
   // RECONSTRUCTED photosphere (SDO/HMI-derived granulation, see manifest).
   // Real wavelength observations live in the SolarScope science view.
   const surface = useMemo(() => {
@@ -63,6 +83,22 @@ function Sun() {
       <sprite scale={[11, 11, 1]}>
         <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
       </sprite>
+      {/* Zodiacal light haze: real interplanetary-dust scattering is concentrated
+          in the ecliptic plane; a faint warm additive disc reads as that band
+          when the plane is seen edge-on. Skipped on the low quality tier. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[135, 64]} />
+        <meshBasicMaterial
+          map={zodiac}
+          transparent
+          opacity={quality === "low" ? 0 : 0.5}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          fog={false}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
     </group>
   );
 }
