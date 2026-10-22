@@ -66,6 +66,12 @@ What shipped:
   verified against real anchors (bulge at texture center, LMC/SMC mapped at
   80.9°/303° galactic longitudes — `src/engine/world/galactic.ts` +
   `galactic.test.ts` anchors for center/pole/LMC).
+- **Ground tiering (phase 4)** — the site quadtree already varies resolution
+  by camera distance (the "3 rings"); the missing piece was scatter cost:
+  rock counts now scale with quality (35% low / 60% medium / 100% high),
+  rocks stop casting shadows below high tier, and the scatter rng stream is
+  exactly 5 rolls per rock (`rockScatter.ts`, locked by `rockScatter.test.ts`)
+  so trimming never reshuffles the landscape a visitor already explored.
 - **Entry timing pass (phase 3)** — school-age attention spans: whole
  Solar-system intro flight 6 s→2.2 s, travel-to-planet formula clamped
   2.2–5.5 s (was 4.5–11 s), orbital-insertion 5 s→2.6 s, site descent
