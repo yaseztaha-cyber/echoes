@@ -60,6 +60,24 @@ export function setView(pos: THREE.Vector3, tgt: THREE.Vector3) {
   useEcho.setState({ flying: false });
 }
 
+/** ESC during a flight: jump straight to the flight's end state. The awaiting
+ *  director continuation (scene swap, veils, arrival timing) resolves exactly
+ *  as if the flight had played, so the chain never desyncs. */
+export function skipFlight() {
+  const f = cam.flight;
+  if (!f) return;
+  const P = cam.camera!.position.clone();
+  const G = cam.controls.target.clone();
+  f.fn(1, P, G); // eases evaluate to 1 at u=1; env lerps land on their finals
+  cam.camera!.position.copy(P);
+  cam.controls.target.copy(G);
+  cam.camera!.lookAt(G);
+  cam.controls.update();
+  cam.flight = null;
+  useEcho.setState({ flying: false });
+  f.resolve();
+}
+
 export function setFollow(getter: null | (() => THREE.Vector3)) {
   cam.follow = getter;
   cam.followFresh = true;

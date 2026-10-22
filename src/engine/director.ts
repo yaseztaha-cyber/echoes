@@ -53,8 +53,8 @@ export function enterSimulation() {
   const b = bodyById("earth")!;
   setView(e.clone().addScaledVector(dir, b.radius * 16), e);
   setFollow(() => bodyPos("earth", clock.t));
-  showBanner("EARTH", "SOLAR SYSTEM · VISUAL SCALE ADJUSTED FOR NAVIGATION", 4200);
-  flyTo(() => bodyPos("earth", clock.t).addScaledVector(dir, b.radius * 7), () => bodyPos("earth", clock.t), 6, smoother);
+  showBanner("EARTH", "SOLAR SYSTEM · VISUAL SCALE ADJUSTED FOR NAVIGATION", 2400);
+  flyTo(() => bodyPos("earth", clock.t).addScaledVector(dir, b.radius * 7), () => bodyPos("earth", clock.t), 2.2, smoother);
 }
 
 /* ------------------------------------------------------------------ solar system */
@@ -93,9 +93,9 @@ export async function goVoyager() {
   const start = vp();
   const sunDir = start.clone().negate().normalize();
   const off = sunDir.clone().multiplyScalar(0.4).add(V(0.25, 0.35, 0.6)).normalize().multiplyScalar(0.95);
-  showBanner("VOYAGER 1", "EARTH → TRAJECTORY → SPACECRAFT → INTERSTELLAR SPACE", 4200);
+  showBanner("VOYAGER 1", "EARTH → TRAJECTORY → SPACECRAFT → INTERSTELLAR SPACE", 3000);
   void c;
-  await flyTo(() => vp().add(off), vp, 9, smoother);
+  await flyTo(() => vp().add(off), vp, 6.5, smoother);
   setFollow(vp);
   markVisit("voyager1", "VOYAGER 1 · INTERSTELLAR SPACECRAFT");
   queueVignette("voyager1");
@@ -168,7 +168,7 @@ export async function travelToBody(id: string) {
   }
   set({ focusBody: id, artifactId: null, camMode: "orbit", instrumentId: null });
   setFollow(null);
-  showBanner(b.name, "DISTANCE · APPROACH", 4800);
+  showBanner(b.name, "DISTANCE · APPROACH", 2600);
   const c = cam.camera!;
   const p0 = bodyPos(id, clock.t);
   const sunDir = p0.clone().negate().normalize();
@@ -176,7 +176,7 @@ export async function travelToBody(id: string) {
   const dir = toCam.multiplyScalar(0.3).addScaledVector(sunDir, 0.9).add(V(0, 0.18, 0)).normalize();
   const dist = b.radius * 10;
   const travel = c.position.distanceTo(p0);
-  await flyTo(() => bodyPos(id, clock.t).addScaledVector(dir, dist), () => bodyPos(id, clock.t), THREE.MathUtils.clamp(3 + Math.log10(1 + travel) * 3.2, 4.5, 11), smoother);
+  await flyTo(() => bodyPos(id, clock.t).addScaledVector(dir, dist), () => bodyPos(id, clock.t), THREE.MathUtils.clamp(2 + Math.log10(1 + travel) * 2.4, 2.2, 5.5), smoother);
   // swap into the planet frame with identical apparent size, direction and sunlight
   const rel = c.position.clone().sub(bodyPos(id, clock.t)).multiplyScalar(k);
   env.sunDir.copy(sunDir);
@@ -184,8 +184,8 @@ export async function travelToBody(id: string) {
   set({ scene: "planet", world: id, sunPhase: 0 });
   setView(rel, V());
   await nextFrames();
-  showBanner(b.name.toUpperCase(), "ORBITAL INSERTION", 3800);
-  await flyTo(rel.clone().normalize().multiplyScalar(300), V(), 5, easeOut);
+  showBanner(b.name.toUpperCase(), "ORBITAL INSERTION", 2400);
+  await flyTo(rel.clone().normalize().multiplyScalar(300), V(), 2.6, easeOut);
   set({ camMode: "orbit" });
 }
 
@@ -231,7 +231,7 @@ export async function descendToSite(id: string, startT?: number) {
   set({ artifactId: id, camMode: "cinematic", instrumentId: null });
   setFollow(null);
   sfx.confirm();
-  showBanner(`${art.designation} · ${art.name}`, `${art.location.region} · ${world.toUpperCase()}`, 4500);
+  showBanner(`${art.designation} · ${art.name}`, `${art.location.region} · ${world.toUpperCase()}`, 2600);
   const R = GLOBE_R;
   const unitsM = (RADIUS_KM[world] * 1000) / R;
   const n = lonLatToVec(art.location.lon, art.location.lat, 1);
@@ -250,7 +250,7 @@ export async function descendToSite(id: string, startT?: number) {
   const q0 = new THREE.Quaternion();
   const q1 = new THREE.Quaternion().setFromUnitVectors(dir0, n);
   await fly(
-    10,
+    5.2,
     (u, p, g) => {
       const a = easeInOut(Math.min(1, u * 1.08));
       q0.identity().slerp(q1, a);
@@ -263,15 +263,15 @@ export async function descendToSite(id: string, startT?: number) {
     (u) => u
   );
   // atmospheric descent: dust haze veils the scene swap
-  await veil(true, world === "mars" ? "mars" : "dark", 700);
+  await veil(true, world === "mars" ? "mars" : "dark", 500);
   const alt = altEnd * unitsM;
   configureForArtifact(art, startT);
   set({ scene: "site", world, artifactId: id });
   const startPos = V(APPROACH.x * alt * 1.1, alt, APPROACH.y * alt * 1.1);
   setView(startPos, V(0, 0, 0));
   await nextFrames();
-  await wait(500);
-  await veil(false, "dark", 800);
+  await wait(250);
+  await veil(false, "dark", 650);
   await arrive(art);
   markVisit(id, art.designation || art.name);
   queueVignette(id);
@@ -288,9 +288,9 @@ async function arrive(art: Artifact) {
   const pitch0 = Math.asin(s0.y / D0);
   const D1 = { mer: 12.5, sojourner: 4.2, insight: 9, apollo: 34, voyager: 20 }[art.model.kind];
   const azEnd = az0 + 0.55;
-  showBanner("MISSION REGION", `${art.name} · ${art.dates.landing ? "SURFACE" : ""}`, 3600);
+  showBanner("MISSION REGION", `${art.name} · ${art.dates.landing ? "SURFACE" : ""}`, 2400);
   await fly(
-    15,
+    7.5,
     (u, p, g) => {
       const e = easeInOut(u);
       const d = D0 * Math.pow(D1 / D0, e);

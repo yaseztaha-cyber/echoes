@@ -116,7 +116,17 @@ try {
     await sleep(4000);
     await clickText(page, "DESCEND TO SITE", false);
     console.log("clicked: DESCEND TO SITE");
-    await sleep(45000);
+    // wait (poll) for on-site state; the chain is ~17 s after the timing pass
+    const deadline = Date.now() + 70000;
+    for (let i = 0; i < 70; i++) {
+      const st = await page.evaluate(() => ({
+        amb: window.__echoesAmb,
+        dem: window.__echoesDemInfo ? window.__echoesDemInfo() : { siteId: null, ready: false },
+      }));
+      if (st.amb === "moon" && st.dem.ready && st.dem.siteId === "apollo-12") break;
+      if (Date.now() > deadline) throw new Error(`descent never landed: ${JSON.stringify(st).slice(0, 300)}`);
+      await sleep(1000);
+    }
     const amb3 = await page.evaluate(() => window.__echoesAmb);
     if (amb3 !== "moon") throw new Error(`ambience site expected moon pulse, got ${amb3}`);
     console.log("ambience: apollo site = moon (suit pulse, airless)");
@@ -131,7 +141,12 @@ try {
     if (!/LOLA DEM ACTIVE/.test(dem.note)) throw new Error(`unexpected dem note: ${dem.note}`);
     results.dem = dem;
     console.log("DEM: apollo-12 = LOLA patch ready, note:", dem.note);
-    const vig = await page.evaluate(() => document.body.innerText.includes("MISSION VIGNETTE") && document.body.innerText.includes("small one for Neil"));
+    // vignette shows for 18 s after arrival — poll for it instead of sleeping past it
+    let vig = false;
+    for (let i = 0; i < 30 && !vig; i++) {
+      vig = await page.evaluate(() => document.body.innerText.includes("MISSION VIGNETTE") && document.body.innerText.includes("small one for Neil"));
+      if (!vig) await sleep(1000);
+    }
     if (!vig) throw new Error("no arrival vignette shown");
     console.log("vignette shown at arrival");
     await page.screenshot({ path: `${outDir}/13a-vignette.png` });

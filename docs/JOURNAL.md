@@ -66,6 +66,16 @@ What shipped:
   verified against real anchors (bulge at texture center, LMC/SMC mapped at
   80.9°/303° galactic longitudes — `src/engine/world/galactic.ts` +
   `galactic.test.ts` anchors for center/pole/LMC).
+- **Entry timing pass (phase 3)** — school-age attention spans: whole
+ Solar-system intro flight 6 s→2.2 s, travel-to-planet formula clamped
+  2.2–5.5 s (was 4.5–11 s), orbital-insertion 5 s→2.6 s, site descent
+  10 s→5.2 s, arrival pan 15 s→7.5 s, Voyager approach 9 s→6.5 s; banners
+  shortened to match. NEW: Escape mid-flight jumps the flight to its end
+  state (`controller.ts::skipFlight`, Escape-first in `useKeys.ts`) — the
+  awaiting director chain resolves exactly as if the flight had played, so
+  scene swaps and veils never desync. Verified by probe: ESC ~0.9 s into a
+  moon travel landed "ORBITAL INSERTION" + planet ambience instantly;
+  harness re-run green (surface 60.1 fps, zero errors).
 - **Zodiacal haze** — faint warm additive disc in the ecliptic plane at the
   Sun (interplanetary-dust scattering is plane-concentrated; reads as the
   classic band edge-on). Canvas radial gradient, DoubleSide, skipped on the

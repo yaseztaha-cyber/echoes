@@ -3,6 +3,7 @@ import { cam } from "@/engine/cameras/controller";
 import { useEcho } from "@/state/store";
 import { requestPhoto } from "@/state/store";
 import { exitInspect, focusBody, inspectHardware, setCamMode, anchor, flyAnchor } from "@/engine/director";
+import { skipFlight } from "@/engine/cameras/controller";
 import { stopDemo } from "@/features/exploration/demo";
 import { unlockAudio } from "@/lib/audio";
 import { setAmbience } from "@/lib/ambience";
@@ -30,6 +31,9 @@ export function useKeys() {
         return;
       }
       if (code === "escape") {
+        // Escape doubles as the flight skip: pressing it mid-flight lands the
+        // destination camera immediately instead of waiting out the arrival.
+        if (st.flying) return skipFlight();
         if (st.demo.active) return stopDemo();
         if (st.overlay) return useEcho.setState({ overlay: null });
         if (st.decodeId) return useEcho.setState({ decodeId: null });
