@@ -14,9 +14,9 @@ import type { Quality } from "@/state/store";
 export const TIERS: Quality[] = ["ultra", "high", "medium", "low"];
 
 const BAD_MS = 20; // sustained p95 above this: step down
-const GOOD_MS = 9; // sustained p95 below this: may step up
+const GOOD_MS = 12; // sustained p95 below this: may step up
 const BAD_FRAMES = 180; // ~3 s at 60 fps before reacting
-const GOOD_FRAMES = 1200; // ~20 s of headroom before restoring
+const GOOD_FRAMES = 600; // ~10 s of headroom before restoring
 const COOLDOWN_FRAMES = 300; // ~5 s quiet after any change
 const WINDOW = 120; // rolling p95 window (frames)
 

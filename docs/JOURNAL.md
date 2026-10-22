@@ -66,6 +66,17 @@ What shipped:
   verified against real anchors (bulge at texture center, LMC/SMC mapped at
   80.9°/303° galactic longitudes — `src/engine/world/galactic.ts` +
   `galactic.test.ts` anchors for center/pole/LMC).
+- **Tier-quality UX (against "it looks low-resolution" on mid GPUs)** —
+  the adaptive stepper used to need p95 ≤ 9 ms for ~20 s to recover from a
+  downgrade, which ordinary Windows+browsers GPUs never reach after one
+  3-second dip → devices silently sat in the soft low/medium path
+  (DPR 0.75–1, shadows off, no stream packs). Recovery band widened to
+  ≤ 12 ms over ~10 s; DPR floors raised (high now 1.2–2.0, ultra 1.5–2.5 —
+  the tier system was supersampling at 100% displays to ~1.0 backing store);
+  the boot screen now points at SYS → QUALITY → ULTRA so the pack tiers
+  (8K moon, 4K earth/mars, 6K Milky Way, 61,814-deep-star layer) are one
+  click away and AUTO ADAPT can be turned off. Probes:
+  `scripts/probe-quality.mjs` captures low vs ultra at the same view.
 - **Ground tiering (phase 4)** — the site quadtree already varies resolution
   by camera distance (the "3 rings"); the missing piece was scatter cost:
   rock counts now scale with quality (35% low / 60% medium / 100% high),

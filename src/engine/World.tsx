@@ -136,7 +136,10 @@ export function World() {
   const world = useEcho((s) => s.world);
   const artifactId = useEcho((s) => s.artifactId);
   const quality = useEcho((s) => s.quality);
-  const dpr: [number, number] = quality === "ultra" ? [1, 2] : quality === "high" ? [1, 1.6] : quality === "medium" ? [1, 1.25] : [0.75, 1];
+  // dpr floors: supersampling at 100% displays was the main "soft look"
+  // complaint — the packing signs (8K moon, 4K maps) read blurry when the
+  // backing store equals the CSS pixel count. Ultra/high now supersample.
+  const dpr: [number, number] = quality === "ultra" ? [1.5, 2.5] : quality === "high" ? [1.2, 2] : quality === "medium" ? [1, 1.4] : [0.75, 1];
   return (
     <Boundary>
       <Canvas
