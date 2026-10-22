@@ -3,46 +3,34 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { heightAt } from "./height";
 import { onDemReady } from "./dem";
-
-/** Seeded PRNG (mulberry-ish). Deterministic scatter, no surveyed positions claimed. */
-function rng(seed: number) {
-  let s = seed | 0;
-  return () => {
-    s = (Math.imul(s, 1664525) + 1013904223) | 0;
-    return ((s >>> 0) % 100000) / 100000;
-  };
-}
+import { rockScatter, rng, type RockItem } from "./rockScatter";
+import { useEcho } from "@/state/store";
 
 /**
  * Representative rock scatter + a few outcrop slabs around the mission site.
  * RECONSTRUCTED VISUALIZATION: rock positions are illustrative (density and size
  * follow Meridiani photo references), NOT surveyed coordinates. One draw call
  * for all rocks (instanced), one per outcrop slab.
+ *
+ * Quality tiers: the rng stream is count-independent — the first n items of a
+ * 140-scatter equal the whole of a 90-scatter — so trimming never reshuffles
+ * the visible landscape between quality changes. Shadows are the expensive
+ * part on weak devices: rocks stop casting below high tier, slabs follow.
  */
+export const ROCK_COUNT_FACTOR: Record<string, number> = { low: 0.35, medium: 0.6, high: 1, ultra: 1 };
+
 export function RockField({ seed, radius = 150, count = 240 }: { seed: number; radius?: number; count?: number }) {
+  const quality = useEcho((s) => s.quality);
   const rocks = useRef<THREE.InstancedMesh>(null);
   // DEM landing can shift heights by metres â€” reground the scatter when it arrives.
   const [demTick, setDemTick] = useState(0);
   useEffect(() => onDemReady(() => setDemTick((t) => t + 1)), []);
-  const data = useMemo(() => {
-    const r = rng(seed * 31 + 7);
-    const items: { x: number; y: number; z: number; s: number; ry: number; tone: number }[] = [];
-    let guard = 0;
-    while (items.length < count && guard++ < count * 30) {
-      const a = r() * Math.PI * 2;
-      // Keep the device clearing open: hardware sits near the origin and
-      // close-up inspection must not stare into a boulder.
-      const d = 12 + Math.pow(r(), 1.4) * (radius - 12);
-      const x = Math.cos(a) * d;
-      const z = Math.sin(a) * d;
-      // near-field discipline: modest rocks just outside the clearing, full
-      // sizes only beyond 20 m, so close-up inspection stays readable
-      const cap = d < 20 ? 0.5 : 1.18;
-      const s = 0.08 + Math.pow(r(), 2.4) * cap;
-      items.push({ x, y: heightAt(x, z) + s * 0.12, z, s, ry: r() * Math.PI * 2, tone: r() });
-    }
-    return items;
-  }, [seed, radius, count, demTick]);
+  const useCount = Math.max(1, Math.round(count * (ROCK_COUNT_FACTOR[quality] ?? 1)));
+  const rockShadows = quality === "high" || quality === "ultra";
+  const data = useMemo(
+    () => rockScatter(seed, radius, useCount, heightAt),
+    [seed, radius, useCount, demTick]
+  ) as RockItem[];
   const slabs = useMemo(() => {
     const r = rng(seed * 57 + 3);
     const out: { x: number; z: number; y: number; w: number; h: number; d: number; ry: number }[] = [];
@@ -111,15 +99,15 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
 
   return (
     <group>
-      <instancedMesh ref={rocks} args={[undefined, undefined, data.length]} castShadow receiveShadow frustumCulled={false}>
+      <instancedMesh ref={rocks} args={[undefined, undefined, data.length]} castShadow={rockShadows} receiveShadow frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
         {/* white base: per-instance colors carry the tone (a colored base would double-darken) */}
         <meshStandardMaterial color="#ffffff" roughness={0.96} metalness={0} />
       </instancedMesh>
       {slabGeos.dark && slabGeos.upper && (
         <>
-          <mesh geometry={slabGeos.dark} material={darkMat} castShadow receiveShadow />
-          <mesh geometry={slabGeos.upper} material={upperMat} castShadow receiveShadow />
+          <mesh geometry={slabGeos.dark} material={darkMat} castShadow={rockShadows} receiveShadow />
+          <mesh geometry={slabGeos.upper} material={upperMat} castShadow={rockShadows} receiveShadow />
         </>
       )}
     </group>
