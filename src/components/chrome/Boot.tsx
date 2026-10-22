@@ -75,9 +75,6 @@ export function Boot() {
               <br />
               Follow the science they made possible.
             </p>
-            <div className="mono mt-8 text-[10px] tracking-[0.18em] text-slate">
-              TIP · FOR THE SHARPEST VIEW OPEN <span className="text-amber">SYS</span> AND SET QUALITY TO <span className="text-amber">ULTRA</span> (AUTO ADAPT CAN BE TURNED OFF)
-            </div>
             <div className="mt-10 flex flex-col items-center gap-3">
               <button className="ctl ctl-primary px-8 py-3 text-[12px] tracking-[0.28em]" onClick={() => enter()} autoFocus>
                 ENTER SIMULATION
