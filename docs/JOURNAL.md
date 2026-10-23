@@ -101,7 +101,7 @@ What shipped:
 - All of it gated, streamed, and Tai-directed (`docs/RENDERING_BENCHMARKS.md`
   carries the measured numbers; tests now 106/106 with the galactic anchors).
 
-### Where verification stands right now (state of this journal)
+### Where verification stood at the end of the rich-universe phase (kept as recorded)
 - Unit tests: **106 passed / 0 failed** (vitest).
 - TypeScript: clean except two pre-existing unused-symbol warnings (unrelated
   to runtime correctness; tracked, not hidden).
@@ -126,6 +126,56 @@ What shipped:
   pins the live entry.
 - Bundle: single text-only `dist/index.html` (≈11.3 MB; sky/stream packs live
   as separate cached streams, so a first visit downloads only what it sees).
+
+### Post-user-review pass (same phase, third session day)
+
+User review flagged four concrete things; each got a fix, not a shrug:
+
+- **"Cloud at the center of everything" at ultra** — diagnosed as two
+  overlapping causes: the zodiacal haze disc (above) reading as a glow blob
+  in the solar view, and the *single-mip q220 Milky Way band* whose flat
+  ETC1S blockiness reads as blocky clouds on dark sky. BOTH removed:
+  zodiacal haze deleted from `SolarSystem.tsx` (feature kept in git history,
+  journal line kept for the record), and the band re-encoded at **qlevel
+  255 with a full 13-level mip chain** (`fetch-hi-textures.mjs` now puts
+  toktx options before files — options after files silently no-op'd;
+  found because levelCount stayed 1 in the KTX2 header). Band pack:
+  6000×3000, 13 mips, 3.26 MB; Mars pack also re-encoded with mips (1.71 MB).
+- **"Why is Mars like that"** — the 4K Mars stream tier was the SVS GMM-3
+  *topography composition* (false-color elevation rainbow), so the globe
+  turned rainbow at high/ultra. Root cause: the fetch script targeted
+  `mars_cyl_topo2.jpg` while the bundled 2K map is the USGS Viking MDIM 2.1
+  photograph. Fixed at the source: the tier now encodes the **same
+  photographic MDIM 2.1 build** the bundled map uses (`assets-hi/mars_4k.jpg`
+  → `public/tex-hi/mars.ktx2`, 4096×2048, 13 mips, 1.71 MB); manifest
+  record + provenance JSONs updated honestly (`mdim21_color`, gaps mention
+  the replaced false-color tier). Headless ultra planet view now shows a
+  recognizable photographic Mars (Valles Marineris visible).
+- **SYS panel couldn't be closed** — Esc never touched it (panel open-flag
+  lived in component state, invisible to the key chain; the hint said
+  `ESC CLOSE` anyway — an honesty bug). The flag is now `sysOpen` in the
+  store, Esc closes it first (before overlay/menu), and the panel has an
+  explicit CLOSE button. Verified: press Esc → panel closes; CLOSE clicks
+  → closes.
+- **"Still the machine is blurry"** — the dynamic backing-store scaler kept
+  trading pixels away whenever p95 sat in its 14–24 ms band, so ultra tier
+  never *guaranteed* sharpness. Ultra now pins dpr = [2, 2] and the scaler
+  is bypassed entirely at ultra (`World.tsx::DynamicScale`) — crispness is
+  the contract there; the tier ladder stays the lever for weak GPUs. Also
+  honest limit: on an integrated GPU ultra may drop frame *rate* — sharp
+  and slow is still better than soft and fast for inspection work.
+
+### Post-user-review verification (state of this journal after this pass)
+- Unit tests: **108 passed / 0 failed (13 files, vitest)**; TypeScript still
+  clean except the two pre-existing unused-symbol warnings.
+- Headless (msedge 1600×1000, quality=ultra, auto-adapt off, zero
+  console/page errors): solar ultra screenshot shows no center haze and a
+  fine-grained band; `SYS` closes via both Esc and CLOSE; Mars travel pulls
+  `/tex-hi/mars.ktx2` (ready, 1.71 MB) and the MilkyWay band tier reports
+  ready at 3.26 MB; Mars planet view photographic; Mars cinematic site
+  arrival frame shows warm rust-orange ground. New probes committed:
+  `probe-pressfix.mjs`, `probe-marsfix.mjs`; `probe-zodiac.mjs` deleted with
+  its feature.
 
 ## Honesty ledger (what must NOT be oversold)
 

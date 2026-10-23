@@ -682,21 +682,21 @@ export const HI_TIER_MANIFEST: GlobeHiTierAsset[] = [
     id: "mars-4k-ktx2",
     body: "mars",
     tier: "max",
-    class: "MOSAIC (MOLA topography composition — elevation-colored, ALLOWED color convention differs from the bundled Viking map)",
-    epoch: "MOLA 1997-2001; SVS GMM-3 era composition",
-    org: "NASA Scientific Visualization Studio (MOLA science team)",
-    product: "MOLA cylindrical color topography, 4096x2048 KTX2 stream tier",
-    sourceUrl: "https://svs.gsfc.nasa.gov/vis/a000000/a004400/a004436/mars_cyl_topo2.jpg",
-    sourcePx: [5760, 2880],
+    class: "MOSAIC (same Viking MDIM 2.1 photograph as the bundled map, at the full 4K tier)",
+    epoch: "Viking orbiter imagery, MDIM 2.1 mosaic",
+    org: "USGS Astrogeology / NASA Ames",
+    product: "Viking MDIM 2.1 color photographic mosaic, 4096x2048 KTX2 stream tier",
+    sourceUrl: "https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m",
+    sourcePx: [4096, 2048],
     deliveredPx: [4096, 2048],
     streamUrl: "/tex-hi/mars.ktx2",
     file: "mars.ktx2",
-    bytes: 1_461_575,
+    bytes: 1_709_637,
     format: "KTX2 ETC1S/BasisLZ (GPU-compressed; runtime transcode via Basis universal, mips included)",
-    processing: "toktx --encode etc1s c4 q220 --resize 4096x2048 (POT downsample of the 5760px native map)",
-    gaps: "Elevation-derived coloring, not Viking photo-mosaic color: the 4K class therefore looks different from the bundled 2K surface map, and DataResolution must state this",
-    credit: "NASA SVS / MOLA",
-    orientation: "Standard equirectangular (source as published)",
+    processing: "toktx --encode etc1s c4 q220 at native 4096x2048 POT from the photographic MDIM 4K build (assets-hi/mars_4k.jpg, same source build-globes.py used — replaces a prior false-color MOLA topography tier)",
+    gaps: "ETC1S quantization may slightly soften Viking mosaic detail; elevation colors from the previous topography tier no longer used — DEM relief still comes from MOLA MEGDR",
+    credit: "USGS Astrogeology / NASA",
+    orientation: "Standard equirectangular (verified in-ECHOES via Syrtis Major and Hellas, see bundled-map record)",
     status: "APPROVED",
   },
 ];
@@ -747,6 +747,8 @@ export interface SkyBandAsset {
   alignment: string;
   license: string;
   credit: string;
+  /** Encode provenance (optional honesty field — not required by the validator). */
+  encode?: string;
   gaps: string;
   status: "APPROVED";
 }
@@ -756,7 +758,7 @@ export const SKY_BAND_MANIFEST: SkyBandAsset[] = [
     id: "milkyway-eso-6k-ktx2",
     url: "/tex-hi/milkyway.ktx2",
     file: "milkyway.ktx2",
-    bytes: 2_308_276,
+    bytes: 3_255_282,
     sourceUrl: "https://cdn.eso.org/images/large/eso0932a.jpg",
     sourcePx: [6000, 3000],
     deliveredPx: [6000, 3000],
@@ -766,6 +768,7 @@ export const SKY_BAND_MANIFEST: SkyBandAsset[] = [
       "Placed in the ECHOES sky with the J2000 galactic->equatorial->scene rotation (galactic.ts), then checked against catalogue anchors (Sgr A* bulge, LMC/SMC density peaks)",
     license: "CC BY 4.0 — ESO/S. Brunier, The Milky Way panorama (GigaGalaxy Zoom)",
     credit: "ESO/S. Brunier",
+    encode: "KTX2 ETC1S BasisLZ, clevel 4, qlevel 255 (max quality) with a full mip chain — re-encoded after the first single-mip tier showed flat blockiness on dark sky",
     gaps:
       "The largest source ESO serves is 6000x3000 (no 8K original publicly available; nothing is upsampled). Photographic mosaic — not a photometric survey: bright-star blooming and processing can exaggerate apparent sizes, and the panorama predates Gaia-era precision. Deep-sky labels elsewhere on the sky are selected objects, not a survey.",
     status: "APPROVED",

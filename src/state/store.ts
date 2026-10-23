@@ -76,6 +76,8 @@ export interface EchoState {
   arrival: { active: boolean; label: string };
   toasts: { id: number; title: string; sub: string }[];
   menuOpen: boolean;
+  /** SYS (graphics/settings) module open — session only so ESC can close it. */
+  sysOpen: boolean;
   panelOpen: boolean;
   sidePanelHidden: boolean;
   /** GPU context lost (canvas blank while UI survives). Set by World listeners. */
@@ -139,6 +141,7 @@ export const useEcho = create<EchoState>(() => ({
   arrival: { active: false, label: "" },
   toasts: [],
   menuOpen: false,
+  sysOpen: false,
   panelOpen: true,
   sidePanelHidden: false,
   gpuLost: false,

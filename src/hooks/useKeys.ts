@@ -35,6 +35,8 @@ export function useKeys() {
         // destination camera immediately instead of waiting out the arrival.
         if (st.flying) return skipFlight();
         if (st.demo.active) return stopDemo();
+        if (st.sysOpen) return useEcho.setState({ sysOpen: false });
+        if (st.menuOpen) return useEcho.setState({ menuOpen: false });
         if (st.overlay) return useEcho.setState({ overlay: null });
         if (st.decodeId) return useEcho.setState({ decodeId: null });
         if (st.compareOpen) return useEcho.setState({ compareOpen: false });

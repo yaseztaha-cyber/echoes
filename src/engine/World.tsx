@@ -78,6 +78,10 @@ function DynamicScale() {
     return () => cancelAnimationFrame(id);
   }, [gl, quality]);
   useFrame((_, dt) => {
+    // Ultra tier promises sharpness at full backing resolution — never let the
+    // frame-time adaptive scaler trade pixels away there (crisp look wins; the
+    // tier system stays the lever for weak GPUs).
+    if (quality === "ultra") return;
     const s = dr.current.feed(adaptive.p95(), Math.min(dt, 0.25));
     if (s !== last.current) {
       last.current = s;
@@ -139,7 +143,7 @@ export function World() {
   // dpr floors: supersampling at 100% displays was the main "soft look"
   // complaint — the packing signs (8K moon, 4K maps) read blurry when the
   // backing store equals the CSS pixel count. Ultra/high now supersample.
-  const dpr: [number, number] = quality === "ultra" ? [1.5, 2.5] : quality === "high" ? [1.2, 2] : quality === "medium" ? [1, 1.4] : [0.75, 1];
+  const dpr: [number, number] = quality === "ultra" ? [2, 2] : quality === "high" ? [1.2, 2] : quality === "medium" ? [1, 1.4] : [0.75, 1];
   return (
     <Boundary>
       <Canvas

@@ -17,6 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const FORCE = process.argv.includes("--force");
+const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1] ?? null;
 const ROOT = path.resolve(import.meta.dirname, "..");
 const OUT_DIR = path.join(ROOT, "public", "tex-hi");
 const META_DIR = path.join(ROOT, "assets-hi", "tex");
@@ -60,16 +61,15 @@ const RECORDS = [
   {
     id: "mars",
     label: "Mars",
-    credit:
-      "NASA SVS GMM-3 (a4436) MOLA cylindrical topography composition derived from MOLA instrument data, svs.gsfc.nasa.gov",
-    urlBase: "https://svs.gsfc.nasa.gov",
-    probeRange: [400_000, 900_000_000],
-    candidates: [
-      "https://svs.gsfc.nasa.gov/vis/a000000/a004400/a004436/mars_cyl_topo2.jpg",
-    ],
+    credit: "USGS Astrogeology Viking MDIM 2.1 color mosaic (1 km/px rendition), astrogeology.usgs.gov",
+    // Photographic global mosaic (built from the same MDIM file build-globes.py
+    // used for the bundled maps) — NOT the false-color topography composition.
+    localSrc: "assets-hi/mars_4k.jpg",
+    provenanceUrl: "https://astrogeology.usgs.gov/search/map/Mars/Viking/mdim21_color",
     tier: "max",
     convertToPng: false,
-    target: null,
+    target: null, // 4096x2048 POT already
+    mips: true,
   },
   {
     id: "milkyway",
@@ -85,6 +85,8 @@ const RECORDS = [
     convertToPng: false,
     target: null,
     native: true, // 6000x3000 2:1 — the largest source on ESO's CDN; never upscale
+    mips: true, // full mip chain: kills the flat single-mip blocky "cloud" look
+    qlevel: 255, // max ETC1S quality — darker astrophoto needs it most
   },
 ];
 
@@ -183,6 +185,11 @@ function runToktx(args) {
 const results = [];
 for (const rec of RECORDS) {
   console.log(`\n=== ${rec.id} (${rec.label}) ===`);
+  if (ONLY && rec.id !== ONLY) {
+    console.log("  not selected (--only) — skipped");
+    results.push({ id: rec.id, skipped: true, reason: "not selected" });
+    continue;
+  }
   const outKtx = path.join(OUT_DIR, `${rec.id}.ktx2`);
   const metaPath = path.join(META_DIR, `${rec.id}.json`);
   if (fs.existsSync(outKtx) && !FORCE) {
@@ -192,19 +199,37 @@ for (const rec of RECORDS) {
   }
 
   let src = null;
-  for (const url of rec.candidates) {
-    const p = await probe(url);
-    if (p) { src = url; break; }
+  let srcFile = null;
+  if (rec.localSrc) {
+    const p = path.join(ROOT, rec.localSrc);
+    if (fs.existsSync(p) && fs.statSync(p).size > 0) {
+      src = rec.provenanceUrl; // provenance records the original data publisher
+      srcFile = p;
+      console.log(`  local source: ${rec.localSrc}`);
+    } else {
+      console.log(`  local source missing: ${rec.localSrc} — falling back to URL candidates`);
+    }
   }
-  if (!src) {
-    console.log("  no candidate reachable — record skipped (logged honestly)");
-    results.push({ id: rec.id, skipped: true, reason: "no source reachable" });
-    continue;
-  }
+  if (!src && rec.candidates) {
+    for (const url of rec.candidates) {
+      const p = await probe(url);
+      if (p) { src = url; break; }
+    }
+    if (!src) {
+      console.log("  no candidate reachable — record skipped (logged honestly)");
+      results.push({ id: rec.id, skipped: true, reason: "no source reachable" });
+      continue;
+    }
 
-  const srcFile = path.join(CACHE, `${rec.id}-${path.basename(src)}`);
-  if (!(await fetchSource(src, srcFile))) {
-    results.push({ id: rec.id, skipped: true, reason: "download failed" });
+    srcFile = path.join(CACHE, `${rec.id}-${path.basename(src)}`);
+    if (!(await fetchSource(src, srcFile))) {
+      results.push({ id: rec.id, skipped: true, reason: "download failed" });
+      continue;
+    }
+  }
+  if (!src || !srcFile) {
+    console.log("  no source available — record skipped (logged honestly)");
+    results.push({ id: rec.id, skipped: true, reason: "no source available" });
     continue;
   }
 
@@ -215,7 +240,7 @@ for (const rec of RECORDS) {
   }
 
   const img = fs.readFileSync(imgFile);
-  const dims = /jpg$/i.test(src) ? jpegDims(img) : pngDims(img);
+  const dims = /jpe?g$/i.test(srcFile) ? jpegDims(img) : pngDims(img);
   if (!dims || dims.w < 1024) {
     console.log(`  source unreadable/undersized (${dims?.w}x${dims?.h}) — skipped`);
     results.push({ id: rec.id, skipped: true, reason: "bad source" });
@@ -223,15 +248,16 @@ for (const rec of RECORDS) {
   }
   const tgt = rec.native ? null : toPegelTarget(dims.w, dims.h, rec.target);
   const mkArgs = (resize) => {
+    // toktx requires options BEFORE the output/input files.
     const args = [
       "--encode", "etc1s",
       "--clevel", "4",
-      "--qlevel", "220",
+      "--qlevel", String(rec.qlevel ?? 220),
       "--threads", "4",
-      outKtx,
-      imgFile,
     ];
-    if (resize) args.splice(args.length - 2, 0, "--resize", `${resize[0]}x${resize[1]}`);
+    if (rec.mips) args.push("--genmipmap");
+    if (resize) args.push("--resize", `${resize[0]}x${resize[1]}`);
+    args.push(outKtx, imgFile);
     return args;
   };
   let delivered = tgt ?? [dims.w, dims.h];
@@ -266,6 +292,7 @@ for (const rec of RECORDS) {
     bytes,
     credit: rec.credit,
     nativeUpsample: false,
+    mipmaps: !!rec.mips,
   };
   fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2) + "\n");
   console.log(`  wrote ${path.basename(outKtx)} (${(bytes / 1e6).toFixed(2)} MB) + provenance`);

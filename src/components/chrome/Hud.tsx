@@ -111,8 +111,7 @@ function Settings() {
   const q = useEcho((s) => s.quality);
   const auto = useEcho((s) => s.autoQuality);
   const reduced = useEcho((s) => s.reducedMotion);
-  const audio = useEcho((s) => s.audioOn);
-  return (
+  const audio = useEcho((s) => s.audioOn);  return (
     <div className="module absolute right-0 top-9 z-40 w-64 p-3 anim-up">
       <div className="label mb-1">GRAPHICS QUALITY {auto ? "· AUTO" : "· MANUAL"}</div>
       <div className="grid grid-cols-4 gap-1">
@@ -142,6 +141,7 @@ function Settings() {
         KEYS · WASD MOVE · Q/E VERTICAL · SHIFT FAST · F FOCUS · I INSPECT · C FRAME · T TIMELINE · M MINIMAP · G SCIENCE · ESC CLOSE
       </div>
       <div className="mt-3 flex gap-1">
+        <button className="ctl flex-1" onClick={() => useEcho.setState({ sysOpen: false })}>CLOSE</button>
         <a className="ctl flex-1 text-center" href="#/dev">DEV</a>
         <button className="ctl flex-1" onClick={() => { persist("echoes.progress", []); useEcho.setState({ progress: [] }); }}>RESET PROGRESS</button>
       </div>
@@ -158,7 +158,7 @@ function TopRight() {
   const ui = useEcho((s) => s.uiMode);
   const aud = useEcho((s) => s.audience);
   const open = useEcho((s) => s.menuOpen);
-  const [sys, setSys] = useState(false);
+  const sys = useEcho((s) => s.sysOpen);
   const setO = (o: any) => useEcho.setState({ overlay: o, menuOpen: false });
   return (
     <div className="relative flex flex-col items-end gap-1.5">
@@ -174,7 +174,7 @@ function TopRight() {
           <button className="ctl" onClick={() => setO("film")}>FILM <FilmCount /></button>
           <button className="ctl" onClick={() => setO("sources")}>GROUND TRUTH</button>
           <button className="ctl" onClick={() => setO("lab")}>MISSION LAB</button>
-          <button className="ctl" aria-expanded={sys} onClick={() => setSys(!sys)}>SYS</button>
+          <button className="ctl" aria-expanded={sys} onClick={() => useEcho.setState({ sysOpen: !sys })}>SYS</button>
         </div>
         {sys && <Settings />}
       </div>
