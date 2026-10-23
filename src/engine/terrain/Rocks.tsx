@@ -33,13 +33,23 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
   ) as RockItem[];
   const slabs = useMemo(() => {
     const r = rng(seed * 57 + 3);
-    const out: { x: number; z: number; y: number; w: number; h: number; d: number; ry: number }[] = [];
-    for (let i = 0; i < 5; i++) {
-      const a = (i / 5) * Math.PI * 2 + r() * 0.8;
-      const dist = 30 + r() * 65;
+    const out: { x: number; z: number; y: number; w: number; h: number; d: number; ry: number; rx: number; rz: number }[] = [];
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + r() * 0.8;
+      const dist = 34 + r() * 65;
       const x = Math.cos(a) * dist;
       const z = Math.sin(a) * dist;
-      out.push({ x, z, y: heightAt(x, z) - 0.15, w: 3 + r() * 5, h: 0.3 + r() * 0.45, d: 1.5 + r() * 2.5, ry: r() * Math.PI });
+      out.push({
+        x,
+        z,
+        y: heightAt(x, z) - 0.35, // half-buried so they read as bedrock, not as dropped boxes
+        w: 2.5 + r() * 4,
+        h: 0.18 + r() * 0.3,
+        d: 1.2 + r() * 2,
+        ry: r() * Math.PI,
+        rx: (r() - 0.5) * 0.12,
+        rz: (r() - 0.5) * 0.12,
+      });
     }
     return out;
   }, [seed, demTick]);
@@ -57,32 +67,39 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
     data.forEach((it, i) => {
       E.set(0, it.ry, 0);
       Q.setFromEuler(E);
-      S.set(it.s * (0.7 + it.tone * 0.6), it.s * 0.75, it.s);
+      S.set(it.s * (0.7 + it.tone * 0.6), it.s * (0.55 + it.tone * 0.45), it.s);
       P.set(it.x, it.y, it.z);
       M.compose(P, Q, S);
       m.setMatrixAt(i, M);
-      // linear-space rock tones (material base is white): dark basaltic browns
-      C.setRGB(0.13 + it.tone * 0.05, 0.08 + it.tone * 0.03, 0.055 + it.tone * 0.02);
+      // linear-space rock tones (material base is white): site-lit scenes push
+      // albedo up hard (dir 2.9 + warm hemi), so bake DARK + rust-leaning so
+      // stones read as weathered basalt in dust, never as white pebbles.
+      const t = it.tone;
+      const dust = it.tone > 0.62 ? 0.5 : 0; // a dust-blended minority reads warmer
+      C.setRGB(0.045 + t * 0.05 + dust * 0.05, 0.03 + t * 0.03 + dust * 0.022, 0.02 + t * 0.018 + dust * 0.008);
       m.setColorAt(i, C);
     });
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }, [data]);
 
-  // Slabs baked into two merged geometries (one per tone) â€” 10 slab meshes
-  // become 2 draw calls instead of 10.
+  // Slabs baked into two merged geometries — 8 slab meshes become 2 draw calls.
   const slabGeos = useMemo(() => {
     const dark: THREE.BufferGeometry[] = [];
     const upper: THREE.BufferGeometry[] = [];
     for (const s of slabs) {
-      const w = new THREE.Matrix4().makeTranslation(s.x, s.y, s.z).multiply(
-        new THREE.Matrix4().makeRotationY(s.ry)
+      const w = new THREE.Matrix4().compose(
+        new THREE.Vector3(s.x, s.y, s.z),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(s.rx, s.ry, s.rz)),
+        new THREE.Vector3(1, 1, 1)
       );
       const main = new THREE.BoxGeometry(s.w, s.h, s.d);
+      // skew the silhouette slightly so it stops reading as a perfect rectangle
+      main.applyMatrix4(new THREE.Matrix4().makeShear(0, 0, 0, 0, 0.08 + Math.abs(s.rx) * 0.4, 0.05 + Math.abs(s.rz) * 0.4));
       main.applyMatrix4(new THREE.Matrix4().makeTranslation(0, s.h * 0.5, 0).premultiply(w));
       dark.push(main);
-      const up = new THREE.BoxGeometry(s.w * 0.7, s.h * 0.4, s.d * 0.8);
-      up.applyMatrix4(new THREE.Matrix4().makeTranslation(0.2, s.h + 0.12, -0.1).premultiply(w));
+      const up = new THREE.BoxGeometry(s.w * 0.6, s.h * 0.42, s.d * 0.72);
+      up.applyMatrix4(new THREE.Matrix4().makeTranslation(s.w * 0.08, s.h + 0.09, -0.08).premultiply(w));
       upper.push(up);
     }
     return {
@@ -90,8 +107,8 @@ export function RockField({ seed, radius = 150, count = 240 }: { seed: number; r
       upper: mergeGeometries(upper) ?? undefined,
     };
   }, [slabs]);
-  const darkMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#42291d", roughness: 0.97, metalness: 0 }), []);
-  const upperMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#54382a", roughness: 0.97, metalness: 0 }), []);
+  const darkMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#3c2a20", roughness: 1, metalness: 0 }), []);
+  const upperMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#4c352a", roughness: 1, metalness: 0 }), []);
   useEffect(() => () => {
     slabGeos.dark?.dispose();
     slabGeos.upper?.dispose();

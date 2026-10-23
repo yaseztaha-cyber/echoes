@@ -25,9 +25,9 @@ function glowTexture() {
   c.width = c.height = 128;
   const g = c.getContext("2d")!;
   const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  gr.addColorStop(0, "rgba(255,244,214,0.55)");
-  gr.addColorStop(0.25, "rgba(255,226,170,0.14)");
-  gr.addColorStop(1, "rgba(255,226,170,0)");
+  gr.addColorStop(0, "rgba(255,248,232,0.95)");
+  gr.addColorStop(0.25, "rgba(255,236,190,0.24)");
+  gr.addColorStop(1, "rgba(255,236,190,0)");
   g.fillStyle = gr;
   g.fillRect(0, 0, 128, 128);
   return new THREE.CanvasTexture(c);
@@ -58,10 +58,17 @@ function Sun() {
     <group>
       <mesh>
         <sphereGeometry args={[2.4, 48, 32]} />
-        <meshBasicMaterial map={surface} toneMapped={false} />
+        {/* HDR multiplier: the HMI-derived granulation map is mid-gray; pushing
+            the multiply into >1 range reads the disc as a white-hot photosphere
+            with darker granulation/spot mottling instead of a dirty beige ball. */}
+        <meshBasicMaterial map={surface} toneMapped={false} color={[5.5, 4.8, 3.9]} />
       </mesh>
-      <sprite scale={[11, 11, 1]}>
+      {/* inner hot core + outer falloff: two additive layers read as glare */}
+      <sprite scale={[13, 13, 1]}>
         <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
+      </sprite>
+      <sprite scale={[30, 30, 1]}>
+        <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.28} fog={false} />
       </sprite>
     </group>
   );

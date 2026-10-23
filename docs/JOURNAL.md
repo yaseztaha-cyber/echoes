@@ -165,9 +165,18 @@ User review flagged four concrete things; each got a fix, not a shrug:
   honest limit: on an integrated GPU ultra may drop frame *rate* — sharp
   and slow is still better than soft and fast for inspection work.
 
-### Post-user-review verification (state of this journal after this pass)
-- Unit tests: **108 passed / 0 failed (13 files, vitest)**; TypeScript still
-  clean except the two pre-existing unused-symbol warnings.
+- Site look follow-up (same pass, second round): the rock scatter read as
+  white confetti and the outcrop slabs as dropped dark boxes. The rocks'
+  baked albedo (0.13 linear) was being lifted into the light by the site's
+  dir 2.9 + warm hemisphere combo; now they bake darker and rust-leaning
+  (0.045–0.095 linear, dust-tinted minority), squash lower, and the slabs
+  are fewer (4), half-buried, tilted, and silhouette-sheared so they read as
+  bedrock instead of dropped rectangles. The Sun read as a dirty beige ball:
+  the photosphere now multiplies HDR (>1 color) so the disc clips toward
+  white-hot with the HMI granulation only visible as mottling, plus a two
+  layer additive glare (13/30 sprites, brighter core stops). Verified with
+  `scripts/probe-sitefix.mjs` shots (sun close-up + site orbit + low-angle
+  field view); tests 108/108.
 - Headless (msedge 1600×1000, quality=ultra, auto-adapt off, zero
   console/page errors): solar ultra screenshot shows no center haze and a
   fine-grained band; `SYS` closes via both Esc and CLOSE; Mars travel pulls
