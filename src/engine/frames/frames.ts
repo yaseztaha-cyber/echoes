@@ -13,6 +13,7 @@ import {
 } from "../solar-system/model";
 import { VOYAGER_NOW } from "@/data/artifacts/voyager";
 import { AU_KM, GLOBE_R, RADIUS_KM, localToLonLat, lonLatToVec, vecToLonLat } from "@/lib/geo";
+import { hasKepler, keplerAU, keplerElementsAt, keplerOrbitPathAU } from "./kepler";
 
 /**
  * ECHOES hierarchical coordinate frames (Phase 2).
@@ -20,11 +21,12 @@ import { AU_KM, GLOBE_R, RADIUS_KM, localToLonLat, lonLatToVec, vecToLonLat } fr
  * Three layers, never mixed silently:
  *
  *   SCI      Authoritative scientific coordinates. Heliocentric positions in AU
- *            (circular-orbit J2000 mean-longitude model from `model.ts`), body-fixed
+ *            (Keplerian JPL approximate elements, 1800–2050, from `kepler.ts`;
+ *            Moon and Pluto keep documented approximations), body-fixed
  *            surface vectors in kilometres. Used for measurements, distances, telemetry.
  *   PRESENT  Navigation/presentation coordinates. The sqrt(AU) visual compression
- *            (`ORBIT_K * sqrt(a)`) plus exaggerated body radii. Used ONLY for rendering
- *            and camera work. NEVER for measurements.
+ *            (`ORBIT_K * sqrt(r)`, applied per position) plus exaggerated body
+ *            radii. Used ONLY for rendering and camera work. NEVER for measurements.
  *   RENDER   Camera-relative scene units for GPU stability (`FloatingOrigin`).
  *            Currently identical to PRESENT shifted by the origin; the machinery exists
  *            so future tile streaming can rebase without touching world logic.
@@ -50,6 +52,10 @@ export {
   voyagerTrail,
   localToLonLat,
   vecToLonLat,
+  hasKepler,
+  keplerAU,
+  keplerElementsAt,
+  keplerOrbitPathAU,
 };
 export type { Body };
 
@@ -107,8 +113,8 @@ export function kmPointToGlobe(
 }
 
 /**
- * Invert the PRESENT radial mapping back to heliocentric AU.
- * Exact for circular-orbit planets by construction (r = ORBIT_K·sqrt(a)).
+ * Invert the PRESENT radial mapping back to heliocentric AU (r = ORBIT_K·sqrt(a)).
+ * Exact for planets by construction, at any true Keplerian radius.
  * Documented approximations: the Moon rides with Earth (visual lunar orbit is not
  * physical — returns Earth's semi-major axis); Voyager returns its AU model value.
  */

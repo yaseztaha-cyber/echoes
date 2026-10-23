@@ -299,7 +299,7 @@ function DataResolution() {
 
 function Provenance() {
   const scene = useEcho((s) => s.scene);
-  const label = scene === "solar" ? ["SIMULATION", "text-cyan", "CIRCULAR-ORBIT MODEL · SPIN NOT SIMULATED"] : scene === "planet" ? ["NASA RECORD + SIMULATION", "text-ok", "GLOBAL IMAGERY: NASA / USGS"] : ["RECONSTRUCTED", "text-warn", "MODEL + TERRAIN ARE VISUALIZATION"];
+  const label = scene === "solar" ? ["SIMULATION", "text-cyan", "KEPLERIAN J2000 MODEL (JPL APPROX. ELEMENTS) · VISUAL SCALE ADJUSTED · SPIN NOT SIMULATED"] : scene === "planet" ? ["NASA RECORD + SIMULATION", "text-ok", "GLOBAL IMAGERY: NASA / USGS"] : ["RECONSTRUCTED", "text-warn", "MODEL + TERRAIN ARE VISUALIZATION"];
   return (
     <div className="pointer-events-none text-right max-md:hidden">
       <span className={`mono border border-iron/70 px-1.5 py-[2px] text-[9px] tracking-[0.16em] ${label[1]}`}>{label[0]}</span>

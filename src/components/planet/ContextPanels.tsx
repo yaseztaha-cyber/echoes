@@ -51,7 +51,7 @@ function BodyPanel() {
             <button className="ctl ctl-primary mt-3 w-full" onClick={() => { sfx.open(); useEcho.setState({ overlay: "sun" }); }}>SOLAR SCIENCE VIEW →</button>
           </>
         )}
-        <div className="label mt-2 leading-relaxed">DISTANCES COMPUTED FROM A CIRCULAR-ORBIT MODEL. DISPLAY POSITIONS USE ADJUSTED VISUAL SCALE.</div>
+        <div className="label mt-2 leading-relaxed">DISTANCES FROM KEPLERIAN HELIOCENTRIC POSITIONS (JPL APPROX. ELEMENTS · DE441-VERIFIED). DISPLAY POSITIONS USE ADJUSTED VISUAL SCALE.</div>
         {(b.destination || focus === "earth") && (
           <button className="ctl ctl-primary mt-3 w-full" onClick={() => travelToBody(b.destination ?? "earth")}>
             {b.destination ? `TRAVEL TO ${b.name} →` : "ENTER EARTH ORBIT →"}

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { AU_KM, D2R } from "@/lib/geo";
 import { DAY_MS, J2000, YEAR_MS } from "@/lib/time";
 import { VOYAGER_LAUNCH, VOYAGER_NOW } from "@/data/artifacts/voyager";
+import { hasKepler, keplerAU } from "../frames/kepler";
 
 /** Visual scale: scene radius = ORBIT_K * sqrt(AU). Adjusted for navigation, NOT to scale. */
 export const ORBIT_K = 20;
@@ -55,12 +56,23 @@ export function bodyPos(id: string, t: number, out = new THREE.Vector3()): THREE
     const L = lonAt(b, t);
     return out.set(e.x + MOON_VISUAL_ORBIT * Math.cos(L), 0, e.z - MOON_VISUAL_ORBIT * Math.sin(L));
   }
+  // Keplerian (JPL approx. elements) for the 8 planets; Pluto stays circular.
+  if (hasKepler(id)) {
+    const k = keplerAU(id, t);
+    const au = Math.hypot(k[0], k[1], k[2]) || 1;
+    const r = ORBIT_K * Math.sqrt(au); // per-position visual compression
+    return out.set(k[0] * (r / au), k[1] * (r / au), k[2] * (r / au));
+  }
   const r = ORBIT_K * Math.sqrt(b.a);
   const L = lonAt(b, t);
   return out.set(r * Math.cos(L), 0, -r * Math.sin(L));
 }
 
-/** Real (circular-orbit) heliocentric position in AU on the ecliptic plane. */
+/**
+ * Real heliocentric position in AU, scene convention (ecliptic = XZ plane).
+ * Planets: Keplerian JPL approximate elements (1800–2050, Table 1). Moon and
+ * Pluto keep their documented approximations; everything is honest in the UI.
+ */
 export function realPos(id: string, t: number): [number, number, number] {
   if (id === "sun") return [0, 0, 0];
   if (id === "voyager1") {
@@ -70,6 +82,7 @@ export function realPos(id: string, t: number): [number, number, number] {
     return [(v.x / l) * au, (v.y / l) * au, (v.z / l) * au];
   }
   const b = bodyById(id)!;
+  if (hasKepler(id)) return keplerAU(id, t);
   if (b.id === "moon") {
     const e = realPos("earth", t);
     const L = lonAt(b, t);

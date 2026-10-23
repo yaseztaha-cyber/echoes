@@ -186,10 +186,35 @@ User review flagged four concrete things; each got a fix, not a shrug:
   `probe-pressfix.mjs`, `probe-marsfix.mjs`; `probe-zodiac.mjs` deleted with
   its feature.
 
+- User round (fourth): "orbits true? distances? and a real sun". Planets now
+  use **real Keplerian positions** — JPL Standish approximate elements
+  (Table 1, 1800–2050, mean ecliptic of J2000) solved per epoch in
+  `src/engine/frames/kepler.ts`; the old circular mean-longitude model only
+  remains where it must: the Moon (visual orbit) and Pluto (also kept out of
+  the table by JPL — read the page footnote). `frames.test.ts` semantics
+  upgraded from "distance == a" to perihelion/aphelion bounds at each epoch's
+  own elements + Kepler mean-r ≈ a property; new `kepler.test.ts` asserts
+  actual heliocentric vectors against **JPL Horizons DE441 ground truth
+  fetched via API** (Earth/Mars 2004-01-25, Jupiter 2026-10-23) inside the
+  published error bars (Earth ≈ 2e-5 AU at the anchor). Orbit lines are now
+  true ellipses with inclination-driven out-of-plane Y (small, honest).
+  Distance panels show live solar-system truth: Earth 0.99 AU in late
+  October, Jupiter 5.28 — nothing pinned to round numbers. UI honesty labels
+  updated (Keplerian JPL approx. elements · DE441-verified). The Sun texture
+  is now a **real** SDO/HMI 4096 continuum (HMIIC, retrieved 2026-10-23,
+  embedded UT timestamp) reprojected to an equirectangular photosphere by
+  `scripts/build-sun-map.py` (inverse-ortho disk detect + bilinear; far side
+  mirrored with a brightness fade, ±7.25° P-angle left as published and
+  documented). Verified: seam-free white-hot disc, spot groups visible,
+  elliptic orbit lines, labels updated; tests 119/119, tsc clean (both
+  pre-existing warnings resolved), harness ERRORS none.
+
 ## Honesty ledger (what must NOT be oversold)
 
-- Orbits use a circular-navigation model; display positions are explicitly
-  **adjusted for navigation, not to scale** — labelled in-app.
+- Orbits are Keplerian (JPL approximate elements, DE441-verified to arcsec
+  accuracy); display positions are explicitly **adjusted for navigation, not
+  to scale** — labelled in-app. Moon keeps a visual orbit; Pluto keeps a
+  circular approximation (excluded from the JPL table by choice).
 - Spacecraft are **team reconstructions**, not NASA CAD; labelled in-app.
 - Terrain relief is real where DEM exists (nine sites), visualized elsewhere.
 - Milky Way band is a real photograph placed at its real galactic geometry —

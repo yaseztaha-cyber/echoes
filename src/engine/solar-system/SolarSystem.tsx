@@ -2,7 +2,7 @@ import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html, Line } from "@react-three/drei";
-import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_VISUAL_ORBIT, voyagerAU, type Body } from "../frames/frames";
+import { BODIES, ORBIT_K, bodyPos, realDistanceKm, realPos, voyagerTrail, MOON_VISUAL_ORBIT, voyagerAU, type Body, hasKepler, keplerOrbitPathAU } from "../frames/frames";
 import { Atmosphere, BandedGlobe, EarthLayers, Globe, PlainGlobe } from "@/engine/planets/Globe";
 import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
@@ -17,7 +17,6 @@ import { focusBody } from "@/engine/director";
 import { smoothstep, AU_KM } from "@/lib/geo";
 import { VOYAGER_LAUNCH, VOYAGER_NOW } from "@/data/artifacts/voyager";
 
-const SUN_DIR = new THREE.Vector3();
 const tmp = new THREE.Vector3();
 
 function glowTexture() {
@@ -150,12 +149,27 @@ function Orbits() {
   const lines = useMemo(
     () =>
       BODIES.filter((b) => b.kind === "planet").map((b) => {
-        const r = ORBIT_K * Math.sqrt(b.a);
-        const pts: [number, number, number][] = [];
-        for (let i = 0; i <= 256; i++) pts.push([r * Math.cos((i / 256) * Math.PI * 2), 0, r * Math.sin((i / 256) * Math.PI * 2)]);
+        // True Keplerian ellipse (JPL approx. elements at the current epoch),
+        // mapped into the PRESENT visual scale per point. Pluto's path stays
+        // circular (documented approximation).
+        const auPath = hasKepler(b.id)
+          ? keplerOrbitPathAU(b.id, clock.t, 256)
+          : (() => {
+              const r = ORBIT_K * Math.sqrt(b.a);
+              const pts: [number, number, number][] = [];
+              for (let i = 0; i <= 256; i++) pts.push([r * Math.cos((i / 256) * Math.PI * 2), 0, r * Math.sin((i / 256) * Math.PI * 2)]);
+              return pts;
+            })();
+        const pts = auPath.map(([x, y, z]) => {
+          const au = Math.hypot(x, y, z) || 1;
+          const k = ORBIT_K * Math.sqrt(au) / au;
+          return [x * k, y * k, z * k] as [number, number, number];
+        });
         return { id: b.id, pts };
       }),
-    []
+    // recompute the shape when the simulated date bucket moves (epochs drift slowly)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Math.floor(clock.t / (90 * 86400000))]
   );
   return (
     <>

@@ -20,6 +20,7 @@ import {
 } from "./frames";
 import { GLOBE_R, RADIUS_KM } from "@/lib/geo";
 import { J2000, DAY_MS } from "@/lib/time";
+import { keplerElementsAt } from "./kepler";
 
 /**
  * Tolerances (float64 arithmetic, justified in physical units):
@@ -30,16 +31,52 @@ import { J2000, DAY_MS } from "@/lib/time";
 
 const planets = BODIES.filter((b) => b.kind === "planet");
 
-describe("SCI frame — circular-orbit invariants", () => {
-  it("sun–earth distance is exactly 1 AU at any epoch", () => {
-    for (const dt of [0, 123.456 * DAY_MS, 36525 * DAY_MS]) {
-      expect(sciDistanceKm("earth", "sun", J2000 + dt)).toBeCloseTo(AU_KM, 6);
+/** Perihelion/aphelion multipliers (1∓e) from JPL Standish Table 1 (a·(1−e), a·(1+e)). */
+const PERI_APHE: Record<string, [number, number]> = {
+  mercury: [0.307490, 0.466697],
+  venus: [0.718433, 0.728214],
+  earth: [0.983289, 1.016713],
+  mars: [1.381335, 1.665981],
+  jupiter: [4.951156, 5.454537],
+  saturn: [9.023078, 10.050181],
+  uranus: [18.286183, 20.101410],
+  neptune: [29.811465, 30.328396],
+};
+
+describe("SCI frame — Keplerian orbit invariants (JPL approximate elements)", () => {
+  const EPOCHS = [0, 777 * DAY_MS, 3652.5 * DAY_MS, 16425 * DAY_MS];
+
+  it("sun–earth distance is Keplerian, not constant: bounded and matching Horizons at the anchor", () => {
+    // Horizons DE441 heliocentric range on 2004-01-25 (fetched 2026-10-23).
+    expect(sciDistanceKm("earth", "sun", Date.UTC(2004, 0, 25)) / AU_KM).toBeCloseTo(0.984418, 3);
+    for (const dt of EPOCHS) {
+      const au = sciDistanceKm("earth", "sun", J2000 + dt) / AU_KM;
+      expect(au).toBeGreaterThanOrEqual(0.983288 - 5e-5);
+      expect(au).toBeLessThanOrEqual(1.016713 + 5e-5);
     }
   });
 
-  it("each planet holds its semi-major axis distance from the sun", () => {
+  it("each planet's heliocentric radius lives between perihelion and aphelion (at its own epoch)", () => {
     for (const b of planets) {
-      expect(sciDistanceKm(b.id, "sun", J2000) / AU_KM).toBeCloseTo(b.a, 9);
+      if (!(b.id in PERI_APHE)) continue; // Pluto keeps its circular approximation
+      for (const dt of EPOCHS) {
+        const t = J2000 + dt;
+        const el = keplerElementsAt(b.id, t);
+        const peri = el.a * (1 - el.e);
+        const aphe = el.a * (1 + el.e);
+        const au = sciDistanceKm(b.id, "sun", t) / AU_KM;
+        expect(au, `${b.id} +${(dt / DAY_MS).toFixed(0)} days below perihelion`).toBeGreaterThanOrEqual(peri - 1e-8);
+        expect(au, `${b.id} +${(dt / DAY_MS).toFixed(0)} days beyond aphelion`).toBeLessThanOrEqual(aphe + 1e-8);
+      }
+    }
+  });
+
+  it("mean heliocentric radius over one orbit ≈ semi-major axis (Kepler property)", () => {
+    for (const b of planets) {
+      const n = 73;
+      let sum = 0;
+      for (let i = 0; i < n; i++) sum += sciDistanceKm(b.id, "sun", J2000 + (b.periodDays * DAY_MS * i) / n) / AU_KM;
+      expect(sum / n, `${b.id} mean radius`).toBeCloseTo(b.a, 1);
     }
   });
 
@@ -51,11 +88,16 @@ describe("SCI frame — circular-orbit invariants", () => {
     }
   });
 
-  it("sciBodyPosAU radius matches the semi-major axis", () => {
+  it("sciBodyPosAU is heliocentric, near-ecliptic, and radially Keplerian", () => {
     for (const b of planets) {
-      const [x, y, z] = sciBodyPosAU(b.id, J2000);
-      expect(y).toBe(0); // model ecliptic plane
-      expect(Math.hypot(x, z)).toBeCloseTo(b.a, 9);
+      if (!(b.id in PERI_APHE)) continue; // Pluto keeps its circular approximation
+      const t = J2000 + 777 * DAY_MS;
+      const [x, y, z] = sciBodyPosAU(b.id, t);
+      const el = keplerElementsAt(b.id, t);
+      // out-of-plane amplitude is bounded by the orbit's inclined geometry
+      expect(Math.abs(y), `${b.id} out-of-plane within a(sinI)(1+e)`).toBeLessThanOrEqual(el.a * (1 + el.e) * Math.abs(Math.sin(el.I)) + 1e-9);
+      expect(Math.hypot(x, z)).toBeGreaterThanOrEqual(el.a * (1 - el.e) - 1e-8);
+      expect(Math.hypot(x, z)).toBeLessThanOrEqual(el.a * (1 + el.e) + 1e-8);
     }
   });
 });
@@ -69,10 +111,16 @@ describe("PRESENT frame — visual mapping and its inverse", () => {
     }
   });
 
-  it("present positions sit on the mapped orbit radius", () => {
+  it("present positions sit exactly on the per-position mapped radius (radial compression)", () => {
+    const t = J2000 + 777 * DAY_MS;
     for (const b of planets) {
-      const p = presentBodyPos(b.id, J2000 + 777 * DAY_MS, new THREE.Vector3());
-      expect(Math.hypot(p.x, p.z)).toBeCloseTo(sciAUToPresentRadius(b.a), 9);
+      const sci = sciBodyPosAU(b.id, t);
+      const rAU = Math.hypot(sci[0], sci[1], sci[2]);
+      const p = presentBodyPos(b.id, t, new THREE.Vector3());
+      // full 3D radius maps r → ORBIT_K*sqrt(r) regardless of direction
+      expect(p.length()).toBeCloseTo(sciAUToPresentRadius(rAU), 9);
+      // and the inverse primitive reproduces the same AU radius
+      expect(presentRadiusToAU(b.id, p.length(), t)).toBeCloseTo(rAU, 9);
     }
   });
 

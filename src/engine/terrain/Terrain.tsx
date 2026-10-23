@@ -175,7 +175,7 @@ export function edgeSnapBits(
   return bits;
 }
 
-function colorAt(world: TerrainWorld, x: number, z: number, h: number, slope: number, out: number[]) {
+function colorAt(world: TerrainWorld, x: number, z: number, _h: number, slope: number, out: number[]) {
   const n1 = fbm(x / 700, z / 700, 3, 5);
   const n2 = fbm(x / 38, z / 38, 3, 11);
   const n3 = fbm(x / 6, z / 6, 2, 21);
