@@ -348,7 +348,7 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     sourceUrl: "https://sdo.gsfc.nasa.gov/data/dataaccess.php",
     sourceFile: "sdo_hmiic_4096.jpg",
     sourcePx: [4096, 4096],
-    deliveredPx: [2048, 1024],
+    deliveredPx: [4096, 2048],
     hiresPx: [4096, 2048],
     projection: "Equirectangular rebuilt from the orthographic disk (scripts/build-sun-channels.py inverse-ortho, bilinear; three.js UV convention)",
     colorClass: "Grayscale continuum intensity only (no baked color); white-gold tone ramp + disclosed contrast stretch applied in the shader — labelled OBSERVED+RECONSTRUCTED in UI",

@@ -1,26 +1,34 @@
 {
- "epoch": "HMI continuum full disk 4096, retrieved 2026-10-23 with the photosphere build",
+ "epoch": "HMI continuum full disk 4096, 2026-10-23T00:00Z (SDO browse archive)",
  "instrument": "SDO/HMI continuum (Fe I 6173 A)",
- "sourceFile": "sdo_hmiic_4096.jpg",
- "sourceUrl": "https://sdo.gsfc.nasa.gov/data/dataaccess.php",
+ "sourceFile": "20261023_000000_4096_HMIIC.jpg",
+ "sourceUrl": "https://sdo.gsfc.nasa.gov/assets/img/browse/2026/10/23/",
  "detection": "Local-illumination-normalised intensity < 0.78 clustered (scipy.ndimage); largest 8 regions kept",
  "note": "Feature positions are real detections of THIS snapshot, not random art; they age with the image and refresh on re-fetch.",
  "spots": [
   {
-   "lon": 54.08,
-   "lat": 8.97,
-   "u": 0.40023,
-   "v": 0.45015,
+   "lon": 47.66,
+   "lat": 8.43,
+   "u": 0.38239,
+   "v": 0.45319,
    "areaPx": 384,
-   "minRelativeIntensity": 0.007
+   "minRelativeIntensity": 0.013
   },
   {
-   "lon": 40.91,
-   "lat": 12.05,
-   "u": 0.36363,
-   "v": 0.43307,
-   "areaPx": 256,
-   "minRelativeIntensity": 0.342
+   "lon": 44.6,
+   "lat": 8.09,
+   "u": 0.3739,
+   "v": 0.45507,
+   "areaPx": 224,
+   "minRelativeIntensity": 0.274
+  },
+  {
+   "lon": 35.59,
+   "lat": 11.32,
+   "u": 0.34885,
+   "v": 0.43712,
+   "areaPx": 208,
+   "minRelativeIntensity": 0.364
   }
  ]
 }

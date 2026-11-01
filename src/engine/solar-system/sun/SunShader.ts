@@ -44,6 +44,19 @@ varying vec3 vV;
 vec3 aces(vec3 x) {
   return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
+float hash(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+// value noise — fine granulation micro-texture (disclosed reconstruction)
+float vnoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
 vec3 toSRGB(vec3 c) {
   return mix(c * 12.92, 1.055 * pow(max(c, vec3(0.0031308)), vec3(0.41666)) - 0.055, step(0.0031308, c));
 }
@@ -56,29 +69,27 @@ void main() {
     // science channel: as-published colors, gentle filmic only (no clipping)
     col = tex * uEx;
   } else {
-    // RECONSTRUCTED photosphere: the measured continuum spans only
-    // p1..p95 = 0.56..0.70 (median 0.63, sRGB units) — stretch around the
-    // median so granulation mottling and sunspot umbrae actually reach the
-    // ramp. Disclosed reconstruction (asset manifest notes the stretch).
-    float m = 0.63 + (pow(lum, 1.0 / 2.2) - 0.63) * 2.8;
+    // RECONSTRUCTED photosphere: real continuum intensity with only a mild
+    // stretch (measured p1..p95 = 0.56..0.70, median 0.63) so the disk stays
+    // a believable white-gold surface instead of stylised blobs. The fine
+    // granulation grain is a disclosed procedural micro-texture (frozen
+    // snapshot — real granules evolve in minutes and are sub-pixel here).
+    float m = 0.63 + (pow(lum, 1.0 / 2.2) - 0.63) * 1.7;
     float mu = clamp(dot(normalize(vN), normalize(vV)), 0.0, 1.0);
     if (uDetail > 0.001) {
-      // granulation micro-mottle: offset re-sample of the same map
-      float l2 = dot(texture2D(uMap, fract(vUv * 3.5 + vec2(0.37, 0.11))).rgb, vec3(0.2126, 0.7152, 0.0722));
-      float m2 = 0.63 + (pow(l2, 1.0 / 2.2) - 0.63) * 2.8;
-      m = mix(m, m2, 0.35 * uDetail);
+      vec2 gv = vUv * vec2(210.0, 105.0);
+      float grain = vnoise(gv) * 0.55 + vnoise(gv * 2.3 + 11.7) * 0.30 + vnoise(gv * 5.1 + 3.3) * 0.15;
+      m += (grain - 0.5) * 0.28 * uDetail;
     }
-    // continuum limb darkening applied after the stretch
-    float i = m * uEx * (0.34 + 0.66 * pow(mu, 0.62));
-    vec3 cUmbra = vec3(0.32, 0.09, 0.02);
-    vec3 cDeep = vec3(1.00, 0.52, 0.14);
-    vec3 cGold = vec3(1.00, 0.78, 0.34);
-    vec3 cWhite = vec3(1.00, 0.975, 0.90);
-    col = mix(cUmbra, cDeep, smoothstep(0.08, 0.32, i));
-    col = mix(col, cGold, smoothstep(0.32, 0.62, i));
-    col = mix(col, cWhite, smoothstep(0.62, 0.92, i));
-    // restrained chromosphere rim (thin warm edge, never a thick orange outline)
-    col += vec3(0.85, 0.25, 0.05) * pow(1.0 - mu, 5.0) * 0.30;
+    // physical continuum limb darkening, then a white-gold ramp
+    float i = m * uEx * (0.30 + 0.70 * pow(mu, 0.62));
+    vec3 cLimb = vec3(1.00, 0.52, 0.20);
+    vec3 cGold = vec3(1.00, 0.88, 0.62);
+    vec3 cWhite = vec3(1.00, 0.985, 0.94);
+    col = mix(cLimb, cGold, smoothstep(0.18, 0.62, i));
+    col = mix(col, cWhite, smoothstep(0.62, 0.90, i));
+    // restrained chromosphere rim (thin warm edge, never a thick outline)
+    col += vec3(0.85, 0.25, 0.05) * pow(1.0 - mu, 6.0) * 0.25;
   }
   col = toSRGB(aces(col));
   gl_FragColor = vec4(col, 1.0);

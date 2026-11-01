@@ -280,7 +280,7 @@ approximate — recorded, not claimed.
 | Uranus | `uranus-rep` | REPRESENTATIVE (fictional) | JPL 720×360 → native |
 | Neptune | `neptune-rep` | REPRESENTATIVE (fictional, no GDS claim) | JPL 720×360 → native |
 | Pluto (dwarf) | `pluto-nh-mosaic` | MOSAIC (LORRI 300m; S-pole night black) | USGS 24888×12444 → 2048 + 4K hi |
-| Sun photosphere | `sun-visible-recon` | OBSERVED + RECONSTRUCTED (HMI continuum, method filed) | HMI 4096² → 2048×1024 grayscale; ramp/contrast in-shader (disclosed) |
+| Sun photosphere | `sun-visible-recon` | OBSERVED + RECONSTRUCTED (HMI continuum, method filed) | HMI 4096² → 4096×2048 grayscale bilinear; white-gold ramp + fine grain in-shader (disclosed) |
 | Sun magnetic/chromosphere/corona/motion | `sun-hmi-mag/aia304/aia171/doppler-recon` | OBSERVED + RECONSTRUCTED sphere channels (false-color/quantity labelled) | SDO 1024² → 1024×512 each, far side mirrored |
 | Sun flat science view | `sun-hmi/aia304/aia193-flat` | OBSERVED flat full-disk (false-color labelled) | SDO 1024 → native |
 | Sun corona structure | `corona_mask.png` + `src/data/corona.json` | RECONSTRUCTED from dated LASCO C3 (radial scale compressed) | LASCO 1024 → 512×256 log-polar |

@@ -118,13 +118,14 @@ def build_equirect(im, out_path, width=1024, height=512):
     print("saved", out_path)
 
 
-def build_photosphere(hmiic_path, out_path=f"{TEX}/sun.jpg", width=2048, height=1024):
+def build_photosphere(hmiic_path, out_path=f"{TEX}/sun.jpg", width=4096, height=2048):
     """Photosphere equirect for the new shader: GRAYSCALE INTENSITY ONLY.
 
-    No baked color ramp, no baked limb glow outside the disk (samples stay
-    inside r=0.995 and saturate to the limb ring at the poles), no tone games —
-    the SunShader owns color/limb-darkening/exposure. Far side = mirrored with
-    fade, same disclosure as the science channels.
+    No baked color ramp, no baked limb glow outside the disk, no tone games -
+    the SunShader owns color/limb-darkening/exposure. Sampled BILINEARLY at
+    full source resolution (nearest sampling aliased the granulation into
+    blocky cells). Far side = mirrored with fade, same disclosure as the
+    science channels.
     """
     im = Image.open(hmiic_path).convert("RGB")
     g = np.asarray(im.convert("L"), dtype=float)
@@ -133,16 +134,21 @@ def build_photosphere(hmiic_path, out_path=f"{TEX}/sun.jpg", width=2048, height=
     X, Y, Z = sample_dir(width, height)
     far = Z < 0
     Xu = np.where(far, -X, X)
-    fx = np.clip((cx + Xu * R).round().astype(int), 0, w0 - 1)
-    fy = np.clip((cy - Y * R).round().astype(int), 0, h0 - 1)
-    val = g[fy, fx]
+    fx = np.clip(cx + Xu * R, 0, w0 - 1.001)
+    fy = np.clip(cy - Y * R, 0, h0 - 1.001)
+    x0 = np.floor(fx).astype(int)
+    y0 = np.floor(fy).astype(int)
+    dx, dy = fx - x0, fy - y0
+    val = (g[y0, x0] * (1 - dx) + g[y0, x0 + 1] * dx) * (1 - dy) + (
+        g[y0 + 1, x0] * (1 - dx) + g[y0 + 1, x0 + 1] * dx
+    ) * dy
     depth = np.minimum(1.0, np.where(far, -Z, 0.0) / np.maximum(np.sqrt(np.maximum(1e-6, 1 - Y ** 2)), 1e-6))
     val = val * (1 - 0.15 * depth)
     near = Z >= 0.5
     p = np.percentile(val[near], [1, 25, 50, 75, 95])
     print(f"photosphere near-side intensity percentiles p1/p25/p50/p75/p95: {p.round(1)}")
     out = np.stack([val] * 3, axis=-1).clip(0, 255).astype(np.uint8).transpose(1, 0, 2)
-    Image.fromarray(out, "RGB").save(out_path, quality=90)
+    Image.fromarray(out, "RGB").save(out_path, quality=92)
     print("saved", out_path)
 
 
