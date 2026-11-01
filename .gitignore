@@ -41,3 +41,7 @@ assets-hi/
 shots*/
 .bisect/
 .bisect/
+
+# python
+__pycache__/
+*.pyc
