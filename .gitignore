@@ -38,6 +38,6 @@ Thumbs.db
 assets-hi/
 
 # measurement harness output + bisect worktree
-shots/
-shots2/
+shots*/
+.bisect/
 .bisect/

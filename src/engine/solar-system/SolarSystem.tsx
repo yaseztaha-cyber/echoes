@@ -8,7 +8,7 @@ import { Stars } from "@/engine/world/Stars";
 import { ArtifactModel } from "@/engine/spacecraft/models";
 import { HI_TIERS } from "@/engine/textures/manager";
 import { useHiMap } from "@/engine/textures/hiGlobe";
-import sunUrl from "@/assets/tex/sun.jpg";
+import { Sun } from "./sun/SunCore";
 import { clock } from "@/engine/time/clock";
 import { tele, siteRef, htmlLayer } from "@/engine/telemetry";
 import { useEcho } from "@/state/store";
@@ -18,19 +18,6 @@ import { smoothstep, AU_KM } from "@/lib/geo";
 import { VOYAGER_LAUNCH, VOYAGER_NOW } from "@/data/artifacts/voyager";
 
 const tmp = new THREE.Vector3();
-
-function glowTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 128;
-  const g = c.getContext("2d")!;
-  const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  gr.addColorStop(0, "rgba(255,248,232,0.95)");
-  gr.addColorStop(0.25, "rgba(255,236,190,0.24)");
-  gr.addColorStop(1, "rgba(255,236,190,0)");
-  g.fillStyle = gr;
-  g.fillRect(0, 0, 128, 128);
-  return new THREE.CanvasTexture(c);
-}
 
 function ringTexture() {
   const c = document.createElement("canvas");
@@ -42,35 +29,6 @@ function ringTexture() {
   g.fillStyle = gr;
   g.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
-}
-
-function Sun() {
-  const tex = useMemo(glowTexture, []);
-  // RECONSTRUCTED photosphere (SDO/HMI-derived granulation, see manifest).
-  // Real wavelength observations live in the SolarScope science view.
-  const surface = useMemo(() => {
-    const t = new THREE.TextureLoader().load(sunUrl);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
-  return (
-    <group>
-      <mesh>
-        <sphereGeometry args={[2.4, 48, 32]} />
-        {/* HDR multiplier: the HMI-derived granulation map is mid-gray; pushing
-            the multiply into >1 range reads the disc as a white-hot photosphere
-            with darker granulation/spot mottling instead of a dirty beige ball. */}
-        <meshBasicMaterial map={surface} toneMapped={false} color={[5.5, 4.8, 3.9]} />
-      </mesh>
-      {/* inner hot core + outer falloff: two additive layers read as glare */}
-      <sprite scale={[13, 13, 1]}>
-        <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
-      </sprite>
-      <sprite scale={[30, 30, 1]}>
-        <spriteMaterial map={tex} transparent depthWrite={false} blending={THREE.AdditiveBlending} opacity={0.28} fog={false} />
-      </sprite>
-    </group>
-  );
 }
 
 function BodyVisual({ b, sun }: { b: Body; sun: THREE.Vector3 }) {

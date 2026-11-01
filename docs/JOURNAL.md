@@ -209,6 +209,41 @@ User review flagged four concrete things; each got a fix, not a shrug:
   elliptic orbit lines, labels updated; tests 119/119, tsc clean (both
   pre-existing warnings resolved), harness ERRORS none.
 
+### THE SUN — extreme visual fidelity + Solar Layer Explorer
+
+- **Renderer:** new `src/engine/solar-system/sun/` module (old flat disc + double
+  sprite glow removed). Photosphere = 96×64 shader sphere sampling the real HMI
+  continuum equirect; white-gold 4-stop ramp, continuum limb darkening, thin
+  chromosphere rim, distance-gated granulation micro-mottle, in-shader ACES +
+  sRGB (no double tone mapping). Glare = one soft sprite, fades out close.
+- **Corona:** structured billboard sampling the LASCO C3 log-polar mask
+  (visible annulus only, sweep-corrupted samples replaced, monotone radial
+  falloff); world-anchored azimuth, distance-aware gain — restrained at
+  overview (no giant grey oval), boosted on the CORONA layer, hidden before it
+  floods close-ups. Plane extent 4.3 R☉ (was 7.0; user-directed shrink).
+- **Solar Layer Explorer:** five layers (photosphere, chromosphere 304,
+  corona 171, magnetic HMI LOS, motion dopplergram) with per-layer
+  instrument/wavelength/class/legend/cannot-conclude text and observation
+  stamps; EUV/magnetogram/doppler render as published (no ramp). `SolarScope`
+  now shows seven flat channels (continuum, magnetogram, dopplergram, 304,
+  171, 193, 211) with A/B compare against continuum.
+- **Real detections:** `src/data/sunspots.json` (detected in the stored HMI
+  snapshot) drives sphere-anchored markers; tapping opens a physics card and
+  "COMPARE IN SOLAR SCIENCE". Marker visibility = distance gate + tangent-safe
+  facing test (0.02) so limb spots stay tappable.
+- **Pipeline:** `scripts/build-sun-channels.py` rebuilt with the three.js UV
+  convention (`sample_dir`; near half u∈[0,0.5), u=0.25 = disk center) after
+  the first convention was found mirrored on the sphere; far side = east-west
+  mirror at 85%; photosphere asset is grayscale intensity only (no baked color
+  or limb bleed); sunspot UVs use the matching formula.
+- **Bug found and fixed:** r3f does not guarantee the `uniforms` prop object
+  identity survives onto the created `ShaderMaterial` — per-frame mutations of
+  the `useMemo` object silently no-op (disk rendered with default uniforms).
+  All uniform writes now go through material refs (`matRef.current.uniforms`).
+- **Verified:** headless probe (`scripts/probe-sun.mjs`, shots in gitignored
+  `shotsun/`) — all five layers swap correctly, corona streamers visible,
+  overview clean, spot card opens, ERRORS 0; tsc clean; vitest 119/119.
+
 ## Honesty ledger (what must NOT be oversold)
 
 - Orbits are Keplerian (JPL approximate elements, DE441-verified to arcsec
@@ -219,6 +254,12 @@ User review flagged four concrete things; each got a fix, not a shrug:
 - Terrain relief is real where DEM exists (nine sites), visualized elsewhere.
 - Milky Way band is a real photograph placed at its real galactic geometry —
   it is scenery for orientation, not a photometric survey of the sky.
+- Sun photosphere is a real HMI continuum snapshot but its white-gold tone is
+  a disclosed reconstruction (in-shader contrast stretch, measured p1–p95
+  recorded); the far hemisphere is mirrored fill; the corona halo is a dated
+  LASCO C3 observation rescaled to hug the limb (radial scale compressed).
+  EUV/magnetogram/doppler layers are false-color or quantity maps, never
+  naked-eye views — labelled per layer in-app.
 - No child-user study has been run yet (planned at the local event; see
   `docs/CONNECTION.md` §6).
 

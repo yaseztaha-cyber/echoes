@@ -6,6 +6,8 @@ export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains
 export type Quality = "ultra" | "high" | "medium" | "low";
 export type SimMode = "solar-system" | "mission" | "historical";
 export type Level = "explore" | "understand" | "technical";
+/** Sun renderer layer (Solar Layer Explorer). Layers are real SDO observations. */
+export type SunLayerId = "photosphere" | "chromosphere" | "corona" | "magnetic" | "motion";
 
 export interface Banner {
   title: string;
@@ -84,6 +86,10 @@ export interface EchoState {
   gpuLost: boolean;
   /** Venus globe mode: radar-derived surface vs cloud-covered appearance. */
   venusView: "surface" | "clouds";
+  /** Sun renderer layer — one deliberate layer at a time (Solar Layer Explorer). */
+  sunLayer: SunLayerId;
+  /** Selected real sunspot (interactive target from src/data/sunspots.json). */
+  sunSpotId: string | null;
   /** Simulated time-of-day scrub (radians 0..2pi, 0 = real arrival sun). Study mode only, never persisted. */
   sunPhase: number;
   /** Session film roll (renderer readbacks). In-memory only — frames are too big for localStorage. */
@@ -146,6 +152,8 @@ export const useEcho = create<EchoState>(() => ({
   sidePanelHidden: false,
   gpuLost: false,
   venusView: "surface",
+  sunLayer: "photosphere",
+  sunSpotId: null,
   sunPhase: 0,
   photos: [],
   photoReq: 0,

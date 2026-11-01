@@ -4,6 +4,7 @@ import { sourceById } from "@/data/sources";
 import { BODIES, bodyById } from "@/engine/frames/frames";
 import { Chip, Field, Panel, Status, stateAt, useTele } from "@/components/chrome/ui";
 import { descendToSite, focusBody, goVoyager, inspectHardware, leaveSite, openRemains, returnToSolarSystem, scalePullback, selectSite, startReplay, travelToBody, goToArtifact } from "@/engine/director";
+import { SunLayerPanel } from "@/components/solar/SunLayerPanel";
 import { fmtDist, fmtLat, fmtLon } from "@/lib/geo";
 import { fmtDate } from "@/lib/time";
 import { sfx } from "@/lib/audio";
@@ -45,12 +46,7 @@ function BodyPanel() {
             <div className="label mt-1 leading-relaxed">SURFACE = MAGELLAN RADAR, NOT A PHOTO · CLOUDS = REPRESENTATIVE APPEARANCE</div>
           </div>
         )}
-        {focus === "sun" && (
-          <>
-            <Field k="PHOTOSPHERE" v="RECONSTRUCTED FROM SDO/HMI" tone="text-warn" />
-            <button className="ctl ctl-primary mt-3 w-full" onClick={() => { sfx.open(); useEcho.setState({ overlay: "sun" }); }}>SOLAR SCIENCE VIEW →</button>
-          </>
-        )}
+        {focus === "sun" && <SunLayerPanel />}
         <div className="label mt-2 leading-relaxed">DISTANCES FROM KEPLERIAN HELIOCENTRIC POSITIONS (JPL APPROX. ELEMENTS · DE441-VERIFIED). DISPLAY POSITIONS USE ADJUSTED VISUAL SCALE.</div>
         {(b.destination || focus === "earth") && (
           <button className="ctl ctl-primary mt-3 w-full" onClick={() => travelToBody(b.destination ?? "earth")}>

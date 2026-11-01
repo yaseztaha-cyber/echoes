@@ -18,6 +18,11 @@ const LAYER_FILES: Record<string, string> = {
   "venus:clouds": "venus_clouds.jpg",
   "earth:clouds": "earth_clouds.jpg",
   "earth:night": "earth_night.jpg",
+  // Sun Solar Layer Explorer: sphere-mapped science channels
+  "sun:magnetic": "sun_hmi.jpg",
+  "sun:chromosphere": "sun_0304.jpg",
+  "sun:corona": "sun_0171.jpg",
+  "sun:motion": "sun_doppler.jpg",
 };
 
 describe("globe asset manifest", () => {
