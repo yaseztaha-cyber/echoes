@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEcho } from "@/state/store";
+import { useEcho, openMissionFilm, closeMissionFilm } from "@/state/store";
 import { getJourney, type MissionJourney, type CaseFile } from "@/data/journeys";
+import { filmForDevice } from "@/data/missionFilms";
+import { MissionFilmPlayer, PlayIcon } from "./MissionFilmPlayer";
 import { artifactById } from "@/data/artifacts";
 import { sourceById } from "@/data/sources";
 import { setT, configureClock } from "@/engine/time/clock";
@@ -57,6 +59,11 @@ export function MissionJourney() {
   const [playing, setPlaying] = useState(false);
   const [openCaseFile, setOpenCaseFile] = useState<CaseFile | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const filmDeviceId = useEcho((s) => s.filmDeviceId);
+  /** The film registered for THIS device (null for every device without one). */
+  const film = filmDeviceId === aid ? filmForDevice(aid) : null;
+  /** The film this device could offer — used for the entry point in the top bar. */
+  const filmOffer = filmForDevice(aid);
 
   const chapter = journey?.chapters[chapterIndex];
   const total = journey?.chapters.length ?? 0;
@@ -128,6 +135,17 @@ export function MissionJourney() {
         </div>
         <div className="flex items-center gap-4">
           <span className="mono text-[10px] text-amber/70">{chapter.date}</span>
+          {filmOffer && !film && (
+            <button
+              className="ctl flex items-center gap-2 text-[9px] px-2 py-1 text-amber"
+              onClick={() => { sfx.confirm(); openMissionFilm(filmOffer.deviceId); }}
+              aria-label="Watch mission film"
+              style={{ minHeight: "22px" }}
+            >
+              <PlayIcon className="h-2.5 w-2.5" />
+              WATCH MISSION FILM
+            </button>
+          )}
           <button className="ctl text-[9px] px-2 py-1" onClick={closeJourney} aria-label="Exit journey" style={{ minHeight: "22px" }}>✕ EXIT</button>
         </div>
       </div>
@@ -135,7 +153,12 @@ export function MissionJourney() {
       {/* Main cinematic content — fills most of screen, 3D world visible around edges */}
       <div className="pointer-events-auto absolute inset-0 flex items-center justify-center px-4 pt-12 pb-16 md:px-8">
         <div className="w-full max-w-7xl">
-          {isIntro ? (
+          {film ? (
+            /* MISSION FILM — the documentary is revealed inside the mission experience */
+            <div className="mx-auto w-full max-w-6xl">
+              <MissionFilmPlayer film={film} onClose={closeMissionFilm} />
+            </div>
+          ) : isIntro ? (
             /* INTRO: Asymmetric cinematic — large media left (60%), mission identity right (40%) */
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
               {/* Left: Large media viewport (3/5 = 60%) */}
@@ -178,6 +201,18 @@ export function MissionJourney() {
                   <h1 className="mono text-[26px] leading-none tracking-[0.06em] text-bone mb-1">{art.name}</h1>
                   <div className="mono text-[11px] text-amber/70">{art.designation} · {journey.missionType.toUpperCase()}</div>
                 </div>
+
+                {/* The mission film — the documentary of this mission (registered devices only) */}
+                {filmOffer && !film && (
+                  <button
+                    className="ctl flex w-full items-center justify-center gap-2 py-2.5 text-amber"
+                    onClick={() => { sfx.confirm(); openMissionFilm(filmOffer.deviceId); }}
+                    aria-label={`Watch mission film: ${filmOffer.title}`}
+                  >
+                    <PlayIcon className="h-3 w-3" />
+                    WATCH MISSION FILM
+                  </button>
+                )}
 
                 {/* Key achievements woven into text, not stat boxes */}
                 <div className="space-y-3">
@@ -372,7 +407,10 @@ export function MissionJourney() {
         </div>
       )}
 
-      {/* Slim timeline — bottom */}
+      {/* Slim timeline — bottom. Hidden while the mission film is open: the
+          chapter ruler drives camera choreography and must not compete with
+          the film's own transport controls. */}
+      {!film && (
       <div className="pointer-events-auto absolute bottom-0 left-0 right-0 px-4 py-2 bg-gradient-to-t from-ink-0/60 to-transparent">
         <div className="flex items-center gap-3 max-w-6xl mx-auto">
           <div className="flex items-center gap-1 flex-none">
@@ -409,6 +447,7 @@ export function MissionJourney() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

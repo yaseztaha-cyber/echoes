@@ -1,5 +1,7 @@
-import { useEcho } from "@/state/store";
+import { useEcho, openMissionFilm } from "@/state/store";
 import { ARTIFACTS, artifactById, artifactsFor } from "@/data/artifacts";
+import { filmForDevice } from "@/data/missionFilms";
+import { PlayIcon } from "@/components/mission/MissionFilmPlayer";
 import { sourceById } from "@/data/sources";
 import { BODIES, bodyById } from "@/engine/frames/frames";
 import { Chip, Field, Panel, Status, stateAt, useTele } from "@/components/chrome/ui";
@@ -151,6 +153,8 @@ function ArtifactPanel() {
   const scene = useEcho((s) => s.scene);
   const progress = useEcho((s) => s.progress);
   const art = artifactById(aid);
+  /** The mission film registered for this device — null for every other device. */
+  const film = filmForDevice(aid);
   if (!art) return null;
   const detail = ui === "science" || aud === "student";
   const voy = art.id === "voyager1";
@@ -163,6 +167,16 @@ function ArtifactPanel() {
         <Field k="LAUNCH" v={fmtDate(art.dates.launch)} />
         {art.dates.landing && <Field k="LANDING" v={fmtDate(art.dates.landing)} />}
         <p className="mt-2 text-[13px] leading-snug text-ash">{art.summary}</p>
+        {film && (
+          <button
+            className="ctl ctl-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-amber"
+            onClick={() => openMissionFilm(film.deviceId)}
+            aria-label={`Watch mission film: ${film.title}`}
+          >
+            <PlayIcon className="h-3 w-3" />
+            WATCH MISSION FILM
+          </button>
+        )}
         <div className="mt-3 grid grid-cols-2 gap-1.5">
           <button className="ctl ctl-primary col-span-2" onClick={() => inspectHardware()}>INSPECT HARDWARE</button>
           <button className="ctl" onClick={() => startReplay()}>▶ REPLAY MISSION</button>

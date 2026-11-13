@@ -314,6 +314,41 @@ User review flagged four concrete things; each got a fix, not a shrug:
   `tsc --noEmit` clean, production build succeeds. Full report:
   `ECHOES_DEVICE_NAVIGATION_FINAL_VERIFICATION.md`.
 
+### MER-B MISSION FILM — the Opportunity documentary, playable inside ECHOES
+
+- **The asset:** the delivered archive `mars-rover-cinematic-prototype (1).zip`
+  contains **no video file** — it is the *source* of the documentary
+  (`MERB_JOURNEY_STANDALONE`: 18 chapters, 514 s, procedural 3D worlds, camera
+  choreography, media manifest, audio policy). The recording its own
+  verification report names
+  (`verification/video/verification-run-software-gl.webm`) was not included and
+  exists nowhere on the machine. The film was therefore **rendered from the
+  delivered documentary** (`scripts/render-merb-film.mjs`: build → headless
+  Edge → real-time playthrough → 9:18.92 at 30 fps). No stock footage, no NASA
+  substitute, no placeholder.
+- **Audio restored exactly:** Chromium's screencast is video-only, so the
+  documentary's only audible material — the NASA/JPL launch tracker tape
+  (AVC-2003-175-1, clip 226–256 s) — was muxed back at the exact offset the
+  documentary plays it, with the video stream copied bit-for-bit. The film is
+  silent everywhere else, which is the documentary's own stated policy.
+- **Integration:** a mission-film registry (`src/data/missionFilms.ts`), a real
+  HTML5 player with ECHOES-styled controls
+  (`src/components/mission/MissionFilmPlayer.tsx`), and a **MER-B-only**
+  `WATCH MISSION FILM` action in the journey intro panel, the journey top bar
+  and the mission context panel. The film is revealed *inside* the mission
+  journey interface; the 3D site stays visible around it.
+- **Safety:** opening/closing the film touches only the overlay and the film id
+  — no scene, world, device, chapter or camera change; the instrumented trace
+  records **zero** Solar System returns; the chapter ruler is hidden while the
+  film is open; ESC closes the film, not the journey.
+- **Verified in the running app** (1920×1080, `http://localhost:5174/`):
+  **24 / 24 browser checks pass**, 0 console errors — file served (HTTP 206,
+  streamed), play/pause, seek (slider + keyboard), fullscreen, audio track,
+  no autoplay, state restoration, no accumulating `<video>` instances, and the
+  action confirmed **absent** on Spirit, InSight, Sojourner, Apollo 12 and
+  Apollo 17. 152 tests pass; `tsc` clean; build clean (the film is never
+  inlined). Report: `ECHOES_MERB_MISSION_FILM_INTEGRATION.md`.
+
 ## Honesty ledger (what must NOT be oversold)
 
 - Orbits are Keplerian (JPL approximate elements, DE441-verified to arcsec

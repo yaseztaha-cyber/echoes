@@ -22,6 +22,16 @@ export function useKeys() {
       const code = e.code.toLowerCase();
       const st = useEcho.getState();
       if (!st.entered) return;
+      // The mission film owns the keyboard while it is open: it handles
+      // play/pause, seek, mute and fullscreen itself, and the camera must
+      // not react to the film's transport keys.
+      if (st.filmDeviceId) {
+        if (code === "escape") {
+          e.preventDefault();
+          useEcho.setState({ filmDeviceId: null });
+        }
+        return;
+      }
       if (MOVE.has(code)) {
         cam.keys.add(code);
         if (code === "space" || code.startsWith("arrow")) e.preventDefault();

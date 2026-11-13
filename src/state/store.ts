@@ -100,6 +100,8 @@ export interface EchoState {
   flash: number;
   /** Site vignette currently on stage (artifact id) — session-scoped, never persisted. */
   vignetteId: string | null;
+  /** Device id whose mission film is open (null = no film). Session-scoped. */
+  filmDeviceId: string | null;
   /** Vignettes already shown this session (once per site). */
   vignettesSeen: string[];
   /** Data-resolution note for the current site terrain (LOLA/MOLA vs procedural); empty off-site. */
@@ -159,6 +161,7 @@ export const useEcho = create<EchoState>(() => ({
   photoReq: 0,
   flash: 0,
   vignetteId: null,
+  filmDeviceId: null,
   vignettesSeen: [],
   demNote: "",
 }));
@@ -220,3 +223,17 @@ export const queueVignette = (artifactId: string) => {
 };
 
 export const dismissVignette = () => useEcho.setState({ vignetteId: null });
+
+/**
+ * Open a device's mission film.
+ *
+ * Navigation safety: this touches ONLY the overlay and the film id. It never
+ * changes the scene, the world, the selected device, the journey chapter or the
+ * camera — the mission experience the user is in stays exactly as it was, and
+ * closing the film returns to it.
+ */
+export const openMissionFilm = (deviceId: string) =>
+  useEcho.setState({ overlay: "mission-journey", filmDeviceId: deviceId, menuOpen: false });
+
+/** Close the film and return to the mission experience unchanged. */
+export const closeMissionFilm = () => useEcho.setState({ filmDeviceId: null });
