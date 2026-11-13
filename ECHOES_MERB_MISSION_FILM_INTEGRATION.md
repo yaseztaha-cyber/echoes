@@ -101,7 +101,7 @@ own chapter caption and honesty line stay legible.
 | Overall bitrate | 2 469 kb/s |
 | Audio | **Opus**, 48 000 Hz, stereo (the documentary's launch tape, 0:30–1:00) |
 | Size | 172 884 711 bytes (164.9 MB) |
-| Poster | `public/films/merb-mission-film-poster.jpg` (960×540 crop of t = 300 s, 36 KB) |
+| Poster | `public/films/merb-mission-film-poster.jpg` (980×550 crop of t = 300 s, 36 KB, JPEG baseline) |
 | Browser compatibility | VP9 + Opus in WebM: Chrome/Edge/Firefox/Safari 14.1+ (no conversion required) |
 | Provenance | MER-B cinematic journey, authored for ECHOES (`MERB_JOURNEY_STANDALONE`). Archival media inside the film: NASA / JPL-Caltech (public domain). |
 
@@ -276,6 +276,14 @@ The registry is asserted in unit tests (`src/data/missionFilms.test.ts`:
 device resolves to `null`) **and** in the browser (V19): each of Spirit,
 InSight, Sojourner, Apollo 12 and Apollo 17 was travelled to in the running
 app and the action was counted as **absent** on the page.
+
+### No regression in the rest of the app
+
+After the film work, the device-navigation regression probe was re-run in the
+same session: **13 / 13 PASS** (Mars → Opportunity → Spirit, cross-planet
+transfers, Moon → Apollo 17 / InSight, all 23 journey chapters at the site with
+zero Solar System returns, 0 console errors). The 3D world, the mission journey
+and the navigation director behave exactly as before the film was added.
 
 ---
 
