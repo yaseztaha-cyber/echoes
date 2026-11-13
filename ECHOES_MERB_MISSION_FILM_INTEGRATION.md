@@ -239,6 +239,15 @@ same session: **13 / 13 PASS** (Mars → Opportunity → Spirit, cross-planet
 transfers, Moon → Apollo 17 / InSight, all 23 journey chapters at the site with
 zero Solar System returns, 0 console errors).
 
+### The production build too
+
+The single-file production build (`npm run build` → `dist/index.html`, 15.16 MB
+of code — **no media file**) was served and driven through the same flow:
+Opportunity → `WATCH MISSION FILM` → the module mounts inside the single-file
+bundle (1 canvas, `.merb` host, 7 chips, transport control present), and the
+documentary's own clock advances on play (`00:00 / 08:34` → `00:05 / 08:34`),
+with **0 console errors**.
+
 ---
 
 ## 6. Automated tests
