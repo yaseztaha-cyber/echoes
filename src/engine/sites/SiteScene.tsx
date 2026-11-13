@@ -207,6 +207,7 @@ function SiteTelemetry({ art }: { art: Artifact }) {
 
 export function SiteScene({ artifactId }: { artifactId: string }) {
   const art = artifactById(artifactId)!;
+  const replayActive = useEcho((s) => s.replay.active);
   const mars = art.destination === "mars";
   const world = mars ? "mars" : "moon";
   terrainState.world = world;
@@ -239,7 +240,7 @@ export function SiteScene({ artifactId }: { artifactId: string }) {
       />
       <SiteArtifact art={art} sun={sun} />
       <RockField seed={art.terrainSeed} />
-      <MissionRoute art={art} />
+      {replayActive && <MissionRoute art={art} />}
       <Beacon art={art} />
       <SiteTelemetry art={art} />
     </>

@@ -244,6 +244,76 @@ User review flagged four concrete things; each got a fix, not a shrug:
   `shotsun/`) — all five layers swap correctly, corona streamers visible,
   overview clean, spot card opens, ERRORS 0; tsc clean; vitest 119/119.
 
+#### Surface look: user-selected artistic map (follow-up, same phase)
+
+- **What changed:** the 3D photosphere now renders the user-supplied Solar
+  System Scope solar map (`src/assets/tex/sun_sss.jpg`, 4096×2048, q90
+  progressive re-encode, no resample and no colour edit) instead of the
+  white-gold ramp over the HMI continuum. It reads orange/gold with dark active
+  regions and bright flare patches, matching the reference the user pointed at.
+- **Why a separate shader path:** the map already carries colour and
+  granulation, so `uBaked` samples it as-is, adds physical limb darkening
+  (`0.84 + 0.16·mu^0.45`), blends the outermost band to a flat warm limb colour
+  (the last sphere rows squeeze the full texture width into a line and alias),
+  and **skips ACES** so the artist palette is not re-graded. The `raw` (science
+  channels as published) and white-gold ramp paths are unchanged.
+- **Honesty:** this surface is `ARTISTIC VISUALIZATION — NOT AN OBSERVATION`
+  (Solar System Scope, CC BY 4.0). Its granulation and active-region shapes are
+  illustrative and may not be read as data for any date; the layer card says so
+  and points at SOLAR SCIENCE, where the real 2026-10-23 HMI continuum is still
+  shown as published. The sunspot markers remain that snapshot's real
+  detections, projected onto the artistic map (their UVs land on dark-orange
+  pixels in the map's active-region band).
+- **Records:** new manifest entry `sun-surface-art-sss` (view `surface-art`,
+  class VISUALIZATION, credit Solar System Scope CC BY 4.0);
+  `sun-visible-recon` keeps the observed continuum record, so
+  `globeAssetFor("sun")` still resolves to the science asset.
+- **Known cosmetic limit:** a ~1 px darker pixel remains on the sun's
+  silhouette against the bright Milky Way band. It reproduces with a flat
+  magenta debug shader, with the corona billboard hidden, and with a flat sky,
+  so it is a renderer/MSAA compositing artifact of the sphere edge rather than
+  the texture or limb ramp. Left as-is; a sky-dome opaque-pass experiment
+  changed nothing and was reverted.
+
+### DEVICE NAVIGATION — final regression audit (separate work stream)
+
+- **Reported symptom:** "transferring to a device unexpectedly returned the user
+  to the Solar System."
+- **Root cause (three defects, none of them in the device transfer itself):**
+  (A) the journey-chapter branch in `transitionToJourneyChapter()` called
+  `returnToSolarSystem()` + `focusBody("earth")` for pre-landing chapters and
+  was guarded only for `scene === "site"` — i.e. exactly *not* while a
+  transfer was in flight; the trigger was the MissionJourney overlay's
+  100 ms delayed effect, which re-fired whenever the device id changed;
+  (B) the guard was a hand-picked list of four event-type labels, so
+  `deployment` / `discovery` / `milestone` / `traverse` fell through to a
+  `goToArtifact()` default branch that could transfer across worlds;
+  (C) multi-await navigation chains had no ownership, so two rapid device
+  selections could interleave and leave the user in the Solar System or at
+  the wrong device.
+- **Fix (explicit policy, not a skipped call):** a journey chapter is a
+  DOCUMENTARY — it updates the content and the timeline, and may move the
+  camera *inside the site the user is already at*; it never changes the
+  exploration location. Pre-landing chapters are classified from the mission's
+  own dates (`isHistoricalChapter()`), not from a label list. The
+  `returnToSolarSystem()` call was removed from the journey path entirely.
+  Two-channel navigation tickets (navigation / chapter) stop a stale transfer
+  from overwriting a newer selection and stop a documentary from cancelling a
+  transfer. `MissionJourney` is keyed by device id, so a device change can no
+  longer re-fire the previous device's choreography. Leaving a site now closes
+  the journey overlay (while it is open the whole HUD is hidden).
+- **Instrumentation:** `navTrace()` records every Solar System return with its
+  reason and call stack; published on `window.__navTrace` with `?navtrace=1`.
+- **Verified in the running app** (`http://localhost:5174/`, Playwright +
+  Edge): 24 / 24 scenarios pass, three consecutive passes, 0 console errors,
+  all 10 devices reachable through three entry points, cross-planet transfers
+  end on the right world, rapid selections settle on the last request, and
+  **zero** unexpected Solar System returns (the only recorded ones are the
+  cross-planet frame hop and the HUD button the probe itself clicked).
+- **Tests:** `src/engine/director.nav.test.ts` (19 new cases); 146 tests total,
+  `tsc --noEmit` clean, production build succeeds. Full report:
+  `ECHOES_DEVICE_NAVIGATION_FINAL_VERIFICATION.md`.
+
 ## Honesty ledger (what must NOT be oversold)
 
 - Orbits are Keplerian (JPL approximate elements, DE441-verified to arcsec

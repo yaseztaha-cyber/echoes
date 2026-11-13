@@ -171,7 +171,7 @@ function ArtifactPanel() {
           {art.media.some((m) => m.imageType?.includes("PANORAM")) && (
             <button className="ctl" onClick={() => { sfx.open(); useEcho.setState({ overlay: "panorama", panoramaId: null }); }}>VIEW REAL PANORAMA</button>
           )}
-          <button className="ctl" onClick={() => (scene === "site" ? leaveSite() : returnToSolarSystem())}>{scene === "site" ? "↑ LEAVE SITE" : "← SOLAR SYSTEM"}</button>
+          <button className="ctl" onClick={() => (scene === "site" ? leaveSite() : returnToSolarSystem(false, "planet-panel-button"))}>{scene === "site" ? "↑ LEAVE SITE" : "← SOLAR SYSTEM"}</button>
         </div>
       </Panel>
       {detail && (

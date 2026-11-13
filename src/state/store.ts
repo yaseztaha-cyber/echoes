@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type SceneId = "solar" | "planet" | "site";
 export type CamMode = "orbit" | "free" | "follow" | "surface" | "inspect" | "cinematic" | "overview";
-export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama" | "film";
+export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama" | "film" | "opportunity-journey" | "mission-journey";
 export type Quality = "ultra" | "high" | "medium" | "low";
 export type SimMode = "solar-system" | "mission" | "historical";
 export type Level = "explore" | "understand" | "technical";

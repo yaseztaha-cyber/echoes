@@ -31,6 +31,145 @@ const veil = async (on: boolean, tone: "dark" | "mars" = "dark", ms = 600) => {
 
 export const currentArtifact = (): Artifact | undefined => artifactById(S().artifactId);
 
+/* ------------------------------------------------------------------ navigation trace */
+/**
+ * Navigation trace — every Solar System return is recorded with its reason and
+ * call stack so navigation regressions can be audited in the running app.
+ *
+ * The log is always kept in memory (the unit tests assert on it); it is only
+ * published on `window` when the page is opened with `?navtrace=1`, so the
+ * production build stays clean.
+ */
+export interface NavTraceEntry {
+  fn: string;
+  reason: string;
+  at: number;
+  scene: string;
+  world: string;
+  artifactId: string | null;
+  stack: string;
+  detail?: Record<string, unknown>;
+}
+export const navTraceLog: NavTraceEntry[] = [];
+const NAV_TRACE =
+  typeof location !== "undefined" && typeof URLSearchParams !== "undefined"
+    ? new URLSearchParams(location.search).has("navtrace")
+    : false;
+const TRACE_CAP = 200;
+
+export function navTrace(fn: string, reason: string, detail?: Record<string, unknown>): NavTraceEntry {
+  const st = S();
+  const entry: NavTraceEntry = {
+    fn,
+    reason,
+    at: Date.now(),
+    scene: st.scene,
+    world: st.world,
+    artifactId: st.artifactId,
+    stack: new Error().stack ?? "",
+    detail,
+  };
+  navTraceLog.push(entry);
+  if (navTraceLog.length > TRACE_CAP) navTraceLog.splice(0, navTraceLog.length - TRACE_CAP);
+  if (NAV_TRACE && typeof window !== "undefined") {
+    const w = window as unknown as { __navTrace?: NavTraceEntry[] };
+    (w.__navTrace ??= []).push(entry);
+  }
+  return entry;
+}
+
+if (typeof window !== "undefined") {
+  // read-only accessors for the navigation audit (browser probes)
+  const w = window as unknown as { __echoesState?: () => unknown; __echoesNav?: () => unknown };
+  w.__echoesState = () => useEcho.getState();
+  w.__echoesNav = () => navStatus();
+}
+
+/* ------------------------------------------------------------------ navigation tickets */
+/**
+ * Navigation tickets.
+ *
+ * Two independent channels:
+ *
+ *  - NAVIGATION (device transfers): every user-initiated transfer claims a
+ *    navigation ticket. A newer transfer invalidates the older one, so two
+ *    rapid device selections cannot interleave — the older chain's scene swap
+ *    can no longer land after the newer one and strand the user in the Solar
+ *    System or at the wrong device.
+ *  - CHAPTER (documentary choreography): a journey chapter claims a chapter
+ *    ticket. Chapters never invalidate a navigation, so a documentary can
+ *    never cancel a device transfer; a navigation does invalidate a pending
+ *    chapter, so the user's device choice always wins.
+ *
+ * Internal steps of one action pass the ticket down, so a single user action
+ * never invalidates itself.
+ */
+export interface NavTicket {
+  id: number;
+  reason: string;
+  kind: "navigation" | "chapter";
+  navSeq: number;
+  chapterSeq: number;
+}
+let navCounter = 0;
+let navSeq = 0;
+let chapterSeq = 0;
+let lastNavTicket: NavTicket | null = null;
+let lastChapterTicket: NavTicket | null = null;
+
+export function beginNav(reason: string, kind: "navigation" | "chapter" = "navigation"): NavTicket {
+  const ticket: NavTicket = {
+    id: ++navCounter,
+    reason,
+    kind,
+    navSeq: kind === "navigation" ? ++navSeq : navSeq,
+    chapterSeq: kind === "chapter" ? ++chapterSeq : chapterSeq,
+  };
+  if (kind === "chapter") lastChapterTicket = ticket;
+  else lastNavTicket = ticket;
+  navTrace("nav-begin", reason, { ticket: ticket.id, kind });
+  return ticket;
+}
+/**
+ * True when a newer action of the same (or a stronger) kind has taken over —
+ * the caller must stop instead of writing scene state.
+ */
+export const isStaleNav = (ticket?: NavTicket): boolean => {
+  if (!ticket) return false;
+  if (ticket.kind === "chapter") {
+    // a newer chapter supersedes this one, and a newer device transfer wins too
+    return ticket.chapterSeq !== chapterSeq || ticket.navSeq !== navSeq;
+  }
+  // a chapter never cancels a device transfer
+  return ticket.navSeq !== navSeq;
+};
+export const activeNavTicket = (): NavTicket | null => lastNavTicket;
+export const lastChapterTicketInfo = (): NavTicket | null => lastChapterTicket;
+
+/** Navigation state for the audit probes (transition id, sequence, scene). */
+export const navStatus = () => ({
+  navTicket: lastNavTicket,
+  chapterTicket: lastChapterTicket,
+  navSeq,
+  chapterSeq,
+  scene: S().scene,
+  world: S().world,
+  artifactId: S().artifactId,
+  camMode: S().camMode,
+  overlay: S().overlay,
+  flying: S().flying,
+});
+
+/** Wait until no camera flight is in progress (bounded). */
+async function waitForIdle(timeoutMs = 30000): Promise<boolean> {
+  const t0 = Date.now();
+  while (Date.now() - t0 < timeoutMs) {
+    if (!S().flying) return true;
+    await wait(120);
+  }
+  return false;
+}
+
 export function anchor(): THREE.Vector3 {
   const st = S();
   if (st.scene === "solar") return st.focusBody === "voyager1" ? siteRef.pos.clone() : bodyPos(st.focusBody, clock.t);
@@ -58,12 +197,13 @@ export function enterSimulation() {
 }
 
 /* ------------------------------------------------------------------ solar system */
-export async function focusBody(id: string) {
+export async function focusBody(id: string, nav?: NavTicket) {
   const st = S();
   if (st.scene !== "solar") return;
-  if (id === "voyager1") return goVoyager();
+  if (id === "voyager1") return goVoyager(nav);
   const b = bodyById(id);
   if (!b) return;
+  const ticket = nav ?? beginNav(`focusBody:${id}`);
   sfx.select();
   if (st.artifactId === "voyager1") exitVoyager();
   set({ focusBody: id, artifactId: null, camMode: "orbit", instrumentId: null });
@@ -78,16 +218,19 @@ export async function focusBody(id: string) {
   const dur = THREE.MathUtils.clamp(1.8 + Math.log10(1 + travel) * 2.2, 2.2, 9);
   showBanner(b.name, id === "mars" || id === "moon" ? "SELECT TRAVEL TO DESCEND" : "ORBIT", 2600);
   await flyTo(() => bodyPos(id, clock.t).addScaledVector(dir, dist), () => bodyPos(id, clock.t), dur, smoother);
+  if (isStaleNav(ticket)) return;
   if (S().focusBody === id && S().scene === "solar") setFollow(() => bodyPos(id, clock.t));
 }
 
-export async function goVoyager() {
+export async function goVoyager(nav?: NavTicket) {
   const art = artifactById("voyager1")!;
+  const ticket = nav ?? beginNav("goVoyager");
   sfx.confirm();
   set({ focusBody: "voyager1", artifactId: "voyager1", camMode: "follow", instrumentId: null });
   setFollow(null);
   configureClock({ mode: "historical", rate: art.clock.rate, range: art.clock.range, t: VOYAGER_NOW, speedIdx: 1, playing: false, dir: 1 });
   await nextFrames();
+  if (isStaleNav(ticket)) return;
   const vp = () => (siteRef.group ? siteRef.pos.clone() : bodyPos("voyager1", clock.t));
   const c = cam.camera!;
   const start = vp();
@@ -96,6 +239,7 @@ export async function goVoyager() {
   showBanner("VOYAGER 1", "EARTH → TRAJECTORY → SPACECRAFT → INTERSTELLAR SPACE", 3000);
   void c;
   await flyTo(() => vp().add(off), vp, 6.5, smoother);
+  if (isStaleNav(ticket)) return;
   setFollow(vp);
   markVisit("voyager1", "VOYAGER 1 · INTERSTELLAR SPACECRAFT");
   queueVignette("voyager1");
@@ -154,12 +298,13 @@ export async function overview() {
 }
 
 /* ------------------------------------------------------------------ planets */
-export async function travelToBody(id: string) {
+export async function travelToBody(id: string, nav?: NavTicket) {
   const b = bodyById(id)!;
+  const ticket = nav ?? beginNav(`travelToBody:${id}`);
   const k = GLOBE_R / b.radius;
   sfx.confirm();
   if (S().artifactId === "voyager1") exitVoyager();
-  // Commit point: destination known → warm its hi-res KTX2 tier now so the
+  // Commit point: destination known → warm its hi-res KTX2 tier now so that the
   // approach sharpens instead of arriving blurry (high/ultra tiers only).
   const hi = HI_TIERS[id]?.hi;
   if (hi) {
@@ -177,6 +322,7 @@ export async function travelToBody(id: string) {
   const dist = b.radius * 10;
   const travel = c.position.distanceTo(p0);
   await flyTo(() => bodyPos(id, clock.t).addScaledVector(dir, dist), () => bodyPos(id, clock.t), THREE.MathUtils.clamp(2 + Math.log10(1 + travel) * 2.4, 2.2, 5.5), smoother);
+  if (isStaleNav(ticket)) return;
   // swap into the planet frame with identical apparent size, direction and sunlight
   const rel = c.position.clone().sub(bodyPos(id, clock.t)).multiplyScalar(k);
   env.sunDir.copy(sunDir);
@@ -184,20 +330,24 @@ export async function travelToBody(id: string) {
   set({ scene: "planet", world: id, sunPhase: 0 });
   setView(rel, V());
   await nextFrames();
+  if (isStaleNav(ticket)) return;
   showBanner(b.name.toUpperCase(), "ORBITAL INSERTION", 2400);
   await flyTo(rel.clone().normalize().multiplyScalar(300), V(), 2.6, easeOut);
+  if (isStaleNav(ticket)) return;
   set({ camMode: "orbit" });
 }
 
-export async function selectSite(id: string) {
+export async function selectSite(id: string, nav?: NavTicket) {
   const art = artifactById(id);
   if (!art || S().scene !== "planet") return;
+  const ticket = nav ?? beginNav(`selectSite:${id}`);
   sfx.select();
   set({ artifactId: id });
   const c = cam.camera!;
   const n = lonLatToVec(art.location.lon, art.location.lat, 1);
   const d = Math.max(c.position.length(), 190);
   await flyTo(n.clone().multiplyScalar(d), V(), 2.4, smoother);
+  if (isStaleNav(ticket)) return;
   setFollow(null);
 }
 
@@ -222,11 +372,13 @@ function saveLast(a: Artifact) {
 }
 export const saveLastLocation = saveLast;
 
-export async function descendToSite(id: string, startT?: number) {
+export async function descendToSite(id: string, startT?: number, nav?: NavTicket) {
   const art = artifactById(id);
   if (!art || art.destination === "deep-space") return;
+  const ticket = nav ?? beginNav(`descendToSite:${id}`);
   const world = art.destination;
-  if (S().scene !== "planet" || S().world !== world) await goToPlanet(world);
+  if (S().scene !== "planet" || S().world !== world) await goToPlanet(world, ticket);
+  if (isStaleNav(ticket)) return;
   const c = cam.camera!;
   set({ artifactId: id, camMode: "cinematic", instrumentId: null });
   setFollow(null);
@@ -262,8 +414,10 @@ export async function descendToSite(id: string, startT?: number) {
     },
     (u) => u
   );
+  if (isStaleNav(ticket)) return;
   // atmospheric descent: dust haze veils the scene swap
   await veil(true, world === "mars" ? "mars" : "dark", 500);
+  if (isStaleNav(ticket)) return;
   const alt = altEnd * unitsM;
   configureForArtifact(art, startT);
   set({ scene: "site", world, artifactId: id });
@@ -273,12 +427,16 @@ export async function descendToSite(id: string, startT?: number) {
   await wait(250);
   await veil(false, "dark", 650);
   await arrive(art);
+  if (isStaleNav(ticket)) return;
   markVisit(id, art.designation || art.name);
   queueVignette(id);
   saveLast(art);
+  // Auto-activate mission journey experience (documentary only — the journey
+  // overlay never drives the camera by itself, see transitionToJourneyChapter).
+  set({ overlay: "mission-journey", menuOpen: false });
 }
 
-async function arrive(art: Artifact) {
+async function arrive(art: Artifact, nav?: NavTicket) {
   const c = cam.camera!;
   set({ arrival: { active: true, label: art.name }, camMode: "cinematic" });
   const tgt = () => siteRef.pos.clone();
@@ -302,82 +460,117 @@ async function arrive(art: Artifact) {
     },
     (u) => u
   );
+  if (isStaleNav(nav)) return;
   set({ arrival: { active: false, label: "" }, camMode: "orbit" });
 }
 
-export async function goToPlanet(world: string) {
-  const st = S();
+export async function goToPlanet(world: string, nav?: NavTicket) {
+  const ticket = nav ?? beginNav(`goToPlanet:${world}`);
+  let st = S();
   if (st.scene === "planet" && st.world === world) return;
-  if (st.scene === "site") await leaveSite();
-  if (S().scene === "planet" && S().world !== world) await returnToSolarSystem(true);
-  if (S().scene === "solar") await travelToBody(world);
+  if (st.scene === "site") {
+    await leaveSite(ticket);
+    st = S();
+  }
+  if (isStaleNav(ticket)) return;
+  if (st.scene === "planet" && st.world !== world) await returnToSolarSystem(true, `goToPlanet:${world}`, ticket);
+  if (isStaleNav(ticket)) return;
+  st = S();
+  if (st.scene === "solar") await travelToBody(world, ticket);
 }
 
-export async function leaveSite() {
+export async function leaveSite(nav?: NavTicket) {
   const art = currentArtifact();
   if (!art || S().scene !== "site") return;
+  const ticket = nav ?? beginNav("leaveSite");
   resetPanels();
+  // Leaving the device closes its journey overlay: while that overlay is open
+  // the whole HUD (device lists, search, planet panel) is hidden, so leaving
+  // the site with it still up would strand the user in the documentary.
+  set({ overlay: null });
   sfx.close();
   setFollow(null);
   await veil(true, art.destination === "mars" ? "mars" : "dark", 650);
+  if (isStaleNav(ticket)) return;
   const n = lonLatToVec(art.location.lon, art.location.lat, 1);
   set({ scene: "planet", world: art.destination, camMode: "orbit" });
   configureClock({ mode: "solar-system", rate: 3600000, range: null, t: Date.now(), speedIdx: 1, playing: true, dir: 1 });
   setView(n.clone().multiplyScalar(GLOBE_R + 0.8), n.clone().multiplyScalar(GLOBE_R));
   await nextFrames();
   await veil(false, "dark", 700);
+  if (isStaleNav(ticket)) return;
   showBanner(art.destination.toUpperCase(), "ORBITAL VIEW", 2400);
   await flyTo(n.clone().multiplyScalar(260), V(), 5.5, easeOut);
 }
 
-export async function returnToSolarSystem(quick = false) {
-  const st = S();
+export async function returnToSolarSystem(quick = false, reason = "unspecified", nav?: NavTicket) {
+  const ticket = nav ?? beginNav(`returnToSolarSystem:${reason}`);
+  navTrace("returnToSolarSystem", reason, { quick, nav: ticket.id });
+  let st = S();
   resetPanels();
   set({ overlay: null });
-  if (st.scene === "site") await leaveSite();
-  if (S().scene === "planet") {
-    const world = S().world;
+  if (st.scene === "site") {
+    await leaveSite(ticket);
+    st = S();
+  }
+  if (isStaleNav(ticket)) return;
+  if (st.scene === "planet") {
+    const world = st.world;
     const b = bodyById(world)!;
     const k = GLOBE_R / b.radius;
     const c = cam.camera!;
     await flyTo(c.position.clone().normalize().multiplyScalar(1000), V(), quick ? 1.8 : 3.5, smoother);
+    if (isStaleNav(ticket)) return;
     configureClock({ mode: "solar-system", rate: 3600000, range: null, t: Date.now(), speedIdx: 1, playing: true, dir: 1 });
     const bp = bodyPos(world, clock.t);
     const rel = c.position.clone().multiplyScalar(1 / k);
     set({ scene: "solar", world: "solar", focusBody: world, artifactId: null });
     setView(bp.clone().add(rel), bp);
     await nextFrames();
+    st = S();
   }
-  if (S().artifactId === "voyager1") exitVoyager();
+  if (st.artifactId === "voyager1") exitVoyager();
   set({ artifactId: null, camMode: "overview" });
   if (!quick) {
     showBanner("SOLAR SYSTEM", "RETURN", 2600);
     await flyTo(V(0, 150, 175), V(), 6.5, smoother);
   }
+  if (isStaleNav(ticket)) return;
   setFollow(null);
 }
 
-export async function goToArtifact(id: string, opts: { t?: number } = {}) {
+export async function goToArtifact(id: string, opts: { t?: number } = {}, nav?: NavTicket) {
   const art = artifactById(id);
   if (!art) return;
+  const ticket = nav ?? beginNav(`goToArtifact:${id}`);
   set({ overlay: null, menuOpen: false });
   stopReplay();
   if (art.destination === "deep-space") {
-    if (S().scene !== "solar") await returnToSolarSystem(true);
-    return goVoyager();
+    if (S().scene !== "solar") await returnToSolarSystem(true, "goToArtifact:deep-space", ticket);
+    if (isStaleNav(ticket)) return;
+    return goVoyager(ticket);
   }
-  const st = S();
+  let st = S();
   if (st.scene === "site" && st.artifactId === id) {
     resetPanels();
     return;
   }
-  if (st.scene === "site") await leaveSite();
-  if (S().scene === "planet" && S().world !== art.destination) await returnToSolarSystem(true);
-  if (S().scene === "solar") {
-    if (S().artifactId === "voyager1") exitVoyager();
-    await travelToBody(art.destination);
+  if (st.scene === "site") {
+    await leaveSite(ticket);
+    st = S();
   }
-  await descendToSite(id, opts.t);
+  if (isStaleNav(ticket)) return;
+  if (st.scene === "planet" && st.world !== art.destination) {
+    await returnToSolarSystem(true, "goToArtifact:cross-planet", ticket);
+    st = S();
+  }
+  if (isStaleNav(ticket)) return;
+  if (st.scene === "solar") {
+    if (st.artifactId === "voyager1") exitVoyager();
+    await travelToBody(art.destination, ticket);
+    if (isStaleNav(ticket)) return;
+  }
+  await descendToSite(id, opts.t, ticket);
 }
 
 /* ------------------------------------------------------------------ camera modes */
@@ -497,21 +690,6 @@ export function closeScience() {
 }
 
 /* ------------------------------------------------------------------ timeline / replay */
-export async function visitWaypoint(artifactId: string, wpId: string) {
-  const art = artifactById(artifactId);
-  const w = art?.missionPath?.waypoints.find((x) => x.id === wpId);
-  if (!art || !w || S().scene !== "site") return;
-  sfx.confirm();
-  setFollow(null);
-  set({ camMode: "orbit" });
-  setT(w.t);
-  await nextFrames();
-  const t = siteRef.pos.clone();
-  const p = V(t.x + APPROACH.x * 70, 0, t.z + APPROACH.y * 70);
-  p.y = heightAt(p.x, p.z) + 22;
-  const from = cam.camera!.position.distanceTo(p);
-  await flyTo(p, t, THREE.MathUtils.clamp(2 + Math.log10(1 + from) * 1.2, 2.5, 6), smoother);
-}
 
 let replayToken = 0;
 let replaySkip: number | null = null;
@@ -645,7 +823,7 @@ export async function playFinale() {
 
 export async function leaveFinale() {
   set({ overlay: null });
-  await returnToSolarSystem();
+  await returnToSolarSystem(false, "leave-finale");
 }
 
 /* ------------------------------------------------------------------ scrubbing helper for demo */
@@ -688,4 +866,188 @@ export async function flyToLonLat(lon: number, lat: number) {
   const n = lonLatToVec(lon, Math.max(-85, Math.min(85, lat)), 1);
   const d = Math.max(cam.camera!.position.length(), 190);
   await flyTo(n.multiplyScalar(d), V(), 2.2, smoother);
+}
+
+/* ------------------------------------------------------------------ journey camera choreography */
+
+import type { MissionChapter } from "@/data/journeys/types";
+
+/**
+ * JOURNEY CHAPTER POLICY — documentary playback vs live exploration.
+ *
+ * A mission-journey chapter is a DOCUMENTARY record. Selecting one updates the
+ * overlay content and the timeline (the MissionJourney component owns the
+ * clock); it is not a navigation command.
+ *
+ * Camera choreography for a chapter is allowed ONLY inside the site the user
+ * is already at:
+ *
+ *  1. Pre-touchdown chapters are HISTORICAL PLAYBACK: content + timeline only,
+ *     never a camera or scene change. They used to call returnToSolarSystem()
+ *     and focusBody("earth"), which threw the user out of a live device site —
+ *     and, mid-transfer, out of the world they were travelling to.
+ *  2. At ANOTHER device's site, on a planet, or in the Solar System:
+ *     documentary only. The live exploration location is untouched — the user
+ *     chooses a device from the HUD (device list / search), never from a
+ *     documentary chapter.
+ *  3. At the device's OWN site, post-landing chapter: the camera may move
+ *     inside that site (mission-path waypoint visit / cinematic orbit).
+ *
+ * Historical playback is deliberately kept separate from live exploration
+ * navigation: a documentary chapter never moves the exploration location.
+ */
+
+/** Event types that are, by definition, before the device reached its world. */
+const HISTORICAL_EVENT_TYPES = new Set(["development", "launch", "cruise", "maneuver", "approach", "transfer"]);
+
+/**
+ * True when the chapter documents a moment before the device touched down.
+ * Classified from the mission's own dates (and the event-type vocabulary), not
+ * from a hand-picked subset of chapter labels, so every pre-landing chapter —
+ * whatever it is called — is treated as historical playback.
+ */
+export function isHistoricalChapter(art: Artifact, chapter: MissionChapter): boolean {
+  const ev = (chapter.eventType || "").toLowerCase();
+  if (HISTORICAL_EVENT_TYPES.has(ev)) return true;
+  const touchdown = art.dates.landing ?? art.dates.launch;
+  if (!touchdown) return false;
+  return chapter.dateUtc > 0 && chapter.dateUtc < touchdown;
+}
+
+/** Waypoint on the mission path that a chapter refers to (if any). */
+function matchWaypoint(art: Artifact, chapter: MissionChapter): string | null {
+  const hasMissionPath = !!art.missionPath && art.missionPath.waypoints.length > 0;
+  if (!hasMissionPath || !art.missionPath) return null;
+  const eventLower = chapter.eventType.toLowerCase();
+  const titleLower = chapter.title.toLowerCase();
+  if (eventLower === "landing" || titleLower.includes("eagle")) return "eagle";
+  if (eventLower === "exploration" && titleLower.includes("endurance")) return "endurance";
+  if (titleLower.includes("burns")) return "burns";
+  if (titleLower.includes("heat shield") || titleLower.includes("meteorite")) return "heatshield";
+  if (titleLower.includes("purgatory")) return "purgatory";
+  if (titleLower.includes("victoria") && !titleLower.includes("exit")) return "victoria";
+  if (titleLower.includes("victoria exit") || titleLower.includes("leaves victoria")) return "victoria-exit";
+  if (titleLower.includes("cape york") || titleLower.includes("endeavour rim")) return "capeyork";
+  if (titleLower.includes("marathon valley")) return "marathon";
+  if (titleLower.includes("perseverance valley")) return "perseverance";
+  if (eventLower === "traverse" || eventLower === "drive") {
+    if (chapter.sol === null) return null;
+    const wps = art.missionPath.waypoints;
+    const base = art.dates.landing ?? art.dates.launch;
+    let closest = wps[0];
+    for (const wp of wps) {
+      const wpSol = Math.floor((wp.t - base) / SOL_MS);
+      const closestSol = Math.floor((closest.t - base) / SOL_MS);
+      if (Math.abs(wpSol - chapter.sol) < Math.abs(closestSol - chapter.sol)) closest = wp;
+    }
+    return closest.id;
+  }
+  return null;
+}
+
+/** Slow orbit around the hardware — the camera stays inside the current site. */
+async function cinematicOrbit(nav?: NavTicket) {
+  await setCamMode("cinematic");
+  if (isStaleNav(nav)) return;
+  const t = siteRef.pos.clone();
+  const c = cam.camera!;
+  const dir = c.position.clone().sub(t).normalize();
+  await fly(
+    4,
+    (u, p, g) => {
+      const e = easeInOut(u);
+      const az = Math.atan2(dir.z, dir.x) + Math.PI * 0.5 * e;
+      const d = 18;
+      g.copy(t);
+      p.set(t.x + Math.cos(az) * d, t.y + d * 0.3, t.z + Math.sin(az) * d);
+    },
+    (u) => u
+  );
+  if (isStaleNav(nav)) return;
+  await setCamMode("orbit");
+}
+
+/**
+ * Execute camera choreography for a journey chapter transition.
+ * Called when the user navigates between chapters in the MissionJourney overlay.
+ *
+ * A chapter NEVER changes the exploration location: it may only move the
+ * camera inside the site the user is already at, and only for that device's
+ * own post-landing chapters. Everything else is documentary playback.
+ */
+export async function transitionToJourneyChapter(artifactId: string, chapter: MissionChapter) {
+  const art = artifactById(artifactId);
+  if (!art) return;
+
+  // A chapter claims a CHAPTER ticket: it never invalidates a device transfer,
+  // and a newer device transfer invalidates it.
+  const nav = beginNav(`journey-chapter:${artifactId}:${chapter.id}`, "chapter");
+  // Never drop the transition silently — wait for any camera move to finish.
+  await waitForIdle();
+  if (isStaleNav(nav)) return;
+
+  const st = S();
+  const atSite = st.scene === "site";
+  const onDevice = atSite && st.artifactId === artifactId;
+
+  // (1) Historical playback: documentary content + timeline only.
+  if (isHistoricalChapter(art, chapter)) {
+    navTrace("journey-chapter", `historical-playback:${chapter.eventType}`, { artifactId, chapter: chapter.id });
+    return;
+  }
+
+  // (2) Anything that is not this device's own site is live exploration
+  //     (another device's site, a planet, the Solar System): documentary only.
+  if (!onDevice) {
+    navTrace("journey-chapter", atSite ? "documentary-only:other-device-site" : "documentary-only:outside-site", {
+      artifactId,
+      chapter: chapter.id,
+    });
+    return;
+  }
+
+  // (3) The device's own site: the camera may move inside this site.
+  const targetWaypoint = matchWaypoint(art, chapter);
+  if (targetWaypoint) {
+    navTrace("journey-chapter", "waypoint-visit", { artifactId, chapter: chapter.id, waypoint: targetWaypoint });
+    await visitWaypoint(artifactId, targetWaypoint, nav, false);
+    return;
+  }
+
+  navTrace("journey-chapter", "site-orbit", { artifactId, chapter: chapter.id });
+  await cinematicOrbit(nav);
+}
+
+/**
+ * Move the camera to a mission-path waypoint.
+ * `allowDescend` is false for chapter playback: a documentary must never move
+ * the user to another site — it only frames the hardware that is already there.
+ */
+export async function visitWaypoint(artifactId: string, wpId: string, nav?: NavTicket, allowDescend = true) {
+  const art = artifactById(artifactId);
+  if (!art) return;
+  const ticket = nav ?? beginNav(`visitWaypoint:${artifactId}:${wpId}`);
+
+  sfx.confirm();
+  setFollow(null);
+  set({ camMode: "orbit" });
+  setT((art.missionPath?.waypoints.find(w => w.id === wpId)?.t) ?? clock.t);
+  await nextFrames();
+  if (isStaleNav(ticket)) return;
+
+  const freshSt = S();
+  if (freshSt.scene !== "site" || freshSt.artifactId !== artifactId) {
+    if (!allowDescend) return; // documentary playback: never leave the current site
+    await descendToSite(artifactId, undefined, ticket);
+    if (isStaleNav(ticket)) return;
+  }
+
+  const finalSt = S();
+  if (finalSt.scene === "site" && finalSt.artifactId === artifactId) {
+    const t = siteRef.pos.clone();
+    const p = V(t.x + APPROACH.x * 70, 0, t.z + APPROACH.y * 70);
+    p.y = heightAt(p.x, p.z) + 22;
+    const from = cam.camera!.position.distanceTo(p);
+    await flyTo(p, t, THREE.MathUtils.clamp(2 + Math.log10(1 + from) * 1.2, 2.5, 6), smoother);
+  }
 }

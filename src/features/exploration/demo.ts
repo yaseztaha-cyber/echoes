@@ -39,7 +39,7 @@ export async function runDemo() {
   };
   set({ demo: { active: true, caption: "" }, overlay: null, menuOpen: false });
   try {
-    if (S().scene !== "solar") await returnToSolarSystem(true);
+    if (S().scene !== "solar") await returnToSolarSystem(true, "guided-demo");
     const opp = artifactById("opportunity")!;
     await say("EVERY WORLD HERE WAS REACHED BY A MACHINE.", () => overview(), 2800);
     await say("MARS. 225 MILLION KILOMETRES AWAY AT ITS FARTHEST.", () => focusBody("mars"), 800);

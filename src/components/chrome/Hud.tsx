@@ -18,8 +18,10 @@ import { Archive, GroundTruth, Search, Film } from "@/components/sources/Overlay
 import { requestPhoto, dismissVignette } from "@/state/store";
 import { VIGNETTES as MISSION_VIGNETTES } from "@/data/vignettes";
 import { MissionLab } from "@/components/lab/MissionLab";
+import { AudioSettings } from "@/components/chrome/AudioSettings";
 import { Remains, Finale } from "@/components/mission/Remains";
 import { Evidence } from "@/components/evidence/EvidenceTrace";
+import { MissionJourney } from "@/components/mission/MissionJourney";
 import { SolarScope } from "@/components/solar/SolarScope";
 import { Panorama } from "@/components/panorama/Panorama";
 import { clock } from "@/engine/time/clock";
@@ -171,6 +173,7 @@ function TopRight() {
         <div className="flex flex-wrap justify-end gap-1">
           <button className="ctl" onClick={() => setO("search")}>SEARCH</button>
           <button className="ctl" onClick={() => setO("archive")}>ARCHIVE</button>
+          <AudioSettings />
           <button className="ctl" onClick={() => setO("film")}>FILM <FilmCount /></button>
           <button className="ctl" onClick={() => setO("sources")}>GROUND TRUTH</button>
           <button className="ctl" onClick={() => setO("lab")}>MISSION LAB</button>
@@ -405,6 +408,7 @@ export function Hud() {
   const audioOn = useEcho((s) => s.audioOn);
   const art = artifactById(aid);
   const cine = mode === "cinematic";
+  const journeyActive = overlay === "opportunity-journey" || overlay === "mission-journey";
   const hasTimeline = !!art && (scene === "site" || aid === "voyager1");
 
   useEffect(() => {
@@ -447,7 +451,7 @@ export function Hud() {
         <button className="ctl pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 opacity-70" onClick={() => useEcho.setState({ camMode: "orbit" })}>EXIT CINEMATIC · ESC</button>
       )}
 
-      {!cine && (
+      {!cine && !journeyActive && (
         <>
           <div className={`pointer-events-auto absolute left-3 top-3 transition-opacity duration-700 ${flying ? "opacity-60" : ""}`}>
             <MissionConsole />
@@ -501,6 +505,10 @@ export function Hud() {
       {overlay === "remains" && <Remains />}
       {overlay === "finale" && <Finale />}
       {overlay === "evidence" && <Evidence />}
+      {overlay === "opportunity-journey" && <MissionJourney />}
+      {/* keyed by device: a device change starts a fresh chapter list and never
+          re-fires the previous device's camera choreography */}
+      {overlay === "mission-journey" && <MissionJourney key={aid ?? "none"} />}
       {overlay === "sun" && <SolarScope />}
       {overlay === "panorama" && <Panorama />}
       <Compare />
@@ -510,7 +518,7 @@ export function Hud() {
       <GpuWatch />
       <Toasts />
       {scene !== "solar" && !cine && (
-        <button className="ctl pointer-events-auto absolute left-3 top-[216px] z-10 max-md:hidden" onClick={() => returnToSolarSystem()}>
+        <button className="ctl pointer-events-auto absolute left-3 top-[216px] z-10 max-md:hidden" onClick={() => returnToSolarSystem(false, "hud-solar-system-button")}>
           ← SOLAR SYSTEM
         </button>
       )}
