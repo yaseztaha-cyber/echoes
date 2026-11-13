@@ -98,22 +98,29 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 
 - **Status:** `IMPLEMENTED` — `src/engine/solar-system/sun/` (`SunCore`, `SunShader`,
   `sunAssets`, `SunSpotMarkers`); old flat `#fff1d0` disc + double sprite glow removed.
-- **Assets:** SDO/HMI continuum 4096² → grayscale intensity equirect 2048×1024
-  (`sun.jpg`, no baked color/limb bleed); sphere-mapped science channels
-  (`sun_hmi.jpg` magnetogram, `sun_0304.jpg` AIA 304, `sun_0171.jpg` AIA 171,
-  `sun_doppler.jpg` HMI dopplergram) from the 2026-10-23 latest-image feed;
-  LASCO C3 white-light structure mask (`corona_mask.png`, 512×256 log-polar,
-  visible-annulus only — see `src/data/corona.json`).
+- **Assets:** 3D photosphere SURFACE is the user-selected artist map
+  (`sun_sss.jpg`, Solar System Scope, CC BY 4.0, 4096×2048, q90 re-encode) sampled
+  as baked color — labelled VISUALIZATION in the layer panel. The science record
+  stays the SDO/HMI continuum 4096² → grayscale intensity equirect 4096×2048
+  (`sun.jpg`, no baked color/limb bleed) shown in the flat SOLAR SCIENCE view.
+  Sphere-mapped science channels (`sun_hmi.jpg` magnetogram, `sun_0304.jpg` AIA 304,
+  `sun_0171.jpg` AIA 171, `sun_doppler.jpg` HMI dopplergram) from the 2026-10-23
+  latest-image feed; LASCO C3 white-light structure mask (`corona_mask.png`,
+  512×256 log-polar, visible-annulus only — see `src/data/corona.json`).
 - **Projection:** `scripts/build-sun-channels.py` — inverse-orthographic resample
   with the three.js sphere UV convention (`sample_dir`; near half u∈[0,0.5),
   u=0.25 = disk center), far side = east-west mirror at 85% (labelled in UI),
   P-angle left as published. Sunspot UVs detected in the same convention
   (`src/data/sunspots.json`); marker positions follow the sphere mapping.
-- **Honesty:** photosphere ramp is a disclosed reconstruction (measured continuum
-  spans only p1–p95 = 0.56–0.70, stretched ~2.8× around the median 0.63 in-shader);
-  EUV/magnetogram/doppler layers render as published (raw path, no ramp);
-  corona structure is a dated LASCO C3 observation rescaled to hug the limb
-  (radial scale compressed, disclosed in `corona.json` and the UI).
+- **Honesty:** the rendered surface is an artistic map — its granulation and
+  active-region shapes are illustrative and must never be read as data for a date;
+  the layer card says so, and the observed HMI continuum stays one click away in
+  SOLAR SCIENCE. The continuum's white-gold ramp path is still in the shader for
+  the observed asset (measured p1–p95 = 0.56–0.70, stretched ~2.8× around the
+  median 0.63 — the documented reconstruction); EUV/magnetogram/doppler layers
+  render as published (raw path, no ramp); corona structure is a dated LASCO C3
+  observation rescaled to hug the limb (radial scale compressed, disclosed in
+  `corona.json` and the UI).
 - **Required:** SDO full-disk with recorded channel + timestamp; visible-light vs
   false-color channels labelled and never conflated — satisfied by the Solar Layer
   Explorer (per-layer instrument/wavelength/class/legend/cannot-conclude text).
@@ -205,7 +212,7 @@ swaps (solar → planet → site), not one continuous metric frame (see §9).
 | moon.jpg | APPROVED (SVS 2025) | Wire LOLA displacement (later phase) |
 | mars.jpg | APPROVED (MDIM 2.1) | MOLA wiring + Trek tiles for streaming |
 | Giants/Pluto | Saturn/Uranus/Neptune REPRESENTATIVE | Authentic observation views deferred to archive phase; Jupiter/Pluto APPROVED |
-| Sun imagery | APPROVED (HMI continuum recon + magnetogram/304/171/doppler sphere channels + LASCO C3 structure mask) | On-demand dated fetch for research use |
+| Sun imagery | APPROVED (artist surface map for the 3D look + HMI continuum recon + magnetogram/304/171/doppler sphere channels + LASCO C3 structure mask) | On-demand dated fetch for research use |
 | Star catalogue | COMPLIANT | HYG v4.4 naked-eye excerpt embedded (5,070 stars, CC BY-SA, RA/Dec→dir, mag→size, B−V→tint); PRNG field removed |
 | PIA archive | APPROVED (web rendition) | Fetch full-res on demand only |
 | Terrain DEM | REAL PATCHES + procedural (labelled) | DONE (Phase 9, LOLA/MOLA at 9 mission sites) — globe displacement wiring later |
@@ -280,7 +287,8 @@ approximate — recorded, not claimed.
 | Uranus | `uranus-rep` | REPRESENTATIVE (fictional) | JPL 720×360 → native |
 | Neptune | `neptune-rep` | REPRESENTATIVE (fictional, no GDS claim) | JPL 720×360 → native |
 | Pluto (dwarf) | `pluto-nh-mosaic` | MOSAIC (LORRI 300m; S-pole night black) | USGS 24888×12444 → 2048 + 4K hi |
-| Sun photosphere | `sun-visible-recon` | OBSERVED + RECONSTRUCTED (HMI continuum, method filed) | HMI 4096² → 4096×2048 grayscale bilinear; white-gold ramp + fine grain in-shader (disclosed) |
+| Sun photosphere (3D surface) | `sun-surface-art-sss` | VISUALIZATION (artist map — not an observation) | Solar System Scope 4096×2048, q90 re-encode; sampled as baked color + limb darkening |
+| Sun continuum (science) | `sun-visible-recon` | OBSERVED + RECONSTRUCTED (HMI continuum, method filed) | HMI 4096² → 4096×2048 grayscale bilinear; flat SOLAR SCIENCE view |
 | Sun magnetic/chromosphere/corona/motion | `sun-hmi-mag/aia304/aia171/doppler-recon` | OBSERVED + RECONSTRUCTED sphere channels (false-color/quantity labelled) | SDO 1024² → 1024×512 each, far side mirrored |
 | Sun flat science view | `sun-hmi/aia304/aia193-flat` | OBSERVED flat full-disk (false-color labelled) | SDO 1024 → native |
 | Sun corona structure | `corona_mask.png` + `src/data/corona.json` | RECONSTRUCTED from dated LASCO C3 (radial scale compressed) | LASCO 1024 → 512×256 log-polar |

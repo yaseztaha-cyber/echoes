@@ -29,7 +29,7 @@ await page.addInitScript(() => {
   localStorage.setItem("echoes.ceiling", "ultra");
   localStorage.setItem("echoes.autoq", "false");
 });
-await page.goto("http://localhost:4173/", { waitUntil: "load", timeout: 60000 });
+await page.goto(process.env.PROBE_BASE || "http://localhost:4173/", { waitUntil: "load", timeout: 60000 });
 if (!(await clickText("ENTER SIMULATION"))) throw new Error("entry missing");
 await sleep(3500);
 // 1. Sun close-up (photosphere: granulation, limb darkening, corona, markers)

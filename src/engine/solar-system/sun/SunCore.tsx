@@ -2,10 +2,12 @@
  * SUN — dedicated solar renderer (ECHOES "THE SUN: EXTREME VISUAL FIDELITY").
  *
  * Replaces the old 2-sprite glow Sun. Pieces:
- *  - photosphere: emissive-only shader sphere (real HMI continuum equirect),
- *    white-gold tone ramp, physical limb darkening (restrained chromosphere
- *    rim), distance-gated micro-detail, in-shader filmic + sRGB (no double
- *    tone mapping);
+ *  - photosphere: emissive-only shader sphere. The surface look is the
+ *    user-selected artistic equirectangular map (Solar System Scope, CC BY
+ *    4.0) sampled as baked color, with physical limb darkening and a
+ *    restrained chromosphere rim; the real HMI continuum stays the science
+ *    record in the flat SOLAR SCIENCE view. Distance-gated micro-detail, and
+ *    in-shader filmic + sRGB for the science channels (no double tone mapping);
  *  - structured corona: one additive billboard sampling the LASCO C3
  *    log-polar structure mask (corona_mask.png), world-anchored azimuth,
  *    distance-aware gain (restrained at overview, stronger near, hidden
@@ -64,6 +66,7 @@ export function Sun() {
       uDetail: { value: 0 },
       uEx: { value: 1.02 },
       uRaw: { value: 0 },
+      uBaked: { value: 0 },
     }),
     [masks],
   );
@@ -87,7 +90,10 @@ export function Sun() {
     const cam = camera as THREE.PerspectiveCamera;
     u.uMap.value = masks[layer];
     u.uRaw.value = info.raw;
-    u.uEx.value = 1.08;
+    u.uBaked.value = info.baked ?? 0;
+    // the artistic surface map is an SDR sRGB image: a touch more exposure
+    // keeps it as bright as the reference without blowing the flare patches
+    u.uEx.value = info.baked ? 1.16 : 1.08;
     const d = cam.position.length();
     // fractional angular radius vs half-fov: the disk's share of screen height
     const frac = Math.atan2(SUN_R, d) / (THREE.MathUtils.degToRad(cam.fov) * 0.5);
@@ -116,7 +122,7 @@ export function Sun() {
     <group>
       {/* photosphere — emissive shader sphere; lighting for planets unchanged */}
       <mesh>
-        <sphereGeometry args={[SUN_R, 96, 64]} />
+        <sphereGeometry args={[SUN_R, 128, 96]} />
         <shaderMaterial ref={matRef} vertexShader={PHOTO_VERT} fragmentShader={PHOTO_FRAG} uniforms={uniforms} />
       </mesh>
       {/* photosphere glare (additive, fades out close) — replaces the old double sprite */}

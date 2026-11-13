@@ -36,7 +36,8 @@ precision highp float;
 uniform sampler2D uMap;
 uniform float uDetail; // micro-detail mix 0..1 (distance LOD)
 uniform float uEx;     // exposure
-uniform float uRaw;    // 0 = photosphere white-gold ramp, 1 = channel as published
+uniform float uRaw;    // 0 = photosphere tone ramp, 1 = channel as published
+uniform float uBaked;  // 1 = texture already carries color + granulation (artistic map)
 varying vec2 vUv;
 varying vec3 vN;
 varying vec3 vV;
@@ -64,6 +65,23 @@ vec3 toSRGB(vec3 c) {
 void main() {
   vec3 tex = texture2D(uMap, vUv).rgb;
   float lum = dot(tex, vec3(0.2126, 0.7152, 0.0722));
+  float mu = clamp(dot(normalize(vN), normalize(vV)), 0.0, 1.0);
+  if (uBaked > 0.5) {
+    // ARTISTIC photosphere map: the texture already carries its own color and
+    // granulation, so it is sampled as baked color (no intensity ramp, no
+    // procedural grain). Only physical limb darkening and a thin chromosphere
+    // rim are added, and ACES is skipped so the palette survives untouched.
+    // the last few pixels of a sphere squeeze the whole texture width into a
+    // line, so sampling there aliases into a dashed rim; fade that band to a
+    // flat warm limb colour (also a physically sensible bright limb)
+    float edge = smoothstep(0.02, 0.22, mu);
+    vec3 limb = vec3(0.92, 0.34, 0.04);
+    vec3 c = tex * uEx * (0.84 + 0.16 * pow(mu, 0.45));
+    c = mix(limb, c, edge);
+    c += vec3(0.85, 0.25, 0.05) * pow(1.0 - mu, 8.0) * 0.10;
+    gl_FragColor = vec4(toSRGB(c), 1.0);
+    return;
+  }
   vec3 col;
   if (uRaw > 0.5) {
     // science channel: as-published colors, gentle filmic only (no clipping)
@@ -75,7 +93,6 @@ void main() {
     // granulation grain is a disclosed procedural micro-texture (frozen
     // snapshot — real granules evolve in minutes and are sub-pixel here).
     float m = 0.63 + (pow(lum, 1.0 / 2.2) - 0.63) * 1.7;
-    float mu = clamp(dot(normalize(vN), normalize(vV)), 0.0, 1.0);
     if (uDetail > 0.001) {
       vec2 gv = vUv * vec2(210.0, 105.0);
       float grain = vnoise(gv) * 0.55 + vnoise(gv * 2.3 + 11.7) * 0.30 + vnoise(gv * 5.1 + 3.3) * 0.15;

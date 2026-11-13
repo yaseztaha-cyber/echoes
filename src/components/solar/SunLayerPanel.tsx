@@ -57,7 +57,7 @@ export function SunLayerPanel() {
       )}
       <div className="mt-1">
         <Chip tone="text-amber">
-          PHOTOSPHERE = GLOBAL RECONSTRUCTION (FAR SIDE MIRRORED) · AIA CHANNELS FALSE COLOR AS PUBLISHED
+          PHOTOSPHERE SURFACE = ARTISTIC MAP (CC BY 4.0) · OBSERVED CONTINUUM IN SOLAR SCIENCE · AIA CHANNELS FALSE COLOR AS PUBLISHED
         </Chip>
       </div>
       <button className="ctl ctl-primary mt-3 w-full" onClick={() => { sfx.open(); useEcho.setState({ overlay: "sun", sunSpotId: null }); }}>

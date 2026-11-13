@@ -1,19 +1,25 @@
 /**
  * SUN — layer registry for the solar renderer.
  *
- * Every layer is a REAL SDO observation, rebuilt as a 1024x512 equirectangular
- * map by scripts/build-sun-channels.py (inverse-orthographic resample of the
- * full disk; far side = mirrored near side with a brightness fade, the same
- * disclosed method as the photosphere sun.jpg).
+ * Science layers are REAL SDO observations, rebuilt as 1024x512 equirectangular
+ * maps by scripts/build-sun-channels.py (inverse-orthographic resample of the
+ * full disk; far side = mirrored near side with a brightness fade).
+ *
+ * The photosphere SURFACE look is the user-selected artistic equirectangular
+ * map (Solar System Scope, CC BY 4.0) — it carries its own color and granulation
+ * and is rendered as baked color (`baked: 1`), not through the intensity ramp.
+ * The real SDO/HMI continuum snapshot stays the science record and is what the
+ * flat SOLAR SCIENCE view shows.
  *
  * Honesty contract (spec: THE SUN — EXTREME VISUAL FIDELITY):
- *  - photosphere is a reconstructed GLOBAL map (near half real, far half mirror);
+ *  - photosphere surface = artistic visualization, labelled as such in the UI;
+ *    the observed continuum lives in the flat science view;
  *  - the flat science-view images are full-disk OBSERVATIONS shown as published;
  *  - AIA channels are FALSE COLOR as published by SDO, never sold as naked-eye;
  *  - magnetogram/dopplergram colors are quantities, not natural color;
  *  - stamps are the watermark timestamps read from each product.
  */
-import sunJpg from "@/assets/tex/sun.jpg";
+import sunSss from "@/assets/tex/sun_sss.jpg";
 import sunHmi from "@/assets/tex/sun_hmi.jpg";
 import sunDoppler from "@/assets/tex/sun_doppler.jpg";
 import sun0304 from "@/assets/tex/sun_0304.jpg";
@@ -30,6 +36,8 @@ export interface SunLayerInfo {
   tex: string;
   /** 0 = photosphere tone ramp (white-gold render), 1 = channel shown as published. */
   raw: 0 | 1;
+  /** 1 = the texture already carries its own color/granulation: sample it as baked color. */
+  baked?: 0 | 1;
   instrument: string;
   wavelength: string;
   colorClass: string;
@@ -45,17 +53,18 @@ export const SUN_LAYERS: Record<SunLayerId, SunLayerInfo> = {
   photosphere: {
     id: "photosphere",
     label: "PHOTOSPHERE",
-    tex: sunJpg,
+    tex: sunSss,
     raw: 0,
-    instrument: "SDO / HMI",
-    wavelength: "6173 Å continuum (visible light)",
-    colorClass: "NEAR-NATURAL INTENSITY · RECONSTRUCTED GLOBAL MAP",
+    baked: 1,
+    instrument: "Surface map: Solar System Scope (artist) · science base: SDO / HMI",
+    wavelength: "Visible-light artistic map (not a spectral band)",
+    colorClass: "ARTISTIC VISUALIZATION — NOT AN OBSERVATION (CC BY 4.0)",
     physics:
       "The visible surface where sunlight escapes (~5,772 K effective temperature). Sunspots read dark because they are ~1,000–2,000 K cooler than the surrounding granulation.",
     cannot:
-      "The far side is a mirrored near-side fill, and granulation cells are frozen in time — real granulation evolves over minutes.",
-    stamp: "2026-10-23 (HMI continuum full disk 4096)",
-    file: "sun.jpg",
+      "The rendered surface is an artist's equirectangular map, not this epoch's observation: its features are illustrative. The real 2026-10-23 HMI continuum is in SOLAR SCIENCE; the sunspot markers on the disk are that snapshot's detections projected onto this map.",
+    stamp: "Artistic map (Solar System Scope, CC BY 4.0) · science base 2026-10-23 HMI continuum",
+    file: "sun_sss.jpg",
   },
   chromosphere: {
     id: "chromosphere",

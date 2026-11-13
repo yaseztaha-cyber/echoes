@@ -23,6 +23,7 @@ const LAYER_FILES: Record<string, string> = {
   "sun:chromosphere": "sun_0304.jpg",
   "sun:corona": "sun_0171.jpg",
   "sun:motion": "sun_doppler.jpg",
+  "sun:surface-art": "sun_sss.jpg",
 };
 
 describe("globe asset manifest", () => {
@@ -105,7 +106,7 @@ describe("globe asset manifest", () => {
   });
 
   it("every entry carries an explicit scientific classification", () => {
-    const allowed = ["OBSERVED", "MOSAIC", "ENHANCED", "REPRESENTATIVE", "RECONSTRUCTED", "SIMULATED"];
+    const allowed = ["OBSERVED", "MOSAIC", "ENHANCED", "REPRESENTATIVE", "RECONSTRUCTED", "SIMULATED", "VISUALIZATION"];
     for (const m of GLOBE_MANIFEST) {
       expect(allowed.some((c) => m.class.includes(c)), m.id).toBe(true);
       expect(m.epoch.length).toBeGreaterThan(3);

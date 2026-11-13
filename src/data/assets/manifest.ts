@@ -25,7 +25,7 @@ export interface GlobeAsset {
   view?: string;
   /** Flat full-disk record, not a spherical map (sun science channels). */
   flat?: boolean;
-  /** OBSERVED | MOSAIC | ENHANCED | REPRESENTATIVE | RECONSTRUCTED | SIMULATED (+qualifiers). */
+  /** OBSERVED | MOSAIC | ENHANCED | REPRESENTATIVE | RECONSTRUCTED | SIMULATED | VISUALIZATION (+qualifiers). */
   class: string;
   /** Observation epoch or product date. Never invented. */
   epoch: string;
@@ -358,6 +358,29 @@ export const GLOBE_MANIFEST: GlobeAsset[] = [
     format: "JPEG q90",
     colorSpace: "SRGBColorSpace",
     orientation: "Equirectangular, solar north up",
+    status: "APPROVED",
+  },
+  {
+    id: "sun-surface-art-sss",
+    body: "sun",
+    view: "surface-art",
+    class: "VISUALIZATION (artist-rendered equirectangular solar surface — not an observation)",
+    epoch: "Artist rendering (undated; not tied to an observation epoch)",
+    org: "Solar System Scope",
+    product: "Full-sphere photosphere surface map, 2:1 equirectangular, delivered 4096x2048",
+    sourceUrl: "https://www.solarsystemscope.com/textures/",
+    sourceFile: "8k_sun.jpg",
+    sourcePx: [4096, 2048],
+    deliveredPx: [4096, 2048],
+    hiresPx: [4096, 2048],
+    projection: "Equirectangular 2:1, solar north up (as delivered by the artist)",
+    colorClass: "Baked artistic color (orange/gold granulation, dark active regions, bright flare patches) — not a measured intensity or spectral band",
+    processing: "Re-encoded JPEG q90 progressive only (no resample, no color edit)",
+    gaps: "Illustrative: granulation and active-region shapes are invented by the artist, so nothing on this surface may be read as data for any date. The observed SDO/HMI continuum (sun-visible-recon) remains the science record",
+    credit: "Solar System Scope (https://www.solarsystemscope.com/textures/), CC BY 4.0",
+    format: "JPEG q90 (progressive)",
+    colorSpace: "SRGBColorSpace",
+    orientation: "Equirectangular, solar north up; seam placement arbitrary (artist map)",
     status: "APPROVED",
   },
   {
