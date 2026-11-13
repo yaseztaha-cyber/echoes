@@ -314,40 +314,43 @@ User review flagged four concrete things; each got a fix, not a shrug:
   `tsc --noEmit` clean, production build succeeds. Full report:
   `ECHOES_DEVICE_NAVIGATION_FINAL_VERIFICATION.md`.
 
-### MER-B MISSION FILM — the Opportunity documentary, playable inside ECHOES
+### MER-B MISSION FILM - the Opportunity documentary, running as code
 
-- **The asset:** the delivered archive `mars-rover-cinematic-prototype (1).zip`
-  contains **no video file** — it is the *source* of the documentary
-  (`MERB_JOURNEY_STANDALONE`: 18 chapters, 514 s, procedural 3D worlds, camera
-  choreography, media manifest, audio policy). The recording its own
-  verification report names
-  (`verification/video/verification-run-software-gl.webm`) was not included and
-  exists nowhere on the machine. The film was therefore **rendered from the
-  delivered documentary** (`scripts/render-merb-film.mjs`: build → headless
-  Edge → real-time playthrough → 9:18.92 at 30 fps). No stock footage, no NASA
-  substitute, no placeholder.
-- **Audio restored exactly:** Chromium's screencast is video-only, so the
-  documentary's only audible material — the NASA/JPL launch tracker tape
-  (AVC-2003-175-1, clip 226–256 s) — was muxed back at the exact offset the
-  documentary plays it, with the video stream copied bit-for-bit. The film is
-  silent everywhere else, which is the documentary's own stated policy.
-- **Integration:** a mission-film registry (`src/data/missionFilms.ts`), a real
-  HTML5 player with ECHOES-styled controls
-  (`src/components/mission/MissionFilmPlayer.tsx`), and a **MER-B-only**
-  `WATCH MISSION FILM` action in the journey intro panel, the journey top bar
-  and the mission context panel. The film is revealed *inside* the mission
-  journey interface; the 3D site stays visible around it.
+- **What the film actually is:** the delivered archive
+  (`mars-rover-cinematic-prototype (1).zip`) contains **no video file** - it is
+  the documentary as **code**: `MERB_JOURNEY_STANDALONE`, a self-contained
+  Three.js experience (18 chapters, 514 s, procedural Mars/launch/space worlds,
+  a reconstructed rover with animation scripts, data-driven camera shots, 55
+  archival NASA/JPL media records, a DOM documentary interface and a strict
+  "archival audio only, no music, Mars is silent" policy). Its own
+  `docs/INTEGRATION.md` prescribes `mountOpportunityJourney(container)`.
+- **Integrated as code, not as a file:** the module now lives in
+  `src/missions/merb/` (22 files, 219 KB, `three` only - ECHOES already ships
+  it) and is mounted by `src/components/mission/MerBMissionFilm.tsx` inside
+  ECHOES' mission journey interface. It keeps its own renderer/scene, its CSS
+  is namespaced under `.merb`, and it is destroyed completely on unmount. **No
+  video file ships with ECHOES** - an earlier iteration rendered the documentary
+  to a 165 MB WebM and played it back; that was the wrong shape for the asset
+  and has been removed again (file, player component and render script).
+- **Integration:** a mission-film registry (`src/data/missionFilms.ts`, kind
+  `documentary` for MER-B), and a **MER-B-only** `WATCH MISSION FILM` action in
+  the journey intro panel, the journey top bar and the mission context panel.
+  The film's player is the documentary's own interface - real play/pause,
+  chapter ruler, scrub inside a chapter, sound toggle, inspect drawer, free
+  orbit/zoom, fullscreen - mounted in a 16:9 stage with the 3D site still
+  visible around it.
 - **Safety:** opening/closing the film touches only the overlay and the film id
-  — no scene, world, device, chapter or camera change; the instrumented trace
-  records **zero** Solar System returns; the chapter ruler is hidden while the
-  film is open; ESC closes the film, not the journey.
-- **Verified in the running app** (1920×1080, `http://localhost:5174/`):
-  **24 / 24 browser checks pass**, 0 console errors — file served (HTTP 206,
-  streamed), play/pause, seek (slider + keyboard), fullscreen, audio track,
-  no autoplay, state restoration, no accumulating `<video>` instances, and the
-  action confirmed **absent** on Spirit, InSight, Sojourner, Apollo 12 and
-  Apollo 17. 152 tests pass; `tsc` clean; build clean (the film is never
-  inlined). Report: `ECHOES_MERB_MISSION_FILM_INTEGRATION.md`.
+  - no scene, world, device, journey chapter or camera change; the instrumented
+  trace records **zero** Solar System returns; the chapter ruler is hidden while
+  the film is open; ESC closes the film, not the journey; ECHOES' ambient bed
+  is muted so the film is heard exactly as authored.
+- **Verified in the running app** (1920x1080, `http://localhost:5174/`):
+  **23 / 23 browser checks pass**, 0 console errors - the module mounts, plays,
+  seeks, scrubs, toggles sound, restores the mission state on close, leaves no
+  accumulating canvas/DOM/context, and the action is confirmed **absent** on
+  Spirit, InSight, Sojourner, Apollo 12 and Apollo 17. The device-navigation
+  probe still passes 13/13. 153 tests; `tsc` clean; build clean. Report:
+  `ECHOES_MERB_MISSION_FILM_INTEGRATION.md`.
 
 ## Honesty ledger (what must NOT be oversold)
 

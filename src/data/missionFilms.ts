@@ -1,37 +1,40 @@
 /**
  * MISSION FILM REGISTRY
  *
- * A mission film is a recorded documentary that belongs to exactly ONE device.
- * Only devices with an `available` entry here can show the "WATCH MISSION
- * FILM" action — a device without a registered film shows nothing at all (no
+ * A mission film is a documentary that belongs to exactly ONE device. Only
+ * devices with an `available` entry here can show the "WATCH MISSION FILM"
+ * action — a device without a registered film shows nothing at all (no
  * disabled button, no empty player, no "coming soon").
  *
- * Files live in `public/films/` and are served as-is by the dev server and
- * copied verbatim into the build. The browser streams them with native range
- * requests: nothing is inlined into the bundle, nothing is preloaded before
- * the user opens the film, and the decoder is released when it closes.
+ * Two kinds are supported:
+ *  - "documentary" — the film IS code: an authored in-app experience mounted
+ *    into the mission journey interface (today: the MER-B cinematic journey,
+ *    `src/missions/merb`). It plays live, at the device's own quality tier.
+ *  - "video" — a recorded film file streamed from `public/` (native range
+ *    requests, never inlined, loaded only when the user opens the film).
  *
- * Honesty: every entry carries its own provenance. The MER-B film is a screen
- * capture of the MER-B cinematic journey prototype authored for this project
- * (NASA/JPL media inside it are public domain and credited in the film).
+ * Honesty: every entry carries its own provenance.
  */
 
 export type FilmStatus = "available" | "unavailable";
+export type FilmKind = "documentary" | "video";
 
 export interface MissionFilm {
   /** ARTIFACTS id the film belongs to (e.g. "opportunity"). */
   deviceId: string;
-  /** Film title shown in the player header. */
+  /** Film title shown in the film header. */
   title: string;
-  /** One line of context above the player. */
+  /** One line of context above the film. */
   subtitle: string;
-  /** Path served from the app root (files live in public/). */
-  src: string;
+  /** How the film is delivered. */
+  kind: FilmKind;
+  /** For kind === "video": the path served from the app root (files live in public/). */
+  src?: string;
   /** Optional poster image (a real frame of the film). */
   poster?: string;
-  /** Informational only — the player always reads the real duration from the file. */
+  /** Informational only — a documentary reads its own timeline from the module. */
   durationSec?: number;
-  /** Provenance line under the player. */
+  /** Provenance line under the film. */
   credit: string;
   /** Availability. Only "available" films are offered. */
   status: FilmStatus;
@@ -41,12 +44,11 @@ export const MISSION_FILMS: MissionFilm[] = [
   {
     deviceId: "opportunity",
     title: "MER-B — OPPORTUNITY",
-    subtitle: "The full mission documentary · 18 chapters · 2000 – 2019",
-    src: "/films/merb-mission-film.webm",
-    poster: "/films/merb-mission-film-poster.jpg",
+    subtitle: "The mission documentary · 18 chapters · 2003 – 2019",
+    kind: "documentary",
     durationSec: 514,
     credit:
-      "MER-B cinematic journey, authored for ECHOES. Archival media inside the film: NASA / JPL-Caltech (public domain).",
+      "MER-B cinematic journey (src/missions/merb), authored for ECHOES. Archival media inside the film: NASA / JPL-Caltech (public domain).",
     status: "available",
   },
 ];

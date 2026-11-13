@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useEcho, openMissionFilm, closeMissionFilm } from "@/state/store";
 import { getJourney, type MissionJourney, type CaseFile } from "@/data/journeys";
 import { filmForDevice } from "@/data/missionFilms";
-import { MissionFilmPlayer, PlayIcon } from "./MissionFilmPlayer";
+import { MerBMissionFilm } from "./MerBMissionFilm";
+import { PlayIcon } from "./MissionFilmIcons";
 import { artifactById } from "@/data/artifacts";
 import { sourceById } from "@/data/sources";
 import { setT, configureClock } from "@/engine/time/clock";
@@ -154,9 +155,20 @@ export function MissionJourney() {
       <div className="pointer-events-auto absolute inset-0 flex items-center justify-center px-4 pt-12 pb-16 md:px-8">
         <div className="w-full max-w-7xl">
           {film ? (
-            /* MISSION FILM — the documentary is revealed inside the mission experience */
-            <div className="mx-auto w-full max-w-6xl">
-              <MissionFilmPlayer film={film} onClose={closeMissionFilm} />
+            /* MISSION FILM — the documentary is mounted INSIDE the mission
+               experience; the 3D site stays visible around the panel. */
+            <div className="mx-auto w-full max-w-7xl">
+              <div className="border border-[#1d2429] bg-ink-1/95">
+                <div className="relative aspect-video w-full bg-black">
+                  <MerBMissionFilm />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1d2429] px-4 py-2">
+                  <span className="label normal-case tracking-[0.08em]">{film.credit}</span>
+                  <button className="ctl flex-none" onClick={closeMissionFilm} aria-label="Close mission film">
+                    ✕ CLOSE FILM
+                  </button>
+                </div>
+              </div>
             </div>
           ) : isIntro ? (
             /* INTRO: Asymmetric cinematic — large media left (60%), mission identity right (40%) */

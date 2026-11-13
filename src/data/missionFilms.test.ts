@@ -45,7 +45,8 @@ describe("mission film registry", () => {
   it("the registered film files exist on disk and are non-trivial", () => {
     for (const film of MISSION_FILMS) {
       if (film.status !== "available") continue;
-      const src = join(PUBLIC, film.src.replace(/^\//, ""));
+      if (film.kind !== "video") continue; // a documentary is code, not a file
+      const src = join(PUBLIC, film.src!.replace(/^\//, ""));
       expect(existsSync(src), src).toBe(true);
       expect(statSync(src).size, `${film.src} is empty`).toBeGreaterThan(1024);
       if (film.poster) {
@@ -56,11 +57,20 @@ describe("mission film registry", () => {
     }
   });
 
+  it("the MER-B film is the documentary module itself, not a media file", () => {
+    const film = filmForDevice("opportunity")!;
+    expect(film.kind).toBe("documentary");
+    expect(film.src).toBeUndefined();
+    // the documentary's code ships with the app
+    expect(existsSync(join(__dirname, "..", "missions", "merb", "index.ts"))).toBe(true);
+    expect(existsSync(join(__dirname, "..", "missions", "merb", "data", "chapters.ts"))).toBe(true);
+  });
+
   it("the film declares its provenance", () => {
     const film = filmForDevice("opportunity")!;
     expect(film.credit.length).toBeGreaterThan(10);
     expect(film.title.length).toBeGreaterThan(3);
     expect(film.subtitle.length).toBeGreaterThan(3);
-    expect(film.src.endsWith(".webm")).toBe(true);
+    expect(film.kind === "documentary" || !!film.src?.endsWith(".webm")).toBe(true);
   });
 });
