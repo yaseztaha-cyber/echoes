@@ -95,12 +95,3 @@ redistributed in the repository.
 | Peer-reviewed claims | Squyres 2004/2012, Klingelhofer 2004, Rieder 2004, Grotzinger 2005, Arvidson 2014, Squyres 2008, Stähler 2021, Stone 2013, Gurnett 2013, Langseth 1976 | cited by DOI in `src/data/sources/index.ts` |
 
 ---
-
-## 8. Obligations the product must keep
-
-1. Keep the credit line on every image, plate and video the product shows.
-2. Keep the "ARTISTIC VISUALIZATION — NOT AN OBSERVATION" label on the
-   Solar System Scope solar map, and keep the CC BY 4.0 attribution next to it.
-3. Keep the reconstruction labels on every non-official model.
-4. Keep NASA imagery marked as NASA imagery — never present generated material
-   as archival footage.

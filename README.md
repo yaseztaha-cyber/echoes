@@ -59,17 +59,3 @@ npx tsc --noEmit
 
 The production build is a static site and can be served by a static web host.
 
-## Current limitations
-
-- Opportunity is the only mission with a spatial waypoint route; the other journeys are chapter-based.
-- Archival imagery is not yet available throughout all mission journeys.
-- Planetary distances and body sizes are visually compressed for navigation.
-- Axial tilt and planetary spin are not currently rendered.
-- Voyager 1's displayed distance is calculated with the project's propagation model; it is not a live NASA ephemeris.
-- Some optional media depends on external archives being available.
-
-## A note on AI and independence
-
-AI coding assistants helped us write and refactor code, tests, and documentation. They did not replace the need to check mission claims against sources. Asset-specific credits and the project's AI-use disclosure are linked above.
-
-ECHOES is an independent student project. It is not affiliated with, endorsed by, or sponsored by NASA.
