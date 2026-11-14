@@ -33,7 +33,7 @@ export function Machines() {
               index="03"
               eyebrow="The machines"
               lines={["Built to go", "where we cannot."]}
-              text="Rovers, orbiters and deep-space probes are engineered for places that are too far, too cold, too hot or too hostile for people. Each of these was built for one job."
+              text="We can't send people everywhere, so we send machines. Some drive across the ground, some map worlds from orbit, and some keep travelling long after their first mission is over."
             />
           </div>
         </Reveal>
@@ -100,7 +100,7 @@ export function Machines() {
                     <dd className="text-ink/85">{m.fn}</dd>
                   </div>
                   <div className="border-l border-lamber pl-5">
-                    <dt className="eyebrow mb-1.5 text-lamber">Engineering detail</dt>
+                    <dt className="eyebrow mb-1.5 text-lamber">A closer look</dt>
                     <dd className="text-ink">{m.detail}</dd>
                   </div>
                 </dl>
