@@ -202,6 +202,7 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     sources: [
       { title: "Apollo 12", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-12/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission dates." },
       { title: "Apollo 12 Lunar Surface Journal", publisher: ALSJ, url: "https://www.nasa.gov/history/alsj/", accessed: ACCESSED, supports: "Landing site coordinates, EVA timeline, surface duration." },
+      { title: "Apollo 12 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo12info.html", accessed: ACCESSED, supports: "Exact UTC launch, lunar landing, and return-to-Earth timestamps." },
     ],
   },
   {
@@ -216,8 +217,8 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     statusNote: "The crew returned to Earth on 9 February 1971.",
     hardwareLocation: "The Antares LM descent stage remains at Fra Mauro; the crew's geological hammer and the ALSEP are still there.",
     keyEvents: [
-      { label: "Launch", dateUtc: Date.UTC(1971, 0, 31, 21, 13), note: "Saturn V SA-508; the third crewed Saturn V flight." },
-      { label: "Landing", dateUtc: Date.UTC(1971, 1, 5, 15, 54, 37), note: "Fra Mauro, 3.67°S 17.47°E — a highlands site near the rim of Imbrium." },
+      { label: "Launch", dateUtc: Date.UTC(1971, 0, 31, 21, 3, 2), note: "Saturn V SA-508 from Launch Complex 39A." },
+      { label: "Landing", dateUtc: Date.UTC(1971, 1, 5, 9, 18, 11), note: "Fra Mauro, 3.65°S 17.47°W — a highlands site near the rim of Imbrium." },
       { label: "Surface EVA", dateUtc: Date.UTC(1971, 1, 5), note: "Two EVAs, 9 h 3 m total; the first use of the ALSEP on the Moon (plus the 'contact light' seismometer in the LM)." },
       { label: "Return to Earth", dateUtc: Date.UTC(1971, 1, 9), note: "Splashdown; 43 kg of lunar samples." },
     ],
@@ -226,7 +227,8 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
       { title: "A magnetic anomaly", text: "The ALSEP magnetometer measured a remanent crustal field, evidence that the Moon once had a global magnetic field." },
     ],
     sources: [
-      { title: "Apollo 14", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-14/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission dates." },
+      { title: "Apollo 14", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-14/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission overview." },
+      { title: "Apollo 14 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo14info.html", accessed: ACCESSED, supports: "Exact UTC launch, lunar landing, and return-to-Earth timestamps." },
     ],
   },
   {
@@ -241,8 +243,8 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     statusNote: "The crew returned to Earth on 7 August 1971.",
     hardwareLocation: "The Falcon LM and the ALSEP remain at Hadley Rille; the ALSEP operated until 1977.",
     keyEvents: [
-      { label: "Launch", dateUtc: Date.UTC(1971, 6, 26, 15, 32), note: "Saturn V SA-509; the first use of a deep-space colour TV camera." },
-      { label: "Landing", dateUtc: Date.UTC(1971, 6, 30, 22, 16, 35), note: "Hadley-Apennine, 26.13°N 3.63°E, beside Hadley Rille." },
+      { label: "Launch", dateUtc: Date.UTC(1971, 6, 26, 13, 34), note: "Saturn V SA-509 from Launch Complex 39A." },
+      { label: "Landing", dateUtc: Date.UTC(1971, 6, 30, 22, 16, 29), note: "Hadley-Apennine, 26.13°N 3.63°E, beside Hadley Rille." },
       { label: "Surface EVA", dateUtc: Date.UTC(1971, 6, 30), note: "Three EVAs, 18 h 35 m; the first rover excursion on the Moon." },
       { label: "Return to Earth", dateUtc: Date.UTC(1971, 7, 7), note: "Splashdown with 77 kg of samples." },
     ],
@@ -252,7 +254,8 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
       { title: "Basalt at the rim of a rille", text: "Samples from the Apennine front helped date the mare basalts and the excavation of Hadley Rille." },
     ],
     sources: [
-      { title: "Apollo 15", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-15/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission dates." },
+      { title: "Apollo 15", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-15/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission overview." },
+      { title: "Apollo 15 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo15info.html", accessed: ACCESSED, supports: "Exact UTC launch, lunar landing, and return-to-Earth timestamps." },
     ],
   },
   {
@@ -264,27 +267,28 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     objective:
       "Sample the Descartes highlands — a candidate young volcanic region — to test the volcanic origin of the lunar highlands.",
     verifiedStatus: "MISSION COMPLETE",
-    statusNote: "The crew returned to Earth on 24 August 1972.",
+    statusNote: "The crew returned to Earth on 27 April 1972; the ALSEP station continued returning data until 1977.",
     hardwareLocation: "The Orion LM and the ALSEP remain in the Descartes highlands; the ALSEP operated until 1977.",
     keyEvents: [
-      { label: "Launch", dateUtc: Date.UTC(1972, 3, 16, 22, 54), note: "Saturn V SA-511." },
-      { label: "Landing", dateUtc: Date.UTC(1972, 3, 21, 23, 54, 50), note: "Descartes highlands, 8.97°S 15.50°E." },
+      { label: "Launch", dateUtc: Date.UTC(1972, 3, 16, 17, 54), note: "Saturn V SA-511 from Launch Complex 39A." },
+      { label: "Landing", dateUtc: Date.UTC(1972, 3, 21, 2, 23, 35), note: "Descartes highlands, 8.97°S 15.50°E." },
       { label: "Surface EVA", dateUtc: Date.UTC(1972, 3, 21), note: "Three EVAs, 21 h 36 m; the first deep drilling on the Moon (a 3 m borehole)." },
-      { label: "Return to Earth", dateUtc: Date.UTC(1972, 7, 24), note: "Splashdown; the first deep-space mission to land humans." },
+      { label: "Return to Earth", dateUtc: Date.UTC(1972, 3, 27, 19, 45, 5), note: "Splashdown in the Pacific Ocean; the crew returned to Earth." },
     ],
     discoveries: [
       { title: "Highland volcanism", text: "The 4.3-billion-year-old basalt fragments confirmed that the lunar highlands were partly volcanic — the impact hypothesis had held for two decades." },
       { title: "A long drill core", text: "The deep drill reached 3 m, sampling a layered column of impact breccias and basalt." },
     ],
     sources: [
-      { title: "Apollo 16", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-16/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission dates." },
+      { title: "Apollo 16", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-16/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission overview." },
+      { title: "Apollo 16 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo16info.html", accessed: ACCESSED, supports: "Exact UTC launch, lunar landing, and return-to-Earth timestamps." },
     ],
   },
   {
     deviceId: "apollo-17",
     agency: "NASA",
     launchVehicle: "Saturn V SA-515",
-    launchSite: "Launch Complex 39B, Kennedy Space Center, Florida",
+    launchSite: "Launch Complex 39A, Kennedy Space Center, Florida",
     missionType: "crewed-lander",
     objective:
       "Explore the Taurus-Littrow valley — a highland/mare boundary rich in stratified layers — and leave the last Apollo lunar surface experiments in operation.",
@@ -293,8 +297,8 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
       "The crew returned to Earth on 19 December 1972. Apollo 17 was the last crewed lunar landing and the last crewed departure from the Moon.",
     hardwareLocation: "The Challenger LM, the ALSEP and the lunar rover remain at Taurus-Littrow; the ALSEP operated until 1977.",
     keyEvents: [
-      { label: "Launch", dateUtc: Date.UTC(1972, 11, 7, 5, 33), note: "Saturn V SA-515 from LC-39B — the only Apollo launch from pad 39B." },
-      { label: "Landing", dateUtc: Date.UTC(1972, 11, 11, 22, 54, 37), note: "Taurus-Littrow, 20.19°N 30.77°E." },
+      { label: "Launch", dateUtc: Date.UTC(1972, 11, 7, 5, 33), note: "Saturn V SA-515 from Launch Complex 39A; the first nighttime launch of a Saturn V." },
+      { label: "Landing", dateUtc: Date.UTC(1972, 11, 11, 19, 54, 57), note: "Taurus-Littrow, 20.19°N 30.77°E." },
       { label: "Surface EVA", dateUtc: Date.UTC(1972, 11, 11), note: "Three EVAs, 22 h 4 m; the final lunar surface operations." },
       { label: "Return to Earth", dateUtc: Date.UTC(1972, 11, 19), note: "Splashdown; the last crewed lunar ascent on 14 December 1972." },
     ],
@@ -304,7 +308,9 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
       { title: "The end of Apollo", text: "The last crewed landing: humanity has not returned to the Moon since December 1972." },
     ],
     sources: [
-      { title: "Apollo 17", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-17/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, launch site, mission dates." },
+      { title: "Apollo 17", publisher: NASA, url: "https://www.nasa.gov/mission/apollo-17/", accessed: ACCESSED, supports: "Mission identity, launch vehicle, and mission overview." },
+      { title: "Apollo 17 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo17info.html", accessed: ACCESSED, supports: "Exact UTC launch, lunar landing, and return-to-Earth timestamps." },
+      { title: "Apollo 17 Launch", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/resource/apollo-17-launch/", accessed: ACCESSED, supports: "Launch from Pad A, Launch Complex 39, Kennedy Space Center." },
     ],
   },
   {
