@@ -2,7 +2,7 @@
  * MISSION FILM REGISTRY
  *
  * A mission film is a documentary that belongs to exactly ONE device. Only
- * devices with an `available` entry here can show the "WATCH MISSION FILM"
+ * devices with an `available` entry here can show the "WATCH MISSION VIDEO"
  * action — a device without a registered film shows nothing at all (no
  * disabled button, no empty player, no "coming soon").
  *
@@ -44,7 +44,7 @@ export const MISSION_FILMS: MissionFilm[] = [
   {
     deviceId: "opportunity",
     title: "MER-B — OPPORTUNITY",
-    subtitle: "The mission documentary · 18 chapters · 2003 – 2019",
+    subtitle: "Archival mission video and interactive documentary · 2003 – 2019",
     kind: "documentary",
     durationSec: 514,
     credit:
