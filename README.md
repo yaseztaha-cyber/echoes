@@ -125,7 +125,7 @@ npm run preview    # serve the production build
 ```
 
 ```bash
-npm test           # 160 unit tests
+npm test           # 172 unit tests
 npx tsc --noEmit   # type check
 ```
 
@@ -134,18 +134,16 @@ A `dist/` deployment needs no server-side code and no credentials.
 
 ---
 
-## Verification
+## Credits, rights and disclosures
 
-| Report | What it covers |
+| Document | What it covers |
 |---|---|
-| [`AUDIT_BASELINE.md`](AUDIT_BASELINE.md) | the project as found, and every problem the audit found |
-| [`MISSION_SCIENTIFIC_AUDIT.md`](MISSION_SCIENTIFIC_AUDIT.md) | per-mission verification and the corrections made |
-| [`MISSION_AUDIT_RESULTS.md`](MISSION_AUDIT_RESULTS.md) | the 140-cell audit matrix |
-| [`BROWSER_VERIFICATION_REPORT.md`](BROWSER_VERIFICATION_REPORT.md) | real browser runs, every device, every surface |
-| [`PERFORMANCE_AUDIT.md`](PERFORMANCE_AUDIT.md) | measured FPS, frame time, draw calls, load time |
-| [`FUNCTIONAL_ACCEPTANCE_REPORT.md`](FUNCTIONAL_ACCEPTANCE_REPORT.md) | every user-facing feature, tested |
+| [`ASSET_LICENSE_AND_ATTRIBUTION.md`](ASSET_LICENSE_AND_ATTRIBUTION.md) | every planetary, spacecraft and media asset with its licence and credit |
+| [`MISSION_SOURCE_REGISTER.md`](MISSION_SOURCE_REGISTER.md) | per-mission claims and their primary sources |
+| [`NASA_DATA_AND_RESOURCES.md`](NASA_DATA_AND_RESOURCES.md) | the NASA data actually used by the application |
 | [`SECURITY_AUDIT.md`](SECURITY_AUDIT.md) | secret scan, dependency and privacy review |
 | [`AI_USE_DISCLOSURE.md`](AI_USE_DISCLOSURE.md) | complete, honest record of AI assistance |
+| [`NASA_SPACE_APPS_SUBMISSION_PACKET.md`](NASA_SPACE_APPS_SUBMISSION_PACKET.md) | the competition submission record |
 
 ---
 
