@@ -74,7 +74,7 @@ export function Hero() {
       <div className="mx-auto w-full max-w-[1500px] px-5 pb-24 sm:px-8 sm:pb-28">
         <p className="eyebrow fade-up mb-6 text-ink/80 [animation-delay:150ms] sm:mb-8">
           <span className="mr-3 inline-block h-px w-8 translate-y-[-3px] bg-lamber align-middle" aria-hidden="true" />
-          An interactive journey through space
+          A closer look at the places we've explored
         </p>
 
         <h1 className="display text-[clamp(3.3rem,9.2vw,9rem)]" aria-label="Every journey leaves a trace.">
@@ -89,13 +89,12 @@ export function Hero() {
         </h1>
 
         <p className="fade-up mt-7 max-w-[34rem] text-[1.02rem] leading-relaxed text-ink/80 [animation-delay:700ms] sm:mt-9 sm:text-lg">
-          From the first steps on distant worlds to spacecraft traveling beyond the edge of our solar system, discover
-          the missions, machines, and discoveries that expanded humanity's understanding of space.
+          From the first footprints on the Moon to probes still sending signals from beyond the planets, follow the missions and machines that changed what we know about space.
         </p>
 
         <div className="fade-up mt-8 flex flex-col gap-3 [animation-delay:850ms] sm:mt-10 sm:flex-row sm:gap-4">
-          <EnterLink>Enter Echoes</EnterLink>
-          <GhostLink href="#missions">Explore Missions</GhostLink>
+          <EnterLink>Enter ECHOES</EnterLink>
+          <GhostLink href="#missions">Browse the missions</GhostLink>
         </div>
       </div>
 
@@ -105,7 +104,7 @@ export function Hero() {
           <span className="relative h-9 w-px overflow-hidden bg-line" aria-hidden="true">
             <span className="cue-line absolute inset-0 bg-lamber" />
           </span>
-          Scroll to explore
+          Keep exploring
         </a>
         <p className="hidden max-w-xs text-right font-mono text-[0.62rem] uppercase leading-relaxed tracking-[0.14em] text-mute sm:block">
           Saturn from within its own shadow · Cassini, 2006
