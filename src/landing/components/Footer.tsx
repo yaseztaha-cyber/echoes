@@ -15,19 +15,17 @@ export function Footer() {
         <div className="lg:col-span-5">
           <p className="display text-6xl sm:text-7xl">Echoes</p>
           <p className="mt-3 font-display text-2xl italic text-lamber">Every Journey Leaves a Trace.</p>
-          <h2 className="eyebrow mb-3 mt-12">About the project</h2>
+          <h2 className="eyebrow mb-3 mt-12">Why we built it</h2>
           <p className="max-w-md leading-relaxed text-ink/80">
-            ECHOES is an interactive space exploration experience built around real missions, spacecraft and worlds. The
-            missions, dates and discoveries on this page are drawn from publicly available NASA material.
+            We built ECHOES to bring the spacecraft, the places they visited, and the science they returned into one place. We use public mission records and credited imagery so you can follow the story back to its sources.
           </p>
           <p className="mt-6 max-w-md border-l border-lamber pl-4 text-[0.92rem] leading-relaxed text-ink">
-            An independent educational space exploration experience using publicly available scientific information and
-            mission resources.
+            ECHOES is an independent project. It isn't an official NASA product, and it isn't endorsed by NASA or any mission team.
           </p>
         </div>
 
         <nav aria-label="Footer" className="lg:col-span-3 lg:col-start-7">
-          <h2 className="eyebrow mb-5">Explore</h2>
+          <h2 className="eyebrow mb-5">Keep exploring</h2>
           <ul className="space-y-3">
             {NAV.filter((n) => n.id !== "about").map((n) => (
               <li key={n.id}>
@@ -47,7 +45,7 @@ export function Footer() {
         </nav>
 
         <div className="lg:col-span-3">
-          <h2 className="eyebrow mb-5">Sources</h2>
+          <h2 className="eyebrow mb-5">Where to read more</h2>
           <ul className="space-y-3">
             {SOURCES.map((s) => (
               <li key={s.href}>
