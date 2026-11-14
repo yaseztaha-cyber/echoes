@@ -14,9 +14,7 @@ Exploration).
 > introduces school-age space enthusiasts to the hardware and the science it
 > made possible."
 
-This file maps every requirement in that brief to a specific, verifiable piece
-of this repository. Nothing here is aspirational; each claim points to code,
-data or a measured result committed alongside this document.
+This is our working map from the challenge brief to the parts of ECHOES that address it. We've included file paths and sources so a reader can check what is already in the project. Where something is still planned or has not been tested with users, we say so.
 
 ---
 
@@ -62,9 +60,7 @@ Every artifact record carries three layers that decode one into the other:
 
 ## 3. "School-age space enthusiasts" — the audience in the design decisions
 
-- **Guided demo:** the entry screen offers "PLAY GUIDED DEMO", an automated
-  tour that reaches an artifact without reading a manual — a first session
-  usable by a 12-year-old in under two minutes.
+- **Guided demo:** the entry screen offers "PLAY GUIDED DEMO", which takes a visitor to an artifact without asking them to learn the controls first. We designed it to make a first visit easier; we have not yet measured how long students take to complete it.
 - **Reading layers everywhere:** all science copy ships in three difficulty
   bands, so siblings of different ages read the same moonquake record
   differently, without the app deciding for them who is which.
@@ -119,12 +115,8 @@ record.
 - Spacecraft models are reconstructions by this team, not NASA CAD, and are
   labelled as such in the application footer.
 
-## 7. Thirty-second judge's tour
+## 7. A quick way to show the project
 
-`npm run build && npm run preview` → ENTER SIMULATION → PLAY GUIDED DEMO →
-reach Apollo 12 → open the artifact → read "The Moon rings like a bell" →
-check the archive filled itself. Everything measured in this build: 106/106
-unit tests, ~60 FPS with a 0-error console on the reference machine
-(`docs/RENDERING_BENCHMARKS.md`), single-file bundle 11.3 MB + streaming asset
-packs (8K Moon LROC 4.4 MB, 6K Milky Way 2.3 MB, deep stars 1 MB — all
-served on demand, never blocking first visit).
+If you have a few minutes, run `npm run build && npm run preview`, open the experience, choose **PLAY GUIDED DEMO**, and follow it to Apollo 12. Open the artifact and read the science record about the Moon's seismic activity. The archive should record the visit as you explore.
+
+For performance, bundle size and browser-check results, use the current measurements in `PERFORMANCE_BENCHMARKS.csv` and the context in `docs/PERFORMANCE_NOTES.md`. Those results come from a particular test setup; they are not a promise that every device will get the same frame rate. Check the latest test run before quoting a pass count or performance figure.
