@@ -276,7 +276,7 @@ footer[id] {
   scroll-margin-top: 56px;
 }
 
-::selection {
+html.landing-mode ::selection {
   background: var(--color-lamber);
   color: var(--color-void);
 }
@@ -304,7 +304,7 @@ html.landing-mode :focus-visible {
 }
 
 /* ---------- Hero entrance (CSS only, ~1s total, never blocks the CTA) ---------- */
-@keyframes rise {
+@keyframes landing-rise {
   from {
     transform: translateY(105%);
   }
@@ -312,7 +312,7 @@ html.landing-mode :focus-visible {
     transform: translateY(0);
   }
 }
-@keyframes fadeUp {
+@keyframes landing-fadeUp {
   from {
     opacity: 0;
     transform: translateY(14px);
@@ -322,7 +322,7 @@ html.landing-mode :focus-visible {
     transform: translateY(0);
   }
 }
-@keyframes fadeIn {
+@keyframes landing-fadeIn {
   from {
     opacity: 0;
   }
@@ -330,7 +330,7 @@ html.landing-mode :focus-visible {
     opacity: 1;
   }
 }
-@keyframes cue {
+@keyframes landing-cue {
   0%,
   100% {
     transform: scaleY(0.35);
@@ -352,16 +352,16 @@ html.landing-mode :focus-visible {
 }
 .line-rise {
   display: block;
-  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation: landing-rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
 .fade-up {
-  animation: fadeUp 0.8s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation: landing-fadeUp 0.8s cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
 .fade-in {
-  animation: fadeIn 1.6s ease both;
+  animation: landing-fadeIn 1.6s ease both;
 }
 .cue-line {
-  animation: cue 2.4s ease-in-out infinite;
+  animation: landing-cue 2.4s ease-in-out infinite;
 }
 
 /* ---------- Scroll reveal ---------- */
@@ -431,16 +431,16 @@ html.landing-mode :focus-visible {
   html.landing-mode {
     scroll-behavior: auto;
   }
-  *,
-  *::before,
-  *::after {
+  html.landing-mode *,
+  html.landing-mode *::before,
+  html.landing-mode *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     animation-delay: 0ms !important;
     transition-duration: 0.001ms !important;
     transition-delay: 0ms !important;
   }
-  .reveal {
+  html.landing-mode .reveal {
     opacity: 1;
     transform: none;
   }

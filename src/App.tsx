@@ -29,6 +29,9 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("landing-mode", !simulator);
+    // A deliberate WebGL teardown can raise webglcontextlost on the old canvas;
+    // never carry that state into a freshly mounted simulator.
+    if (simulator) useEcho.setState({ gpuLost: false });
     if (!simulator) {
       const id = window.location.hash.replace("#", "");
       const raf = requestAnimationFrame(() => {
