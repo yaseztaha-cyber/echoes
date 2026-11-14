@@ -24,11 +24,35 @@ const csvCell = (v: unknown) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+/** UTC event instants transcribed from the NASA NSSDCA Apollo mission records. */
+const APOLLO_UTC = {
+  "apollo-12": { launch: Date.UTC(1969, 10, 14, 16, 22), landing: Date.UTC(1969, 10, 19, 6, 54, 35) },
+  "apollo-14": { launch: Date.UTC(1971, 0, 31, 21, 3, 2), landing: Date.UTC(1971, 1, 5, 9, 18, 11) },
+  "apollo-15": { launch: Date.UTC(1971, 6, 26, 13, 34), landing: Date.UTC(1971, 6, 30, 22, 16, 29) },
+  "apollo-16": { launch: Date.UTC(1972, 3, 16, 17, 54), landing: Date.UTC(1972, 3, 21, 2, 23, 35) },
+  "apollo-17": { launch: Date.UTC(1972, 11, 7, 5, 33), landing: Date.UTC(1972, 11, 11, 19, 54, 57) },
+} as const;
+
 describe("mission inventory", () => {
   it("every registered device has verified mission facts", () => {
     const missing = ARTIFACTS.filter((a) => !verificationFor(a.id)).map((a) => a.id);
     expect(missing, `devices without a verification record: ${missing.join(", ")}`).toEqual([]);
     expect(MISSION_VERIFICATION.length).toBe(ARTIFACTS.length);
+  });
+
+  it("keeps Apollo UTC launch and landing instants aligned with NASA NSSDCA records", () => {
+    for (const [id, expected] of Object.entries(APOLLO_UTC)) {
+      const art = artifactById(id)!;
+      const verified = verificationFor(id)!;
+      const launch = verified.keyEvents.find((e) => e.label === "Launch");
+      const landing = verified.keyEvents.find((e) => e.label === "Landing");
+      expect(art.dates.launch, `${id} artifact launch UTC`).toBe(expected.launch);
+      expect(launch?.dateUtc, `${id} verified launch UTC`).toBe(expected.launch);
+      expect(art.dates.landing, `${id} artifact landing UTC`).toBe(expected.landing);
+      expect(landing?.dateUtc, `${id} verified landing UTC`).toBe(expected.landing);
+      expect(verified.launchSite, `${id} launch site`).toContain("Launch Complex 39A");
+      expect(verified.sources.some((s) => s.url.includes(`/apollo${id.slice(-2)}info.html`)), `${id} needs its NSSDCA mission record`).toBe(true);
+    }
   });
 
   it("the verified launch date matches the artifact record", () => {
@@ -136,10 +160,8 @@ describe("mission inventory", () => {
       lines.push("");
       lines.push("| Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |");
       lines.push("|---|---|---|---|---|---|");
-      const claims = v.keyEvents.map((e) => `${e.label} (${iso(e.dateUtc) || "ongoing"})`);
-      claims.push("Verified operational status", "Objective and mission type", "Discoveries");
-      v.sources.forEach((s, i) => {
-        lines.push(`| ${claims[i] ?? "Mission facts"} | ${s.title} | ${s.publisher} | ${s.url} | ${s.accessed} | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |`);
+      v.sources.forEach((s) => {
+        lines.push(`| ${s.supports} | ${s.title} | ${s.publisher} | ${s.url} | ${s.accessed} | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |`);
       });
       lines.push("");
     }
