@@ -11,6 +11,10 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), viteSingleFile()],
+  // relative base: the same build works at a domain root AND under a
+  // sub-path (a GitHub Pages project site). Asset URLs are resolved against
+  // the page that loads them (see src/lib/asset.ts).
+  base: "./",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

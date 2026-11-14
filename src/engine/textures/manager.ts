@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { assetUrl } from "@/lib/asset";
 import { createResidencyManager, type ResidencyManager } from "./residency";
 import { getKtxLoader, estimateCompressedBytes } from "./ktx";
 import { HI_TIER_MANIFEST, SKY_BAND_MANIFEST } from "@/data/assets/manifest";
@@ -39,8 +40,10 @@ function texBytes(t: THREE.Texture): number {
 }
 
 export const globeResidency: ResidencyManager<THREE.Texture> = createResidencyManager<THREE.Texture>({
-  load: (url) =>
-    url.endsWith(".ktx2")
+  load: (rawUrl) => {
+    // resolve against the deployment base (root or sub-path hosting)
+    const url = assetUrl(rawUrl);
+    return url.endsWith(".ktx2")
       ? getKtxLoader()
           .loadAsync(url)
           .then((t) => {
@@ -56,7 +59,8 @@ export const globeResidency: ResidencyManager<THREE.Texture> = createResidencyMa
             undefined,
             () => reject(new Error(`texture load failed: ${url}`))
           );
-        }),
+        });
+  },
   dispose: (t) => t.dispose(),
   maxBytes: 96 * 1024 * 1024,
   now: () => performance.now(),

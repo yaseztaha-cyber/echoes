@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { assetUrl } from "@/lib/asset";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { globeResidency } from "@/engine/textures/manager";
@@ -16,7 +17,7 @@ import { useEcho } from "@/state/store";
  * the photo as the sky's texture while HYG points stay the positional truth.
  */
 
-const BAND_URL = "/tex-hi/milkyway.ktx2";
+const BAND_URL = assetUrl("/tex-hi/milkyway.ktx2");
 const BAND_OPACITY = 1.0;
 const FADE_SECONDS = 2.4;
 

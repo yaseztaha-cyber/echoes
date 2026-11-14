@@ -1,5 +1,6 @@
 import type { WebGLRenderer, CompressedTexture } from "three";
 import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
+import { assetUrl } from "@/lib/asset";
 
 /**
  * Rich-Universe Phase 1 — KTX2/Basis Universal streaming textures.
@@ -18,7 +19,7 @@ export function initKtx(r: WebGLRenderer) {
 export function getKtxLoader(): KTX2Loader {
   if (!loader) {
     if (!renderer) throw new Error("ktx loader used before initKtx(renderer)");
-    loader = new KTX2Loader().setTranscoderPath("/vendors/basis/").detectSupport(renderer);
+    loader = new KTX2Loader().setTranscoderPath(assetUrl("/vendors/basis/")).detectSupport(renderer);
   }
   return loader;
 }

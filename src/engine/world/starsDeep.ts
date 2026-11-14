@@ -1,3 +1,5 @@
+import { assetUrl } from "@/lib/asset";
+
 /**
  * Rich-universe phase — streamed deep star catalogue.
  *
@@ -11,7 +13,7 @@
  */
 import { STAR_COUNT } from "@/data/stars/starCatalog";
 
-const URL_DEEP = "/stars-deep.bin";
+const URL_DEEP = assetUrl("/stars-deep.bin");
 
 let pending: Promise<Float32Array | null> | null = null;
 let loadedCount = 0;

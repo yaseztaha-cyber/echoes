@@ -6,6 +6,9 @@
 //
 // The token is read from the environment only — it is never written to a file,
 // to the git configuration, or to a remote URL that gets stored.
+//
+// The publish happens in a temporary git worktree, so the working tree of the
+// repository is never touched.
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -25,46 +28,56 @@ const REPO = argOf("--repo", "yaseztaha-cyber/echoes");
 const BRANCH = argOf("--branch", "gh-pages");
 const ROOT = resolve(".");
 const DIST = join(ROOT, "dist");
-const STAGE = join(ROOT, ".pages-stage");
+const WT = join(ROOT, ".pages-worktree");
 
 const run = (cmd, args2, opts = {}) =>
   execFileSync(cmd, args2, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], ...opts });
 
 /* ------------------------------------------------------------------ build */
 console.log("building the production site…");
-run("npm", ["run", "build"], { stdio: "inherit" });
+// npm is a .cmd on Windows — spawn it through the shell so it resolves.
+const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
+run(npmCmd, ["run", "build"], { stdio: "inherit", shell: process.platform === "win32" });
 if (!existsSync(join(DIST, "index.html"))) {
   console.error("the build produced no dist/index.html");
   process.exit(1);
 }
 
-/* ------------------------------------------------------------------ stage */
-rmSync(STAGE, { recursive: true, force: true });
-mkdirSync(STAGE, { recursive: true });
-cpSync(DIST, STAGE, { recursive: true });
-// GitHub Pages must not run Jekyll over the output
-writeFileSync(join(STAGE, ".nojekyll"), "");
-// deep links fall back to the single-file app
-if (existsSync(join(STAGE, "index.html"))) writeFileSync(join(STAGE, "404.html"), readFileSync(join(STAGE, "index.html")));
+/* ------------------------------------------------------------------ worktree */
+rmSync(WT, { recursive: true, force: true });
+run("git", ["worktree", "prune"]);
+run("git", ["worktree", "add", "--detach", WT], { stdio: "inherit" });
 
-/* ------------------------------------------------------------------ publish */
-const auth = `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${TOKEN}`).toString("base64")}`;
-const gitEnv = { ...process.env, GIT_AUTHOR_NAME: "ECHOES release", GIT_AUTHOR_EMAIL: "release@echoes.local" };
+try {
+  // the published site is exactly the build output
+  for (const entry of ["index.html", "tex-hi", "vendors", "stars-deep.bin", "films"]) {
+    const from = join(DIST, entry);
+    if (!existsSync(from)) continue;
+    const to = join(WT, entry);
+    if (existsSync(to)) rmSync(to, { recursive: true, force: true });
+    cpSync(from, to, { recursive: true });
+  }
+  // GitHub Pages must not run Jekyll over the output
+  writeFileSync(join(WT, ".nojekyll"), "");
+  // a deep link falls back to the single-file app
+  if (existsSync(join(WT, "index.html"))) writeFileSync(join(WT, "404.html"), readFileSync(join(WT, "index.html")));
 
-console.log(`publishing to ${REPO} (${BRANCH})…`);
-run("git", ["checkout", "--orphan", BRANCH], { env: gitEnv });
-run("git", ["rm", "-rf", "--cached", "."], { env: gitEnv });
-for (const entry of ["index.html", "404.html", ".nojekyll", "films", "tex-hi", "vendors"]) {
-  if (!existsSync(join(STAGE, entry))) continue;
-  run("git", ["add", "--force", entry], { env: gitEnv });
+  const gitEnv = {
+    ...process.env,
+    GIT_AUTHOR_NAME: "ECHOES release",
+    GIT_AUTHOR_EMAIL: "release@echoes.local",
+    GIT_COMMITTER_NAME: "ECHOES release",
+    GIT_COMMITTER_EMAIL: "release@echoes.local",
+  };
+  run("git", ["-C", WT, "add", "--force", "."], { env: gitEnv });
+  run("git", ["-C", WT, "commit", "-m", "publish: production build"], { env: gitEnv });
+
+  console.log(`publishing to ${REPO} (${BRANCH})…`);
+  run("git", ["-C", WT, "push", "--force", `https://x-access-token:${TOKEN}@github.com/${REPO}.git`, `HEAD:refs/heads/${BRANCH}`], { env: gitEnv, stdio: "inherit" });
+} finally {
+  run("git", ["worktree", "remove", "--force", WT]);
+  run("git", ["worktree", "prune"]);
 }
-for (const f of readFileSync(join(STAGE, ".gitignore-stage"), "utf8").split("\n").filter(Boolean)) {
-  run("git", ["rm", "-rf", "--cached", "--ignore-unmatch", f], { env: gitEnv });
-}
-run("git", ["-c", "user.name=ECHOES release", "-c", "user.email=release@echoes.local", "commit", "-m", "publish: production build"], { env: gitEnv });
-run("git", ["push", "-f", `https://x-access-token:${TOKEN}@github.com/${REPO}.git`, BRANCH], { env: gitEnv });
-run("git", ["checkout", "main"], { env: gitEnv });
-rmSync(STAGE, { recursive: true, force: true });
 
 /* ------------------------------------------------------------------ pages */
 const api = async (path, method = "GET") => {

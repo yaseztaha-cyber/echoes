@@ -62,7 +62,15 @@ endorsed by NASA.
 - [x] The public URL opened in a fresh, private browser session and verified
 - [x] Repository contents reviewed file by file before publishing
 
-## 6. Steps that still need a human
+## 6. Deployed
+
+| Item | Value |
+|---|---|
+| Live site | <https://yaseztaha-cyber.github.io/echoes/> (GitHub Pages, published from `gh-pages`) |
+| Verified | in a fresh private browser session: landing, entry, HUD, ULTRA (LOCKED), no dev control, **0 console errors, 0 failed requests** |
+| Demo films | <https://github.com/yaseztaha-cyber/echoes-demo> — 29.88 s competition cut + 60.72 s master, both verified playing |
+
+## 7. Steps that still need a human
 
 | Step | Why |
 |---|---|
