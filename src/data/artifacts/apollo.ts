@@ -106,6 +106,8 @@ const HEAT: ScienceQuestion = {
 
 interface Spec {
   n: number; lm: string; region: string; lat: number; lon: number; landing: number; eva: number; liftoff: number;
+  /** Real launch instant (UTC). Derived dates were wrong for Apollo 12, 14 and 16. */
+  launch: number;
   summary: string; extra: HardwareComponent[]; qs: ScienceQuestion[]; terrainSeed: number; extraLegacy?: string;
 }
 
@@ -130,7 +132,7 @@ const make = (s: Spec): Artifact => {
     },
     location: { world: "moon", site: `${s.lm} landing site`, region: s.region, lat: s.lat, lon: s.lon },
     status: "INACTIVE HARDWARE",
-    dates: { launch: s.landing - 4 * 86400000, landing: s.landing, end: Date.UTC(1977, 8, 30), endLabel: "ALSEP stations shut down (30 September 1977)" },
+    dates: { launch: s.launch, landing: s.landing, end: Date.UTC(1977, 8, 30), endLabel: "ALSEP stations shut down (30 September 1977)" },
     clock: { rate: 60000, range: [s.landing - HOUR, s.liftoff + HOUR], kind: "date" },
     sun: { el: 22, az: 80 },
     terrainSeed: s.terrainSeed,
@@ -156,24 +158,24 @@ const make = (s: Spec): Artifact => {
 };
 
 export const apollo12 = make({
-  n: 12, lm: "Intrepid", region: "OCEANUS PROCELLARUM", lat: -3.0124, lon: -23.4216, landing: Date.UTC(1969, 10, 19, 6, 54), eva: Date.UTC(1969, 10, 19, 11, 32), liftoff: Date.UTC(1969, 10, 20, 14, 25),
+  n: 12, lm: "Intrepid", region: "OCEANUS PROCELLARUM", lat: -3.0124, lon: -23.4216, landing: Date.UTC(1969, 10, 19, 6, 54), launch: Date.UTC(1969, 10, 14, 21, 22), eva: Date.UTC(1969, 10, 19, 11, 32), liftoff: Date.UTC(1969, 10, 20, 14, 25),
   summary: "Second crewed landing and the first precision landing, close to the Surveyor 3 spacecraft.", extra: [pse, sws], qs: [QUAKES], terrainSeed: 3,
 });
 export const apollo14 = make({
-  n: 14, lm: "Antares", region: "FRA MAURO HIGHLANDS", lat: -3.6453, lon: -17.4714, landing: Date.UTC(1971, 1, 5, 9, 18), eva: Date.UTC(1971, 1, 5, 14, 42), liftoff: Date.UTC(1971, 1, 6, 18, 48),
+  n: 14, lm: "Antares", region: "FRA MAURO HIGHLANDS", lat: -3.6453, lon: -17.4714, landing: Date.UTC(1971, 1, 5, 9, 18), launch: Date.UTC(1971, 0, 31, 21, 13), eva: Date.UTC(1971, 1, 5, 14, 42), liftoff: Date.UTC(1971, 1, 6, 18, 48),
   summary: "Landed in the Fra Mauro highlands, the intended target of the aborted Apollo 13.", extra: [pse, ase], qs: [QUAKES], terrainSeed: 14,
   extraLegacy: "A laser retroreflector left on the surface is still used for laser ranging to the Moon.",
 });
 export const apollo15 = make({
-  n: 15, lm: "Falcon", region: "HADLEY–APENNINE", lat: 26.1322, lon: 3.6298, landing: Date.UTC(1971, 6, 30, 22, 16), eva: Date.UTC(1971, 6, 31, 13, 12), liftoff: Date.UTC(1971, 7, 2, 17, 11),
+  n: 15, lm: "Falcon", region: "HADLEY–APENNINE", lat: 26.1322, lon: 3.6298, landing: Date.UTC(1971, 6, 30, 22, 16), launch: Date.UTC(1971, 6, 26, 19, 32), eva: Date.UTC(1971, 6, 31, 13, 12), liftoff: Date.UTC(1971, 7, 2, 17, 11),
   summary: "First mission with the Lunar Roving Vehicle, exploring Hadley Rille and the Apennine Mountains.", extra: [pse, hfe, lrv], qs: [QUAKES, HEAT], terrainSeed: 15,
   extraLegacy: "A laser retroreflector left on the surface is still used for laser ranging to the Moon.",
 });
 export const apollo16 = make({
-  n: 16, lm: "Orion", region: "DESCARTES HIGHLANDS", lat: -8.9730, lon: 15.5002, landing: Date.UTC(1972, 3, 21, 2, 23), eva: Date.UTC(1972, 3, 21, 17, 55), liftoff: Date.UTC(1972, 3, 24, 1, 25),
+  n: 16, lm: "Orion", region: "DESCARTES HIGHLANDS", lat: -8.9730, lon: 15.5002, landing: Date.UTC(1972, 3, 21, 2, 23), launch: Date.UTC(1972, 3, 17, 2, 54), eva: Date.UTC(1972, 3, 21, 17, 55), liftoff: Date.UTC(1972, 3, 24, 1, 25),
   summary: "The only Apollo landing in the lunar highlands, with a Lunar Roving Vehicle for exploring the Descartes region.", extra: [pse, ase, lrv], qs: [QUAKES], terrainSeed: 16,
 });
 export const apollo17 = make({
-  n: 17, lm: "Challenger", region: "TAURUS–LITTROW VALLEY", lat: 20.1908, lon: 30.7717, landing: Date.UTC(1972, 11, 11, 19, 54), eva: Date.UTC(1972, 11, 11, 23, 54), liftoff: Date.UTC(1972, 11, 14, 22, 55),
+  n: 17, lm: "Challenger", region: "TAURUS–LITTROW VALLEY", lat: 20.1908, lon: 30.7717, landing: Date.UTC(1972, 11, 11, 19, 54), launch: Date.UTC(1972, 11, 7, 10, 33), eva: Date.UTC(1972, 11, 11, 23, 54), liftoff: Date.UTC(1972, 11, 14, 22, 55),
   summary: "The last crewed lunar landing of the Apollo program. Harrison Schmitt became the first geologist on the Moon.", extra: [lspe, hfe, lrv], qs: [QUAKES, HEAT], terrainSeed: 17,
 });

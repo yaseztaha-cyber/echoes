@@ -27,7 +27,11 @@ export const voyager1: Artifact = {
   },
   location: { world: "deep-space", site: "Interstellar space", region: "BEYOND THE HELIOPAUSE", lat: 0, lon: 0 },
   status: "PARTIALLY OPERATIONAL",
-  dates: { launch: VOYAGER_LAUNCH, end: VOYAGER_NOW, endLabel: "Operating; some instruments powered down to conserve energy" },
+  // The Voyager mission has NOT ended: NASA states Voyager 1 "continues to
+  // collect data" beyond the heliopause. `end` is therefore intentionally
+  // absent (the mission is ongoing) — the clock range below still tracks the
+  // spacecraft out to the present.
+  dates: { launch: VOYAGER_LAUNCH, end: undefined, endLabel: "ONGOING — still returning data from interstellar space; some instruments powered down to conserve energy" },
   clock: { rate: DAY_MS, range: [VOYAGER_LAUNCH, VOYAGER_NOW], kind: "date" },
   sun: { el: 30, az: 90 },
   terrainSeed: 0,

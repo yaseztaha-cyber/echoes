@@ -1,6 +1,7 @@
 import { useEcho, openMissionFilm } from "@/state/store";
 import { ARTIFACTS, artifactById, artifactsFor } from "@/data/artifacts";
 import { filmForDevice } from "@/data/missionFilms";
+import { verificationFor } from "@/data/missions/verification";
 import { PlayIcon } from "@/components/mission/MissionFilmIcons";
 import { sourceById } from "@/data/sources";
 import { BODIES, bodyById } from "@/engine/frames/frames";
@@ -155,6 +156,8 @@ function ArtifactPanel() {
   const art = artifactById(aid);
   /** The mission film registered for this device — null for every other device. */
   const film = filmForDevice(aid);
+  /** Audited, source-backed mission facts (agency, vehicle, verified status). */
+  const verified = verificationFor(aid);
   if (!art) return null;
   const detail = ui === "science" || aud === "student";
   const voy = art.id === "voyager1";
@@ -167,6 +170,32 @@ function ArtifactPanel() {
         <Field k="LAUNCH" v={fmtDate(art.dates.launch)} />
         {art.dates.landing && <Field k="LANDING" v={fmtDate(art.dates.landing)} />}
         <p className="mt-2 text-[13px] leading-snug text-ash">{art.summary}</p>
+        {verified && (
+          <div className="mt-3 border-t border-[#1d2429] pt-2">
+            <div className="label mb-1 text-[9px]">MISSION VERIFIED</div>
+            <Field k="AGENCY" v={verified.agency} />
+            <Field k="VEHICLE" v={verified.launchVehicle} />
+            <Field k="LAUNCH SITE" v={verified.launchSite} />
+            <Field k="STATUS" v={verified.verifiedStatus} tone="text-ok" />
+            <p className="mt-1 text-[11px] leading-snug text-ash">{verified.statusNote}</p>
+            <div className="label mt-1 text-[9px] text-slate">HARDWARE TODAY</div>
+            <p className="text-[11px] leading-snug text-ash">{verified.hardwareLocation}</p>
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+              {verified.sources.map((s, i) => (
+                <a
+                  key={`${s.url}#${i}`}
+                  className="mono text-[9px] tracking-[0.1em] text-cyan/80 underline decoration-cyan/30 underline-offset-2"
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`${s.title} — ${s.publisher} (accessed ${s.accessed})`}
+                >
+                  SOURCE ↗
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
         {film && (
           <button
             className="ctl ctl-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-amber"

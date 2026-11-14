@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useEcho, openMissionFilm, closeMissionFilm } from "@/state/store";
+import type { CamMode } from "@/state/store";
 import { getJourney, type MissionJourney, type CaseFile } from "@/data/journeys";
 import { filmForDevice } from "@/data/missionFilms";
 import { MerBMissionFilm } from "./MerBMissionFilm";
@@ -8,7 +9,7 @@ import { artifactById } from "@/data/artifacts";
 import { sourceById } from "@/data/sources";
 import { setT, configureClock } from "@/engine/time/clock";
 import { sfx } from "@/lib/audio";
-import { transitionToJourneyChapter } from "@/engine/director";
+import { transitionToJourneyChapter, setCamMode } from "@/engine/director";
 
 const setOverlay = (o: string | null) => useEcho.setState({ overlay: o as any });
 
@@ -147,6 +148,11 @@ export function MissionJourney() {
               WATCH MISSION FILM
             </button>
           )}
+          <div className="flex items-center gap-1">
+            {(["cinematic","follow","free","overview"] as CamMode[]).map((m) => (
+              <button key={m} className="ctl text-[8px] px-1.5 py-1" onClick={() => { sfx.select(); void setCamMode(m); }} aria-label={`Camera mode ${m}`} style={{ minHeight: "22px" }}>{m.toUpperCase()}</button>
+            ))}
+          </div>
           <button className="ctl text-[9px] px-2 py-1" onClick={closeJourney} aria-label="Exit journey" style={{ minHeight: "22px" }}>✕ EXIT</button>
         </div>
       </div>

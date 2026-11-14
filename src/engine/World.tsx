@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraRig } from "./cameras/CameraRig";
+import { cam } from "./cameras/controller";
 import { SolarSystem } from "./solar-system/SolarSystem";
 import { PlanetScene } from "./planets/PlanetScene";
 import { SiteScene } from "./sites/SiteScene";
@@ -135,6 +136,32 @@ class Boundary extends Component<{ children: ReactNode }, { err: string | null }
   }
 }
 
+/**
+ * Landing hero camera.
+ *
+ * Before the visitor enters ECHOES, the camera drifts slowly around the solar
+ * system — the landing page is presented over the live scene, not over a
+ * picture of one. The drift stops the moment the visitor enters (the entry
+ * flight takes the camera over) and never fights a running camera flight.
+ */
+function LandingDrift() {
+  const { camera } = useThree();
+  const t = useRef(0);
+  const target = useRef(new THREE.Vector3());
+  useFrame((_, dtRaw) => {
+    if (useEcho.getState().entered) return;
+    if (cam.flight) return;
+    const dt = Math.min(dtRaw, 0.05);
+    t.current += dt * 0.035;
+    const a = t.current;
+    const r = 34 + Math.sin(a * 0.37) * 5;
+    camera.position.set(Math.cos(a) * r, 9 + Math.sin(a * 0.61) * 4.5, Math.sin(a) * r);
+    target.current.set(0, 0, 0);
+    camera.lookAt(target.current);
+  });
+  return null;
+}
+
 export function World() {
   const scene = useEcho((s) => s.scene);
   const world = useEcho((s) => s.world);
@@ -178,6 +205,7 @@ export function World() {
       >
         <TimeDriver />
         <CameraRig />
+        <LandingDrift />
         <Perf />
         <DynamicScale />
         <HotspotProjector />

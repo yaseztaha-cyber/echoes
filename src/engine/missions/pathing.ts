@@ -58,7 +58,8 @@ export function artifactStateAt(a: Artifact, t: number): ArtifactState {
     if (path[m].t <= t) lo = m;
     else hi = m;
   }
-  const f = (t - path[lo].t) / (path[hi].t - path[lo].t || 1);
+  const raw = (t - path[lo].t) / (path[hi].t - path[lo].t || 1);
+  const f = raw * raw * (3 - 2 * raw); // smoothstep accel/decel
   return {
     x: path[lo].x + (path[hi].x - path[lo].x) * f,
     z: path[lo].z + (path[hi].z - path[lo].z) * f,
@@ -80,3 +81,4 @@ function dirYaw(path: PathSample[], i: number) {
 export function waypointById(a: Artifact, id: string) {
   return a.missionPath?.waypoints.find((w) => w.id === id);
 }
+

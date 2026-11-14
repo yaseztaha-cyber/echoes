@@ -162,7 +162,7 @@ export const insight: Artifact = {
   },
   location: { world: "mars", site: "InSight landing site", region: "ELYSIUM PLANITIA", lat: 4.5, lon: 135.62 },
   status: "MISSION COMPLETE",
-  dates: { launch: Date.UTC(2018, 4, 5), landing: INSIGHT_LANDING, end: Date.UTC(2022, 11, 21), endLabel: "NASA ended the mission" },
+  dates: { launch: Date.UTC(2018, 4, 5), landing: INSIGHT_LANDING, end: Date.UTC(2022, 11, 15), endLabel: "End of mission: NASA ceased operations after the final data transmission" },
   clock: { rate: SOL_MS * 0.5, range: [Date.UTC(2018, 4, 5), Date.UTC(2022, 11, 21)], kind: "sol" },
   sun: { el: 38, az: 90 },
   terrainSeed: 57,

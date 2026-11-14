@@ -45,3 +45,21 @@ shots*/
 # python
 __pycache__/
 *.pyc
+
+# release hygiene
+test-results/
+.playwright-mcp/
+agent/
+.agents/
+.claude/
+skills-lock.json
+
+# the delivered prototype archive is an input file, not project source:
+# the module it contains ships as src/missions/merb/
+mars-rover-cinematic-prototype*.zip
+
+# local secrets
+.env
+.env.*
+!.env.example
+

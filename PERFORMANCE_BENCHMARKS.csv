@@ -1,0 +1,27 @@
+metric,value,unit,scope,source
+cold page load (dev server),5624,ms,landing -> first paint,probe-release.mjs
+solar system fps,49,,solar system,probe-release.mjs
+solar system frameMsP50,16.7,,solar system,probe-release.mjs
+solar system frameMsP95,33.6,,solar system,probe-release.mjs
+solar system frameMsMax,116.8,,solar system,probe-release.mjs
+solar system drawCalls,22,,solar system,probe-release.mjs
+solar system triangles,108328,,solar system,probe-release.mjs
+solar system geometries,33,,solar system,probe-release.mjs
+solar system textures,20,,solar system,probe-release.mjs
+solar system pixelRatio,0.6,,solar system,probe-release.mjs
+solar system (6 s sample) fps,60,,solar system,probe-release.mjs
+solar system (6 s sample) frameMsP50,16.7,,solar system,probe-release.mjs
+solar system (6 s sample) frameMsP95,16.8,,solar system,probe-release.mjs
+solar system (6 s sample) frameMsMax,33.4,,solar system,probe-release.mjs
+solar system (6 s sample) drawCalls,31,,solar system,probe-release.mjs
+solar system (6 s sample) triangles,188268,,solar system,probe-release.mjs
+solar system (6 s sample) geometries,85,,solar system,probe-release.mjs
+solar system (6 s sample) textures,60,,solar system,probe-release.mjs
+solar system (6 s sample) pixelRatio,0.225,,solar system,probe-release.mjs
+browser scenarios executed,55,checks,full release pass,probe-release.mjs
+scenarios failed,1,checks,full release pass,probe-release.mjs
+console errors,1,errors,full release pass,probe-release.mjs
+failed network requests,0,requests,full release pass,probe-release.mjs
+gpu renderer,"ANGLE (Intel, Intel(R) HD Graphics 530 (0x0000191B) Direct3D11 vs_5_0 ps_5_0, D3D11)",,test machine,WEBGL_debug_renderer_info
+logical cores,8,,test machine,navigator.hardwareConcurrency
+device memory,16,GB,test machine,navigator.deviceMemory

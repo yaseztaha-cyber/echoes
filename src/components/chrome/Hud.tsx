@@ -115,6 +115,10 @@ function Settings() {
   const reduced = useEcho((s) => s.reducedMotion);
   const audio = useEcho((s) => s.audioOn);  return (
     <div className="module absolute right-0 top-9 z-40 w-64 p-3 anim-up">
+      {import.meta.env.PROD ? (
+        <div className="label mb-1">GRAPHICS QUALITY · ULTRA (LOCKED)</div>
+      ) : (
+        <>
       <div className="label mb-1">GRAPHICS QUALITY {auto ? "· AUTO" : "· MANUAL"}</div>
       <div className="grid grid-cols-4 gap-1">
         {(["ultra", "high", "medium", "low"] as const).map((k) => (
@@ -127,7 +131,8 @@ function Settings() {
         AUTO ADAPT {auto ? "ON" : "OFF"}
       </button>
       <div className="label mt-1 leading-relaxed">AUTO STEPS DOWN ON SUSTAINED SLOW FRAMES, RECOVERS TO YOUR PICK. RANGE AND MARKERS NEVER HIDE.</div>
-      <div className="label mb-1 mt-3">ACCESSIBILITY</div>
+        </>
+      )}
       <div className="flex gap-1">
         <button className="ctl flex-1" data-on={reduced} aria-pressed={reduced} onClick={() => { useEcho.setState({ reducedMotion: !reduced }); persist("echoes.reduced", !reduced); }}>
           REDUCED MOTION
@@ -144,7 +149,7 @@ function Settings() {
       </div>
       <div className="mt-3 flex gap-1">
         <button className="ctl flex-1" onClick={() => useEcho.setState({ sysOpen: false })}>CLOSE</button>
-        <a className="ctl flex-1 text-center" href="#/dev">DEV</a>
+        {import.meta.env.DEV && <a className="ctl flex-1 text-center" href="#/dev">DEV</a>}
         <button className="ctl flex-1" onClick={() => { persist("echoes.progress", []); useEcho.setState({ progress: [] }); }}>RESET PROGRESS</button>
       </div>
     </div>

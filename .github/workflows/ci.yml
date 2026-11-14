@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · tests · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: The built site must contain no development surfaces
+        run: |
+          set -euo pipefail
+          html="dist/index.html"
+          test -f "$html"
+          # the diagnostics panel is a dev-only chunk and must not be in the bundle
+          if grep -q "DEV DIAGNOSTICS" "$html"; then
+            echo "::error::development diagnostics leaked into the production bundle"
+            exit 1
+          fi
+          # the public build is locked to Ultra
+          grep -q "ULTRA (LOCKED)" "$html"
+
+      - name: Secret scan (tracked files)
+        run: |
+          set -euo pipefail
+          # no credential-shaped strings in tracked source (the star-catalogue
+          # seed is a known false positive and is allow-listed)
+          if git grep -nEI "(ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY)" -- \
+              ':!src/data/stars/starCatalog.ts' ':!*.md'; then
+            echo "::error::a credential-shaped string is present in a tracked file"
+            exit 1
+          fi
+
+      - name: Upload the production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: echoes-dist
+          path: dist
+          retention-days: 7

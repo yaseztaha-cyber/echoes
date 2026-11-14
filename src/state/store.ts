@@ -138,9 +138,9 @@ export const useEcho = create<EchoState>(() => ({
   progress: load<string[]>("echoes.progress", []),
   visits: load<string[]>("echoes.visits", []),
   last: load<LastLocation | null>("echoes.last", null),
-  quality: load<Quality>("echoes.quality", "high"),
-  qualityCeiling: load<Quality>("echoes.ceiling", "high"),
-  autoQuality: load<boolean>("echoes.autoq", true),
+  quality: import.meta.env.PROD ? "ultra" : load<Quality>("echoes.quality", "ultra"),
+  qualityCeiling: import.meta.env.PROD ? "ultra" : load<Quality>("echoes.ceiling", "high"),
+  autoQuality: import.meta.env.PROD ? false : load<boolean>("echoes.autoq", true),
   reducedMotion:
     load<boolean | null>("echoes.reduced", null) ??
     (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches),
