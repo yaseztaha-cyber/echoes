@@ -230,16 +230,22 @@ export function MissionJourney() {
       <div className="pointer-events-auto absolute inset-0 flex items-center justify-center px-4 pt-12 pb-16 md:px-8">
         <div className="w-full max-w-7xl">
           {film ? (
-            /* MISSION FILM — the documentary is mounted INSIDE the mission
-               experience; the 3D site stays visible around the panel. */
-            <div className="mx-auto w-full max-w-7xl">
-              <div className="border border-[#1d2429] bg-ink-1/95">
-                <div className="relative aspect-video w-full bg-black">
-                  <MerBMissionFilm />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1d2429] px-4 py-2">
-                  <span className="label normal-case tracking-[0.08em]">{film.credit}</span>
-                  <button className="ctl flex-none" onClick={closeMissionFilm} aria-label="Close mission film">
+            /* MISSION FILM — an interactive documentary, not a recorded video.
+               It gets the full stage; it must never be framed like a video
+               player, or its UI reads as a website embedded in a player. */
+            <div className="mx-auto flex h-[calc(100vh-11rem)] min-h-[440px] w-full max-w-[1600px] flex-col border border-[#1d2429] bg-black">
+              <div className="relative min-h-0 flex-1">
+                <MerBMissionFilm />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1d2429] bg-ink-1/95 px-4 py-2">
+                <span className="label normal-case tracking-[0.08em]">
+                  INTERACTIVE DOCUMENTARY · NOT A RECORDED VIDEO · {film.credit}
+                </span>
+                <div className="flex flex-none items-center gap-2">
+                  <button className="ctl" onClick={() => { sfx.confirm(); openMissionMedia(art.id); }} aria-label="Open the archival mission media and video">
+                    ARCHIVAL MEDIA · VIDEO
+                  </button>
+                  <button className="ctl" onClick={closeMissionFilm} aria-label="Close mission film">
                     ✕ CLOSE FILM
                   </button>
                 </div>
