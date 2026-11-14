@@ -20,21 +20,20 @@ export function FinalCta() {
         <Reveal>
           <p className="eyebrow mb-8 flex items-center gap-4">
             <span className="h-px w-10 bg-lamber" aria-hidden="true" />
-            Begin
+            Your turn
           </p>
           <h2 id="final-title" className="display text-[clamp(3rem,9vw,8.4rem)]">
-            <span className="block">The next journey</span>
+            <span className="block">There's more</span>
             <span className="block">
-              starts with <span className="text-lamber">you.</span>
+              to explore.
             </span>
           </h2>
           <p className="mt-8 max-w-xl text-[1.05rem] leading-relaxed text-ink/85 sm:text-lg">
-            Step beyond the familiar. Explore the worlds, machines, and missions that continue to shape our understanding
-            of the universe.
+            Pick a destination, follow a mission, or get close to a machine that travelled millions of kilometres to do its job.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <EnterLink>Enter the Universe</EnterLink>
-            <GhostLink href="#missions">Explore the Missions</GhostLink>
+            <EnterLink>Start exploring</EnterLink>
+            <GhostLink href="#missions">Browse missions</GhostLink>
           </div>
         </Reveal>
         <p className="mt-24 text-right font-mono text-[0.62rem] uppercase leading-relaxed tracking-[0.14em] text-mute">
