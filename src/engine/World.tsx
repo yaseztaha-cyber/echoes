@@ -167,6 +167,8 @@ export function World() {
   const world = useEcho((s) => s.world);
   const artifactId = useEcho((s) => s.artifactId);
   const quality = useEcho((s) => s.quality);
+  // Never inherit a GPU-loss flag from a previous renderer instance.
+  useEffect(() => { useEcho.setState({ gpuLost: false }); }, []);
   // dpr floors: supersampling at 100% displays was the main "soft look"
   // complaint — the packing signs (8K moon, 4K maps) read blurry when the
   // backing store equals the CSS pixel count. Ultra/high now supersample.

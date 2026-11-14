@@ -63,3 +63,7 @@ mars-rover-cinematic-prototype*.zip
 .env.*
 !.env.example
 
+
+# browser test reports and traces (generated output, recreated by the verify scripts)
+playwright-report/
+blob-report/
