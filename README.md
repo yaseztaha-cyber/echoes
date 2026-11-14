@@ -33,6 +33,14 @@ The experiences are not all at the same level of completion. Opportunity is curr
 
 A model, reconstruction, artist's visualization, or archival photograph is not the same thing as a direct observation. The interface and asset records should make those distinctions clear.
 
+## Performance in the real world
+
+ECHOES is a 3D experience running in a web browser, so it will not feel exactly the same on every device. Graphics hardware, drivers, browser support, screen resolution, power settings, and other apps running in the background can all affect how smoothly it renders. A slower connection or host can also delay the first load and streamed assets.
+
+We work on the parts that are ours to improve: scene complexity, asset sizes, loading, rendering quality, and fallbacks. We also want to be clear that a slow frame rate is not automatically a hosting problem. Once the scene is loaded, rendering performance depends mostly on the browser and the device doing the work. And if our code or visual settings are making that work unnecessarily heavy, that is still our responsibility to fix.
+
+We cannot promise the same FPS on every computer. Our current recorded test results, what they do and do not tell us, and how to report a performance issue are explained in [our performance notes](docs/PERFORMANCE_NOTES.md).
+
 ## References and credits
 
 Start with [REFERENCES.md](REFERENCES.md) for the main NASA, JPL, USGS, PDS, and mission-history sources.
