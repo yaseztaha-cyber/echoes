@@ -168,6 +168,7 @@ function TopRight() {
   const open = useEcho((s) => s.menuOpen);
   const sys = useEcho((s) => s.sysOpen);
   const panel = useEcho((s) => s.panelOpen);
+  const timelineOpen = useEcho((s) => s.timelineOpen);
   const hasArt = useEcho((s) => !!s.artifactId);
   const setO = (o: any) => useEcho.setState({ overlay: o, menuOpen: false });
   return (
@@ -422,6 +423,8 @@ export function Hud() {
   const audioOn = useEcho((s) => s.audioOn);
   const art = artifactById(aid);
   const mediaDeviceId = useEcho((s) => s.mediaDeviceId);
+  const aud = useEcho((s) => s.audience);
+  const panelOpen = useEcho((s) => s.panelOpen);
   const scienceDensity = useEcho((s) => s.uiMode) === "science" || aud === "student";
   const replay = useEcho((s) => s.replay);
   const timelineOpen = useEcho((s) => s.timelineOpen);
