@@ -233,10 +233,10 @@ function ArtifactPanel() {
           <button
             className="ctl ctl-primary mt-3 flex w-full items-center justify-center gap-2 py-2.5 text-amber"
             onClick={() => openMissionFilm(film.deviceId)}
-            aria-label={`Watch mission video: ${film.title}`}
+            aria-label={`Watch mission film: ${film.title}`}
           >
             <PlayIcon className="h-3 w-3" />
-            WATCH MISSION VIDEO
+            WATCH MISSION FILM
           </button>
         )}
         <div className="mt-3 grid grid-cols-2 gap-1.5">

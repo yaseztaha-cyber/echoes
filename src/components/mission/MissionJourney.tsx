@@ -6,7 +6,6 @@ import { filmForDevice } from "@/data/missionFilms";
 import { heroForDevice, journeyMediaForDevice } from "@/data/media-manifest";
 import { assetUrl } from "@/lib/asset";
 import { MerBMissionFilm } from "./MerBMissionFilm";
-import { MissionVideoPlayer } from "./MissionVideoPlayer";
 import { PlayIcon } from "./MissionFilmIcons";
 import { artifactById } from "@/data/artifacts";
 import { sourceById } from "@/data/sources";
@@ -119,7 +118,6 @@ export function MissionJourney() {
   const [playing, setPlaying] = useState(false);
   const [openCaseFile, setOpenCaseFile] = useState<CaseFile | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [showDocumentary, setShowDocumentary] = useState(false);
   const filmDeviceId = useEcho((s) => s.filmDeviceId);
   /** The film registered for THIS device (null for every device without one). */
   const film = filmDeviceId === aid ? filmForDevice(aid) : null;
@@ -127,7 +125,6 @@ export function MissionJourney() {
   const filmOffer = filmForDevice(aid);
   /** The mission media collection for this device (null when it has none). */
   const mediaHero = heroForDevice(aid);
-  useEffect(() => { if (!film) setShowDocumentary(false); }, [film]);
 
   const chapter = journey?.chapters[chapterIndex];
   const total = journey?.chapters.length ?? 0;
@@ -213,11 +210,11 @@ export function MissionJourney() {
             <button
               className="ctl flex items-center gap-2 text-[9px] px-2 py-1 text-amber"
               onClick={() => { sfx.confirm(); openMissionFilm(filmOffer.deviceId); }}
-              aria-label="Watch mission video"
+              aria-label="Watch mission film"
               style={{ minHeight: "22px" }}
             >
               <PlayIcon className="h-2.5 w-2.5" />
-              WATCH MISSION VIDEO
+              WATCH MISSION FILM
             </button>
           )}
           <div className="flex items-center gap-1">
@@ -233,35 +230,27 @@ export function MissionJourney() {
       <div className="pointer-events-auto absolute inset-0 flex items-center justify-center px-4 pt-12 pb-16 md:px-8">
         <div className="w-full max-w-7xl">
           {film ? (
-            showDocumentary ? (
-              /* INTERACTIVE DOCUMENTARY — a separate authored experience,
-                 never the default "video" surface. */
-              <div className="mx-auto flex h-[calc(100vh-11rem)] min-h-[440px] w-full max-w-[1600px] flex-col border border-[#1d2429] bg-black">
-                <div className="relative min-h-0 flex-1">
-                  <MerBMissionFilm />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1d2429] bg-ink-1/95 px-4 py-2">
-                  <span className="label normal-case tracking-[0.08em]">
-                    INTERACTIVE DOCUMENTARY · NOT A RECORDED VIDEO · {film.credit}
-                  </span>
-                  <div className="flex flex-none items-center gap-2">
-                    <button className="ctl" onClick={() => { sfx.select(); setShowDocumentary(false); }} aria-label="Back to the mission video">
-                      ← BACK TO VIDEO
-                    </button>
-                    <button className="ctl" onClick={closeMissionFilm} aria-label="Close mission film">
-                      ✕ CLOSE FILM
-                    </button>
-                  </div>
+            /* MISSION FILM — an interactive documentary, not a recorded video.
+               It gets the full stage; it must never be framed like a video
+               player, or its UI reads as a website embedded in a player. */
+            <div className="mx-auto flex h-[calc(100vh-11rem)] min-h-[440px] w-full max-w-[1600px] flex-col border border-[#1d2429] bg-black">
+              <div className="relative min-h-0 flex-1">
+                <MerBMissionFilm />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#1d2429] bg-ink-1/95 px-4 py-2">
+                <span className="label normal-case tracking-[0.08em]">
+                  INTERACTIVE DOCUMENTARY · NOT A RECORDED VIDEO · {film.credit}
+                </span>
+                <div className="flex flex-none items-center gap-2">
+                  <button className="ctl" onClick={() => { sfx.confirm(); openMissionMedia(art.id); }} aria-label="Open the archival mission media and video">
+                    ARCHIVAL MEDIA · VIDEO
+                  </button>
+                  <button className="ctl" onClick={closeMissionFilm} aria-label="Close mission film">
+                    ✕ CLOSE FILM
+                  </button>
                 </div>
               </div>
-            ) : (
-              <MissionVideoPlayer
-                deviceId={art.id}
-                label={`${art.designation} · ${art.name}`}
-                onOpenDocumentary={() => setShowDocumentary(true)}
-                onClose={closeMissionFilm}
-              />
-            )
+            </div>
           ) : isIntro ? (
             /* INTRO: Asymmetric cinematic — large media left (60%), mission identity right (40%) */
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
@@ -285,10 +274,10 @@ export function MissionJourney() {
                   <button
                     className="ctl flex w-full items-center justify-center gap-2 py-2.5 text-amber"
                     onClick={() => { sfx.confirm(); openMissionFilm(filmOffer.deviceId); }}
-                    aria-label={`Watch mission video: ${filmOffer.title}`}
+                    aria-label={`Watch mission film: ${filmOffer.title}`}
                   >
                     <PlayIcon className="h-3 w-3" />
-                    WATCH MISSION VIDEO
+                    WATCH MISSION FILM
                   </button>
                 )}
 
