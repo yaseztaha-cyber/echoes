@@ -73,7 +73,7 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     verifiedStatus: "MISSION COMPLETE",
     statusNote:
       "NASA ended attempts to contact Opportunity on 14 February 2019 after the last transmission on 10 June 2018; a dust storm ended the mission's power budget.",
-    hardwareLocation: "Still on Mars in Endeavour crater (Cape York), inside Victoria crater's rim.",
+    hardwareLocation: "At Perseverance Valley on the rim of Endeavour Crater; NASA's final traverse map places the rover there on 10 June 2018.",
     keyEvents: [
       { label: "Launch", dateUtc: Date.UTC(2003, 6, 7, 9, 26), note: "Delta II Heavy 7925H, SLC-17B; first launch of the type." },
       { label: "Cruise", dateUtc: Date.UTC(2003, 6, 7), note: "≈200-day interplanetary cruise, ≈201 million km." },
@@ -89,6 +89,7 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     sources: [
       { title: "Mars Exploration Rovers: Spirit and Opportunity", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/", accessed: ACCESSED, supports: "Mission type, objectives, mission dates." },
       { title: "MER-B Opportunity — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-037A", accessed: ACCESSED, supports: "Launch date, vehicle, landing site, end of mission." },
+      { title: "Opportunity’s Final Traverse Map", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/photojournal/opportunitys-final-traverse-map/", accessed: ACCESSED, supports: "Final rover position in Perseverance Valley on the rim of Endeavour Crater on 10 June 2018." },
     ],
   },
   {
