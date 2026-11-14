@@ -17,12 +17,13 @@ product carries its credit line in the interface.
 - **Launch site:** Space Launch Complex 17B, Cape Canaveral Air Force Station, Florida
 - **Objective:** Search for and characterise rocks and soils at a Martian site selected for evidence of ancient liquid water, using a mobile laboratory on the surface.
 - **Status:** NASA ended attempts to contact Opportunity on 14 February 2019 after the last transmission on 10 June 2018; a dust storm ended the mission's power budget.
-- **Hardware today:** Still on Mars in Endeavour crater (Cape York), inside Victoria crater's rim.
+- **Hardware today:** At Perseverance Valley on the rim of Endeavour Crater; NASA's final traverse map places the rover there on 10 June 2018.
 
 | Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |
 |---|---|---|---|---|---|
 | Launch (2003-07-07) | Mars Exploration Rovers: Spirit and Opportunity | NASA Science | https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
 | Cruise (2003-07-07) | MER-B Opportunity — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-037A | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Final rover position in Perseverance Valley on the rim of Endeavour Crater (10 June 2018) | Opportunity’s Final Traverse Map | NASA Science | https://science.nasa.gov/photojournal/opportunitys-final-traverse-map/ | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### SPIRIT (MER-A) — MISSION COMPLETE
 
@@ -77,6 +78,7 @@ product carries its credit line in the interface.
 |---|---|---|---|---|---|
 | Launch (1969-11-14) | Apollo 12 | NASA | https://www.nasa.gov/mission/apollo-12/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
 | Translunar injection (1969-11-15) | Apollo 12 Lunar Surface Journal | NASA Apollo Lunar Surface Journal | https://www.nasa.gov/history/alsj/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Exact UTC launch, lunar landing, and return-to-Earth timestamps | Apollo 12 — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo12info.html | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### APOLLO 14 (A14) — MISSION COMPLETE
 
@@ -90,6 +92,7 @@ product carries its credit line in the interface.
 | Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |
 |---|---|---|---|---|---|
 | Launch (1971-01-31) | Apollo 14 | NASA | https://www.nasa.gov/mission/apollo-14/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Exact UTC launch, lunar landing, and return-to-Earth timestamps | Apollo 14 — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo14info.html | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### APOLLO 15 (A15) — MISSION COMPLETE
 
@@ -103,6 +106,7 @@ product carries its credit line in the interface.
 | Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |
 |---|---|---|---|---|---|
 | Launch (1971-07-26) | Apollo 15 | NASA | https://www.nasa.gov/mission/apollo-15/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Exact UTC launch, lunar landing, and return-to-Earth timestamps | Apollo 15 — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo15info.html | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### APOLLO 16 (A16) — MISSION COMPLETE
 
@@ -110,18 +114,19 @@ product carries its credit line in the interface.
 - **Launch vehicle:** Saturn V SA-511
 - **Launch site:** Launch Complex 39A, Kennedy Space Center, Florida
 - **Objective:** Sample the Descartes highlands — a candidate young volcanic region — to test the volcanic origin of the lunar highlands.
-- **Status:** The crew returned to Earth on 24 August 1972.
+- **Status:** The crew returned to Earth on 27 April 1972; the ALSEP station continued returning data until 1977.
 - **Hardware today:** The Orion LM and the ALSEP remain in the Descartes highlands; the ALSEP operated until 1977.
 
 | Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |
 |---|---|---|---|---|---|
 | Launch (1972-04-16) | Apollo 16 | NASA | https://www.nasa.gov/mission/apollo-16/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Exact UTC launch, lunar landing, and return-to-Earth timestamps | Apollo 16 — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo16info.html | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### APOLLO 17 (A17) — MISSION COMPLETE
 
 - **Agency:** NASA
 - **Launch vehicle:** Saturn V SA-515
-- **Launch site:** Launch Complex 39B, Kennedy Space Center, Florida
+- **Launch site:** Launch Complex 39A, Kennedy Space Center, Florida
 - **Objective:** Explore the Taurus-Littrow valley — a highland/mare boundary rich in stratified layers — and leave the last Apollo lunar surface experiments in operation.
 - **Status:** The crew returned to Earth on 19 December 1972. Apollo 17 was the last crewed lunar landing and the last crewed departure from the Moon.
 - **Hardware today:** The Challenger LM, the ALSEP and the lunar rover remain at Taurus-Littrow; the ALSEP operated until 1977.
@@ -129,6 +134,8 @@ product carries its credit line in the interface.
 | Claim / data item | Source | Publisher | URL | Accessed | Attribution & usage |
 |---|---|---|---|---|---|
 | Launch (1972-12-07) | Apollo 17 | NASA | https://www.nasa.gov/mission/apollo-17/ | 2026-11-13 | NASA media: credit the source and creator (not copyrighted, attribution requested). Peer-reviewed: cite the DOI. |
+| Exact UTC launch, lunar landing, and return-to-Earth timestamps | Apollo 17 — mission record | NASA NSSDCA Master Catalog | https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo17info.html | 2026-11-14 | NASA source; cite and credit the source. |
+| Launch from Pad A, Launch Complex 39, Kennedy Space Center | Apollo 17 Launch | NASA Science | https://science.nasa.gov/resource/apollo-17-launch/ | 2026-11-14 | NASA source; cite and credit the source. |
 
 ### VOYAGER 1 (VGR-1) — ONGOING
 
