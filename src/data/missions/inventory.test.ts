@@ -40,6 +40,14 @@ describe("mission inventory", () => {
     expect(MISSION_VERIFICATION.length).toBe(ARTIFACTS.length);
   });
 
+  it("places Opportunity at its documented final location", () => {
+    const opportunity = verificationFor("opportunity")!;
+    expect(opportunity.hardwareLocation).toContain("Perseverance Valley");
+    expect(opportunity.hardwareLocation).toContain("Endeavour Crater");
+    expect(opportunity.hardwareLocation).not.toMatch(/Victoria Crater/i);
+    expect(opportunity.sources.some((s) => s.url.includes("opportunitys-final-traverse-map"))).toBe(true);
+  });
+
   it("keeps Apollo UTC launch and landing instants aligned with NASA NSSDCA records", () => {
     for (const [id, expected] of Object.entries(APOLLO_UTC)) {
       const art = artifactById(id)!;
