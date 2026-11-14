@@ -84,7 +84,22 @@ Details and screenshots: `BROWSER_VERIFICATION_REPORT.md`, `shotsrelease/`.
 | `scripts/probe-nav.mjs` — device navigation | 13 | PASS (zero Solar System returns during chapter selection) |
 | `scripts/probe-film.mjs` — the MER-B mission film | 23 | PASS (mounts, plays, seeks, scrubs, sound, state-safe, no accumulation) |
 
-## 6. Honest gaps
+## 6. CI on GitHub (observed, not assumed)
+
+The workflow in `.github/workflows/ci.yml` was run by GitHub Actions on the
+final commit and **passed**:
+
+| Workflow | Commit | Result | Run |
+|---|---|---|---|
+| CI | `dbf8732` | completed / **success** | https://github.com/yaseztaha-cyber/echoes/actions/runs/43586245445 |
+| CI | `2bb3840` | completed / **success** | https://github.com/yaseztaha-cyber/echoes/actions/runs/43547456887 |
+| pages build and deployment | `bce797b` | completed / **success** | https://github.com/yaseztaha-cyber/echoes/actions/runs/43586432617 |
+
+Each CI run performs: install → `tsc --noEmit` → `npm test` → `npm run build` →
+the bundle assertions (no development diagnostics in the production HTML, the
+`ULTRA (LOCKED)` label present) → the secret scan → the build artefact upload.
+
+## 7. Honest gaps
 
 | Gap | Status |
 |---|---|

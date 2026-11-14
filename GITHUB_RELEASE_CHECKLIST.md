@@ -78,4 +78,5 @@ endorsed by NASA.
 | Add team members as collaborators (the PAT's owner is the only account available here) | access control |
 | Enable branch protection on `main` (CI must pass) | repository settings |
 | Confirm the challenge on the submission portal matches the one the team selected | the account must be logged in |
+| Watch one CI run to green after any further change | the runs so far are recorded in `TEST_RESULTS.md` §6 |
 | Accept the participation terms and submit | **irreversible and personal** — deliberately not automated |

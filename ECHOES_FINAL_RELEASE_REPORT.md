@@ -105,7 +105,7 @@ calls to action work; the page loads in ~6 s.
 | Quality controls | no public dropdown; the panel reads **GRAPHICS QUALITY · ULTRA (LOCKED)** |
 | Quality behaviour | production forces `quality = ultra`, `qualityCeiling = ultra`, `autoQuality = false` — no saved preference can downgrade it |
 | Runtime configuration | none; the app ships with no credentials and no server |
-| CI | typecheck → tests → build → bundle assertions → secret scan, on every push |
+| CI | typecheck → tests → build → bundle assertions → secret scan, on every push — **observed green on GitHub Actions** for `2bb3840` and `dbf8732` |
 
 ## 8. Performance
 
@@ -185,4 +185,4 @@ Details: `NASA_SPACE_APPS_SUBMISSION_PACKET.md`.
 | 6 | `npm audit --production` | **NOT TESTED** — endpoint unreachable |
 | 7 | Multi-hour session soak; forced network failure for the official MER model; touch gestures; screen-reader walkthrough | **NOT TESTED** — out of the audit window or not stageable here |
 | 8 | The per-challenge Resources list of the 2026 rules | **BLOCKED** — client-rendered; manual confirmation required |
-| 9 | CI has not been observed running on GitHub from this sandbox | **NOT TESTED** — the workflow is committed; the run must be watched on the repository |
+| 9 | — | Closed: CI was observed running and **passing** on GitHub Actions (two green runs, see `TEST_RESULTS.md` §6) |
