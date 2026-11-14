@@ -25,7 +25,7 @@ export function Journey() {
               index="04"
               eyebrow="Follow the journey"
               lines={["A mission is more", "than a destination."]}
-              text="Every mission follows its own route. A flyby never lands. An orbiter never drives. Choose a mission to see the stages it actually went through."
+              text="A mission is a chain of decisions, long waits, close encounters and, sometimes, a final goodbye. Pick one below and follow what happened, in order."
             />
           </div>
         </Reveal>
@@ -116,7 +116,7 @@ export function Journey() {
               <p className="max-w-xl text-[1.05rem] leading-relaxed text-ink/85">{stage.text}</p>
             </div>
             <div className="flex items-end lg:col-span-3 lg:justify-end">
-              <TextLink href={missionHref(m.id)}>Open full journey</TextLink>
+              <TextLink href={missionHref(m.id)}>See the full mission</TextLink>
             </div>
           </div>
         </Reveal>
