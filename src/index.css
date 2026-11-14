@@ -236,3 +236,225 @@ canvas {
   border-color: #d8d6ce;
   box-shadow: 0 0 0 4px rgba(208, 164, 91, 0.25);
 }
+
+
+/* ================= ECHOES LANDING PAGE (existing implementation) ================= */
+@theme {
+  --color-void: #050608;
+  --color-char: #0c1015;
+  --color-surface: #14191f;
+  --color-line: #232a32;
+  --color-ink: #f3f2ee;
+  --color-mute: #929ba5;
+  --color-lamber: #e6a85c;
+  --color-frost: #83b6c7;
+
+  --font-display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html.landing-mode {
+  scroll-behavior: smooth;
+  background: var(--color-void);
+  color-scheme: dark;
+}
+
+html.landing-mode body {
+  margin: 0;
+  background: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+section[id],
+div[id="experience"],
+footer[id] {
+  scroll-margin-top: 56px;
+}
+
+::selection {
+  background: var(--color-lamber);
+  color: var(--color-void);
+}
+
+html.landing-mode :focus-visible {
+  outline: 2px solid var(--color-lamber);
+  outline-offset: 3px;
+}
+
+/* ---------- Type helpers ---------- */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+/* ---------- Hero entrance (CSS only, ~1s total, never blocks the CTA) ---------- */
+@keyframes rise {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cue {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    transform-origin: top;
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+}
+
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.line-rise {
+  display: block;
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+.fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+.fade-in {
+  animation: fadeIn 1.6s ease both;
+}
+.cue-line {
+  animation: cue 2.4s ease-in-out infinite;
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.7, 0.1, 1),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.1, 1);
+  transition-delay: var(--d, 0ms);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+.btn-primary:hover::before,
+.btn-primary:focus-visible::before {
+  transform: scaleX(1);
+}
+.btn-primary .arrow {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+.btn-primary:hover .arrow,
+.btn-primary:focus-visible .arrow {
+  transform: translateX(6px);
+}
+
+.link-u {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s ease;
+}
+.link-u:hover {
+  background-size: 0% 1px;
+  background-position: 100% 100%;
+}
+
+/* ---------- Scrollbar for horizontal rails ---------- */
+.rail {
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Reduced motion: everything static ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html.landing-mode {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Landing route must be able to scroll even though the simulator locks the page. */
+html.landing-mode,
+html.landing-mode body,
+html.landing-mode #root {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+html.landing-mode body {
+  overscroll-behavior: auto;
+}

@@ -193,6 +193,7 @@ function TopRight() {
           <button className="ctl" onClick={() => setO("sources")}>GROUND TRUTH</button>
           <button className="ctl" onClick={() => setO("lab")}>MISSION LAB</button>
           <button className="ctl" aria-expanded={sys} onClick={() => useEcho.setState({ sysOpen: !sys })}>SYS</button>
+          <button className="ctl" onClick={() => { setAmbience("off"); useEcho.setState({ overlay: null, menuOpen: false, sysOpen: false }); window.location.hash = "#/"; }}>LANDING PAGE</button>
         </div>
         {sys && <Settings />}
       </div>
