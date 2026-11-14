@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEcho, openMissionFilm, closeMissionFilm } from "@/state/store";
+import { useEcho, openMissionFilm, closeMissionFilm, openMissionMedia } from "@/state/store";
 import type { CamMode } from "@/state/store";
 import { getJourney, type MissionJourney, type CaseFile } from "@/data/journeys";
 import { filmForDevice } from "@/data/missionFilms";
+import { heroForDevice, journeyMediaForDevice } from "@/data/media-manifest";
+import { assetUrl } from "@/lib/asset";
 import { MerBMissionFilm } from "./MerBMissionFilm";
 import { PlayIcon } from "./MissionFilmIcons";
 import { artifactById } from "@/data/artifacts";
@@ -12,6 +14,61 @@ import { sfx } from "@/lib/audio";
 import { transitionToJourneyChapter, setCamMode } from "@/engine/director";
 
 const setOverlay = (o: string | null) => useEcho.setState({ overlay: o as any });
+
+/** A chapter media entry is an image when it points at an image file. */
+const IMAGE_EXT = /\.(webp|jpg|jpeg|png|avif|gif)$/i;
+const isImageMedia = (m: string): boolean =>
+  /^(https?:)?\/\//i.test(m) || IMAGE_EXT.test(m.split("?")[0] || "");
+
+/**
+ * The image (or media label) attached to a journey chapter.
+ *
+ * Chapter imagery is a local file served from `public/media/missions/` — the
+ * mission journey makes no network request of its own.
+ */
+function ChapterMedia({ media, date, title, deviceId }: { media: string[]; date: string; title: string; deviceId: string }) {
+  const image = media.find(isImageMedia);
+  const asset = image ? journeyMediaForDevice(deviceId).find((a) => a.file === image) : undefined;
+  if (!image) {
+    if (media.length === 0) {
+      return (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="mono text-[12px] text-slate/40">HISTORICAL ARCHIVE</div>
+        </div>
+      );
+    }
+    return (
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+        <div className="mono text-[11px] tracking-[0.15em] text-amber/80">HISTORICAL MEDIA</div>
+        <div className="flex flex-wrap gap-2 justify-center px-6">
+          {media.map((m, i) => (
+            <span key={i} className="mono border border-iron/50 bg-ink-0/40 px-3 py-1.5 text-[10px] text-ash">{m}</span>
+          ))}
+        </div>
+        <div className="mono text-[9px] text-slate/50 mt-2">ORIGINAL VIDEO / PHOTOGRAPH · NASA / JPL</div>
+      </div>
+    );
+  }
+  return (
+    <div className="w-full h-full relative">
+      <img
+        src={assetUrl(image)}
+        alt={asset?.title ?? title}
+        className={`w-full h-full ${asset?.width && asset?.height && (asset.width / asset.height > 2.1 || asset.width / asset.height < 0.55) ? "object-contain" : "object-cover"}`}
+        loading="lazy"
+        decoding="async"
+      />
+      <div className="absolute bottom-2 left-3 mono text-[8px] text-white/60 tracking-[0.1em] bg-black/40 px-2 py-1 rounded">
+        ORIGINAL PHOTOGRAPH · NASA / JPL · {date}
+      </div>
+      {asset && (
+        <div className="absolute bottom-2 right-3 mono text-[8px] text-white/55 tracking-[0.1em] bg-black/40 px-2 py-1 rounded">
+          {asset.credit.toUpperCase()}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CaseFileViewer({ caseFile, onClose }: { caseFile: CaseFile; onClose: () => void }) {
   const srcs = caseFile.sourceIds.map((sid: string) => sourceById(sid)).filter(Boolean);
@@ -66,6 +123,8 @@ export function MissionJourney() {
   const film = filmDeviceId === aid ? filmForDevice(aid) : null;
   /** The film this device could offer — used for the entry point in the top bar. */
   const filmOffer = filmForDevice(aid);
+  /** The mission media collection for this device (null when it has none). */
+  const mediaHero = heroForDevice(aid);
 
   const chapter = journey?.chapters[chapterIndex];
   const total = journey?.chapters.length ?? 0;
@@ -137,6 +196,16 @@ export function MissionJourney() {
         </div>
         <div className="flex items-center gap-4">
           <span className="mono text-[10px] text-amber/70">{chapter.date}</span>
+          {mediaHero && (
+            <button
+              className="ctl flex items-center gap-2 text-[9px] px-2 py-1"
+              onClick={() => { sfx.confirm(); openMissionMedia(art.id); }}
+              aria-label="Open mission media"
+              style={{ minHeight: "22px" }}
+            >
+              MISSION MEDIA
+            </button>
+          )}
           {filmOffer && !film && (
             <button
               className="ctl flex items-center gap-2 text-[9px] px-2 py-1 text-amber"
@@ -182,33 +251,7 @@ export function MissionJourney() {
               {/* Left: Large media viewport (3/5 = 60%) */}
               <div className="lg:col-span-3 relative">
                 <div className="relative aspect-[16/9] bg-black/30 border border-iron/30 rounded-l-lg overflow-hidden">
-                  {chapter.media.some(m => m.startsWith('http')) ? (
-                    <div className="w-full h-full relative">
-                      <img
-                        src={chapter.media.find(m => m.startsWith('http'))!}
-                        alt={chapter.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute bottom-2 left-3 mono text-[8px] text-white/60 tracking-[0.1em] bg-black/40 px-2 py-1 rounded">
-                        ORIGINAL PHOTOGRAPH · NASA / JPL · {chapter.date}
-                      </div>
-                    </div>
-                  ) : hasMedia ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="mono text-[11px] tracking-[0.15em] text-amber/80">HISTORICAL MEDIA</div>
-                      <div className="flex flex-wrap gap-2 justify-center px-6">
-                        {chapter.media.map((m, i) => (
-                          <span key={i} className="mono border border-iron/50 bg-ink-0/40 px-3 py-1.5 text-[10px] text-ash">{m}</span>
-                        ))}
-                      </div>
-                      <div className="mono text-[9px] text-slate/50 mt-2">ORIGINAL VIDEO / PHOTOGRAPH · NASA / JPL</div>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="mono text-[12px] text-slate/40">HISTORICAL ARCHIVE</div>
-                    </div>
-                  )}
+                  <ChapterMedia media={chapter.media} date={chapter.date} title={chapter.title} deviceId={art.id} />
                 </div>
               </div>
 
@@ -229,6 +272,17 @@ export function MissionJourney() {
                   >
                     <PlayIcon className="h-3 w-3" />
                     WATCH MISSION FILM
+                  </button>
+                )}
+
+                {/* The mission media — the archival images and video of this mission */}
+                {mediaHero && (
+                  <button
+                    className="ctl ctl-primary flex w-full items-center justify-center gap-2 py-2.5"
+                    onClick={() => { sfx.confirm(); openMissionMedia(art.id); }}
+                    aria-label={`Open mission media for ${art.name}`}
+                  >
+                    MISSION MEDIA · ARCHIVAL IMAGERY
                   </button>
                 )}
 
@@ -292,29 +346,8 @@ export function MissionJourney() {
               <div className="lg:col-span-3">
                 {hasMedia ? (
                   <div className="relative bg-ink-1/30 border border-iron/30 rounded overflow-hidden">
-                    <div className="aspect-[16/9] flex items-center justify-center">
-                      {chapter.media.some(m => m.startsWith('http')) ? (
-                        <div className="w-full h-full relative">
-                          <img
-                            src={chapter.media.find(m => m.startsWith('http'))!}
-                            alt={chapter.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                          <div className="absolute bottom-2 left-3 mono text-[8px] text-white/60 tracking-[0.1em] bg-black/40 px-2 py-1 rounded">
-                            ORIGINAL PHOTOGRAPH · NASA / JPL · {chapter.date}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="mono text-[10px] tracking-[0.12em] text-amber/60">HISTORICAL MEDIA</div>
-                          <div className="flex flex-wrap gap-2 justify-center px-6">
-                            {chapter.media.map((m, i) => (
-                              <span key={i} className="mono border border-iron/50 bg-ink-0/30 px-3 py-1.5 text-[10px] text-ash">{m}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                    <div className="aspect-[16/9] flex items-center justify-center relative">
+                      <ChapterMedia media={chapter.media} date={chapter.date} title={chapter.title} deviceId={art.id} />
                     </div>
                   </div>
                 ) : (

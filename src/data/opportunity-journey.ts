@@ -47,7 +47,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
       "Established the dual-rover strategy (Spirit and Opportunity) to hedge against launch or landing failure.",
     futureMissions:
       "Set the template for later rovers (Curiosity, Perseverance) to follow the water and seek signs of past habitability.",
-    media: ["https://images-assets.nasa.gov/image/KSC-03pd2090/KSC-03pd2090~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/ksc-03pd2090.webp"],
     caseFileId: null,
     cameraBehavior: "Orbital view of Earth, transitioning to Mars approach; instrument diagrams fade in.",
     hologramSequence: [
@@ -77,7 +77,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Verified launch vehicle performance and spacecraft separation for the MER-B spacecraft.",
     futureMissions: "Launch architecture informed later Mars missions including Curiosity and Perseverance.",
-    media: [OPPORTUNITY_MEDIA.LAUNCH_STILL, "https://images-assets.nasa.gov/image/KSC-03pd2090/KSC-03pd2090~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.LAUNCH_STILL, "/media/missions/opportunity/journey/ksc-03pd2090.webp"],
     caseFileId: null,
     cameraBehavior: "Rocket on pad, liftoff, stage separation, spacecraft drifting away from Earth.",
     hologramSequence: [
@@ -106,7 +106,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated deep-space navigation, course correction, and communications over interplanetary distances.",
     futureMissions: "Cruise navigation techniques reused by all subsequent Mars missions.",
-    media: ["https://images-assets.nasa.gov/image/KSC-03pd2090/KSC-03pd2090~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/ksc-03pd2090.webp"],
     caseFileId: null,
     cameraBehavior: "Spacecraft traveling along curved trajectory; Earth recedes, Mars grows; DSN comms link pulses.",
     hologramSequence: [
@@ -134,7 +134,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     scientificSignificance: "Positioned the spacecraft for entry at the Meridiani Planum target.",
     engineeringSignificance: "Final trajectory refinement before the EDL sequence.",
     futureMissions: "Course correction procedures became standard for all Mars landers.",
-    media: ["https://images-assets.nasa.gov/image/KSC-03pd2090/KSC-03pd2090~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/ksc-03pd2090.webp"],
     caseFileId: null,
     cameraBehavior: "Approach trajectory tightens; spacecraft orientation shifts for entry; entry capsule cutaway shows EDL components.",
     hologramSequence: [
@@ -198,7 +198,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Verified camera systems survived landing and could transmit imagery from the surface.",
     futureMissions: "Surface imaging protocols became standard for all subsequent rovers.",
-    media: [OPPORTUNITY_MEDIA.FIRST_IMAGES, "https://images-assets.nasa.gov/image/PIA05619/PIA05619~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.FIRST_IMAGES, "/media/missions/opportunity/journey/looking-back-at-eagle-crater3-d.webp"],
     caseFileId: null,
     cameraBehavior: "Reveal actual first Pancam images; identify Eagle Crater; expose the bedrock outcrop; compare pre-landing orbital view with surface imagery.",
     hologramSequence: [
@@ -227,7 +227,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Validated the rover egress mechanism and suspension deployment on Martian soil.",
     futureMissions: "Egress procedures adopted by all subsequent Mars rovers.",
-    media: [OPPORTUNITY_MEDIA.ROLLOFF, "https://images-assets.nasa.gov/image/PIA05171/PIA05171~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.ROLLOFF, "/media/missions/opportunity/journey/engineers-test-roll-off-at-jpl.webp"],
     caseFileId: null,
     cameraBehavior: "Animate the suspension unfolding, rover descending the ramp, wheel contact with soil, first tracks, empty lander photograph.",
     hologramSequence: [
@@ -258,7 +258,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated the RAT brushing capability and contact instrument coordination on a specific target.",
     futureMissions: "RAT and contact-instrument workflows became standard for in-situ rock analysis.",
-    media: [OPPORTUNITY_MEDIA.BERRY_BOWL, "https://images-assets.nasa.gov/image/PIA05273/PIA05273~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.BERRY_BOWL, "/media/missions/opportunity/journey/berries-on-the-ground.webp"],
     caseFileId: "opp-case-blueberries",
     cameraBehavior: "Zoom into the real Berry Bowl image, highlight spherical features, show the brushing operation, reveal spectrometer investigation.",
     hologramSequence: [
@@ -288,7 +288,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated safe entry into and operation within a large crater, including slope management and egress planning.",
     futureMissions: "Crater-entry protocols informed Victoria, Endeavour, and later crater investigations.",
-    media: [OPPORTUNITY_MEDIA.ENDURANCE, OPPORTUNITY_MEDIA.BURNS_CLIFF, "https://images-assets.nasa.gov/image/PIA15091/PIA15091~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.ENDURANCE, OPPORTUNITY_MEDIA.BURNS_CLIFF, "/media/missions/opportunity/journey/layers-in-burns-cliff-examined-by-opportunity.webp"],
     caseFileId: null,
     cameraBehavior: "Fly down toward Endurance, reveal layered cliffs, activate geological cross-sections, and display the rover's actual route and images.",
     hologramSequence: [
@@ -317,7 +317,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated that mobile scientific hardware could operate far longer than its initial design mission.",
     futureMissions: "Extended-mission planning became standard for Mars surface missions.",
-    media: [OPPORTUNITY_MEDIA.SELF_PORTRAIT_2005, "https://images-assets.nasa.gov/image/PIA17759/PIA17759~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.SELF_PORTRAIT_2005, "/media/missions/opportunity/journey/self-portrait-by-opportunity-mars-rover-in-january-2014.webp"],
     caseFileId: null,
     cameraBehavior: "Show the original 90-sol design limit, advance the counter to Sol 180, and display the rover's actual shadow photograph.",
     hologramSequence: [
@@ -349,7 +349,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Showed the rover could identify and investigate non-indigenous rocks during traverse.",
     futureMissions: "Meteorite identification became part of rover traverse science planning.",
-    media: [OPPORTUNITY_MEDIA.HEAT_SHIELD_ROCK, "https://images-assets.nasa.gov/image/PIA12131/PIA12131~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.HEAT_SHIELD_ROCK, "/media/missions/opportunity/journey/skirting-an-obstacle-opportunity-sol-1867.webp"],
     caseFileId: null,
     cameraBehavior: "Show the rover and its heat shield, reveal the meteorite target, compare the rock's appearance with its iron-nickel interpretation.",
     hologramSequence: [
@@ -378,7 +378,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated the importance of realistic terrain testing and conservative autonomous mobility planning. Recovery took over five weeks of careful commanding.",
     futureMissions: "Terrain assessment and wheel-slip monitoring became critical for all subsequent rovers.",
-    media: [OPPORTUNITY_MEDIA.PURGATORY, "https://images-assets.nasa.gov/image/PIA12131/PIA12131~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.PURGATORY, "/media/missions/opportunity/journey/skirting-an-obstacle-opportunity-sol-1867.webp"],
     caseFileId: null,
     cameraBehavior: "Show the six wheels sinking, compare wheel movement with actual displacement, and replay the recovery strategy.",
     hologramSequence: [
@@ -408,7 +408,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated long-distance traverse capability far beyond the original ~1 km design goal.",
     futureMissions: "Long-distance rover traverse planning became standard for Mars missions.",
-    media: ["https://images-assets.nasa.gov/image/PIA08812/PIA08812~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/the-opportunity-rover-at-victoria-crater.webp"],
     caseFileId: null,
     cameraBehavior: "Display the historical traverse, animate the rover along documented route segments, and reveal the increasing scale of its journey.",
     hologramSequence: [
@@ -438,7 +438,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Operated through severe dust storms, demonstrating power management under reduced sunlight.",
     futureMissions: "Dust-storm power management informed later solar-powered mission planning.",
-    media: [OPPORTUNITY_MEDIA.VICTORIA, "https://images-assets.nasa.gov/image/PIA08812/PIA08812~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.VICTORIA, "/media/missions/opportunity/journey/the-opportunity-rover-at-victoria-crater.webp"],
     caseFileId: null,
     cameraBehavior: "Orbit-like overview of the crater, panoramic views from Cape Verde, historical rover path and the dust-storm interruption.",
     hologramSequence: [
@@ -469,7 +469,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "A rover designed to travel roughly one kilometre during its prime mission had now traveled many times farther.",
     futureMissions: "Extended-traverse operations became a core capability of Mars rover missions.",
-    media: ["https://images-assets.nasa.gov/image/PIA17073/PIA17073~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/opportunity-exploration-of-cape.webp"],
     caseFileId: null,
     cameraBehavior: "A cinematic regional map, waypoint progression, changing terrain photographs and arrival at Endeavour.",
     hologramSequence: [
@@ -501,7 +501,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Validated orbital mineral detection as a tool for selecting rover investigation targets.",
     futureMissions: "Orbital-to-surface targeting workflow used by Curiosity and Perseverance.",
-    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "https://images-assets.nasa.gov/image/PIA17074/PIA17074~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "/media/missions/opportunity/journey/esperance-target-examined-by-opportunity.webp"],
     caseFileId: null,
     cameraBehavior: "Show orbital mineral detection, fly down to Cape York, highlight the target, then connect the rover's instruments to the observation.",
     hologramSequence: [
@@ -531,7 +531,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated the full contact-instrument chain: Pancam targeting, RAT abrasion, APXS measurement, MI imaging.",
     futureMissions: "Contact-instrument targeting and abrasion-before-measurement workflow standardized.",
-    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "https://images-assets.nasa.gov/image/PIA17074/PIA17074~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "/media/missions/opportunity/journey/esperance-target-examined-by-opportunity.webp"],
     caseFileId: "opp-case-esperance",
     cameraBehavior: "Display the actual Pancam target image, animate the abrasion operation as an educational reconstruction, highlight APXS, then reveal the measured compositional comparison.",
     hologramSequence: [
@@ -561,7 +561,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated how environmental changes and engineering workarounds could keep aging equipment scientifically useful beyond design life.",
     futureMissions: "Long-duration operations and autonomous fault recovery became core design principles.",
-    media: [OPPORTUNITY_MEDIA.SELF_PORTRAIT_2014, "https://images-assets.nasa.gov/image/PIA17759/PIA17759~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.SELF_PORTRAIT_2014, "/media/missions/opportunity/journey/self-portrait-by-opportunity-mars-rover-in-january-2014.webp"],
     caseFileId: null,
     cameraBehavior: "Compare dusty and cleaned solar panels, reveal the energy context, show the flash-memory system and the next mission target.",
     hologramSequence: [
@@ -590,7 +590,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "A rover designed to travel roughly one kilometre during its prime mission had traveled 42.195 km — a marathon on another world.",
     futureMissions: "Long-distance rover mobility demonstrated as feasible for multi-year missions.",
-    media: ["https://images-assets.nasa.gov/image/PIA19157/PIA19157~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/opportunity-rover-surpasses-marathon-distance.webp"],
     caseFileId: null,
     cameraBehavior: "Show the 42.195 km milestone, the actual traverse map, a visual comparison with a marathon, and the rover's progress beyond its original mission target.",
     hologramSequence: [
@@ -622,7 +622,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Set a Mars-rover slope record at ~32 degrees, demonstrating extreme-terrain mobility capability.",
     futureMissions: "Steep-slope driving techniques informed later rover terrain capabilities.",
-    media: ["https://images-assets.nasa.gov/image/PIA19155/PIA19155~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/opportunity-approach-to-marathon-valley.webp"],
     caseFileId: null,
     cameraBehavior: "Show the actual rover route, slope visualization, geological layers, dust-devil imagery and competing hypotheses for gully formation.",
     hologramSequence: [
@@ -652,7 +652,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated continued mobility and instrument operation despite wheel steering issues.",
     futureMissions: "Wheel-steering fault tolerance informed later rover drive-system design.",
-    media: ["https://images-assets.nasa.gov/image/PIA21496/PIA21496~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/from-tribulation-to-perseverance-on-mars.webp"],
     caseFileId: null,
     cameraBehavior: "Fly into Perseverance Valley, show its actual panoramas and route, and reveal the scientific questions being investigated.",
     hologramSequence: [
@@ -681,7 +681,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated the vulnerability of solar-powered spacecraft to planet-wide dust events.",
     futureMissions: "Dust-storm modeling and power budgeting informed later mission designs.",
-    media: [OPPORTUNITY_MEDIA.FINAL_IMAGE, "https://images-assets.nasa.gov/image/PIA22930/PIA22930~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.FINAL_IMAGE, "/media/missions/opportunity/journey/opportunity-legacy-panorama.webp"],
     caseFileId: null,
     cameraBehavior: "The illumination fades, the solar-power indication drops, actual last images appear, and the timeline stops at the last signal.",
     hologramSequence: [
@@ -712,7 +712,7 @@ export const OPPORTUNITY_JOURNEY: MissionChapter[] = [
     engineeringSignificance:
       "Demonstrated the value of long-lived robotic exploration, remote mobility operations, fault recovery, and scientific investigation over distances far greater than originally planned.",
     futureMissions: "Opportunity's longevity record set expectations for Mars surface mission durability.",
-    media: ["https://images-assets.nasa.gov/image/PIA23178/PIA23178~orig.jpg"],
+    media: ["/media/missions/opportunity/journey/opportunity-s-final-traverse-map.webp"],
     caseFileId: null,
     cameraBehavior: "Show mission-control photographs, the final commands, the end-of-mission announcement and the rover's final position in Perseverance Valley.",
     hologramSequence: [
@@ -743,7 +743,7 @@ export const OPPORTUNITY_CASE_FILES: CaseFile[] = [
       "Exact formation mechanism (groundwater vs. other aqueous process) not fully resolved.",
     significance:
       "Physical and chemical evidence that liquid water had affected the ancient Martian environment at Meridiani Planum. Not evidence of life.",
-    media: [OPPORTUNITY_MEDIA.BERRY_BOWL, "https://images-assets.nasa.gov/image/PIA05273/PIA05273~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.BERRY_BOWL, "/media/missions/opportunity/journey/berries-on-the-ground.webp"],
     sourceIds: ["squyres2004", "klingelhofer2004", "rieder2004"],
   },
   {
@@ -762,7 +762,7 @@ export const OPPORTUNITY_CASE_FILES: CaseFile[] = [
       "Preliminary interpretation — clay content suggested but not definitively confirmed; not evidence of life.",
     significance:
       "Expanded understanding of the range of ancient watery environments on Mars and their possible habitability.",
-    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "https://images-assets.nasa.gov/image/PIA17074/PIA17074~orig.jpg"],
+    media: [OPPORTUNITY_MEDIA.ESPERANCE, OPPORTUNITY_MEDIA.ESPERANCE_FIG, "/media/missions/opportunity/journey/esperance-target-examined-by-opportunity.webp"],
     sourceIds: ["pia17074", "nasa-mer-instruments"],
   },
 ];

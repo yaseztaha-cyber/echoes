@@ -22,6 +22,7 @@ import { AudioSettings } from "@/components/chrome/AudioSettings";
 import { Remains, Finale } from "@/components/mission/Remains";
 import { Evidence } from "@/components/evidence/EvidenceTrace";
 import { MissionJourney } from "@/components/mission/MissionJourney";
+import { MissionMediaOverlay } from "@/components/mission/MissionMediaOverlay";
 import { SolarScope } from "@/components/solar/SolarScope";
 import { Panorama } from "@/components/panorama/Panorama";
 import { clock } from "@/engine/time/clock";
@@ -166,20 +167,28 @@ function TopRight() {
   const aud = useEcho((s) => s.audience);
   const open = useEcho((s) => s.menuOpen);
   const sys = useEcho((s) => s.sysOpen);
+  const panel = useEcho((s) => s.panelOpen);
+  const hasArt = useEcho((s) => !!s.artifactId);
   const setO = (o: any) => useEcho.setState({ overlay: o, menuOpen: false });
   return (
     <div className="relative flex flex-col items-end gap-1.5">
       <div className="flex items-center gap-1.5">
-        <Segmented a={["cinematic", "CINEMATIC"]} b={["science", "SCIENCE"]} value={ui} onChange={(v) => useEcho.setState({ uiMode: v })} label="Display mode" />
-        <button className="ctl md:hidden" aria-expanded={open} onClick={() => useEcho.setState({ menuOpen: !open })}>MENU</button>
+        {hasArt && (
+          <button className="ctl" data-on={panel} aria-pressed={panel} onClick={() => useEcho.setState({ panelOpen: !panel })}>
+            {panel ? "HIDE INFO" : "MISSION INFO"}
+          </button>
+        )}
+        <button className="ctl" aria-expanded={open} aria-label="Tools" onClick={() => useEcho.setState({ menuOpen: !open })}>TOOLS</button>
       </div>
-      <div className={`${open ? "flex" : "hidden"} flex-col items-end gap-1.5 md:flex`}>
+      <div className={`${open ? "flex" : "hidden"} flex-col items-end gap-1.5`}>
+        <Segmented a={["cinematic", "CINEMATIC"]} b={["science", "SCIENCE"]} value={ui} onChange={(v) => useEcho.setState({ uiMode: v })} label="Display mode" />
         <Segmented a={["explorer", "EXPLORER"]} b={["student", "STUDENT"]} value={aud} onChange={(v) => useEcho.setState({ audience: v })} label="Information density" />
         <div className="flex flex-wrap justify-end gap-1">
           <button className="ctl" onClick={() => setO("search")}>SEARCH</button>
           <button className="ctl" onClick={() => setO("archive")}>ARCHIVE</button>
           <AudioSettings />
           <button className="ctl" onClick={() => setO("film")}>FILM <FilmCount /></button>
+          <button className="ctl" aria-pressed={timelineOpen} onClick={() => useEcho.setState({ timelineOpen: !timelineOpen })}>TIMELINE</button>
           <button className="ctl" onClick={() => setO("sources")}>GROUND TRUTH</button>
           <button className="ctl" onClick={() => setO("lab")}>MISSION LAB</button>
           <button className="ctl" aria-expanded={sys} onClick={() => useEcho.setState({ sysOpen: !sys })}>SYS</button>
@@ -412,6 +421,10 @@ export function Hud() {
   const reduced = useEcho((s) => s.reducedMotion);
   const audioOn = useEcho((s) => s.audioOn);
   const art = artifactById(aid);
+  const mediaDeviceId = useEcho((s) => s.mediaDeviceId);
+  const scienceDensity = useEcho((s) => s.uiMode) === "science" || aud === "student";
+  const replay = useEcho((s) => s.replay);
+  const timelineOpen = useEcho((s) => s.timelineOpen);
   const cine = mode === "cinematic";
   const journeyActive = overlay === "opportunity-journey" || overlay === "mission-journey";
   const hasTimeline = !!art && (scene === "site" || aid === "voyager1");
@@ -467,19 +480,23 @@ export function Hud() {
 
           {/* contextual right column */}
           <div className={`pointer-events-none absolute right-3 top-[132px] bottom-[168px] z-10 flex w-[336px] flex-col items-end gap-3 overflow-y-auto transition-opacity duration-700 scroll-thin max-md:inset-x-2 max-md:top-auto max-md:bottom-[96px] max-md:max-h-[44vh] max-md:w-auto ${dim}`}>
-            {mode === "inspect" ? scienceOpen ? <ScienceChain /> : <InstrumentPanel /> : <ContextPanel />}
+            {mode === "inspect" ? (scienceOpen ? <ScienceChain /> : <InstrumentPanel />) : panelOpen ? <ContextPanel /> : null}
           </div>
 
           {/* left-bottom stack */}
           <div className={`pointer-events-none absolute bottom-[100px] left-3 flex flex-col gap-2 transition-opacity duration-700 max-md:bottom-[200px] ${dim}`}>
             <ReplayCard />
-            <div className="pointer-events-auto"><SurfaceStatus /></div>
-            <div className="pointer-events-auto"><DataResolution /></div>
-            <Telemetry />
+            {scienceDensity && (
+              <>
+                <div className="pointer-events-auto"><SurfaceStatus /></div>
+                <div className="pointer-events-auto"><DataResolution /></div>
+                <Telemetry />
+              </>
+            )}
           </div>
 
           <div className={`absolute bottom-[100px] right-3 flex flex-col items-end gap-2 max-md:hidden ${flying ? "opacity-30" : ""}`}>
-            <Provenance />
+            {scienceDensity && <Provenance />}
           </div>
           {minimap && !eventOpen && (
             <div className={`pointer-events-auto absolute left-3 top-[260px] max-md:hidden ${flying ? "opacity-40" : ""}`}>
@@ -496,7 +513,7 @@ export function Hud() {
                 <button className="ctl shrink-0" onClick={requestPhoto} aria-label="Capture frame">FRAME</button>
               </div>
             </div>
-            <div className="min-w-[220px] flex-1 max-md:order-last max-md:basis-full">{hasTimeline && <Timeline />}</div>
+            <div className="min-w-[220px] flex-1 max-md:order-last max-md:basis-full">{hasTimeline && (replay.active || timelineOpen) && <Timeline />}</div>
             <TimeControls />
           </div>
         </>
@@ -514,6 +531,8 @@ export function Hud() {
       {/* keyed by device: a device change starts a fresh chapter list and never
           re-fires the previous device's camera choreography */}
       {overlay === "mission-journey" && <MissionJourney key={aid ?? "none"} />}
+      {/* keyed by device: each device shows its own collection */}
+      {overlay === "mission-media" && <MissionMediaOverlay key={mediaDeviceId ?? "none"} />}
       {overlay === "sun" && <SolarScope />}
       {overlay === "panorama" && <Panorama />}
       <Compare />

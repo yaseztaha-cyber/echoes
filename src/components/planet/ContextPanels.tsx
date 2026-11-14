@@ -1,6 +1,8 @@
-import { useEcho, openMissionFilm } from "@/state/store";
+import { useEcho, openMissionFilm, openMissionMedia } from "@/state/store";
 import { ARTIFACTS, artifactById, artifactsFor } from "@/data/artifacts";
 import { filmForDevice } from "@/data/missionFilms";
+import { heroForDevice, mediaAssetsForDevice } from "@/data/media-manifest";
+import { assetUrl } from "@/lib/asset";
 import { verificationFor } from "@/data/missions/verification";
 import { PlayIcon } from "@/components/mission/MissionFilmIcons";
 import { sourceById } from "@/data/sources";
@@ -156,6 +158,9 @@ function ArtifactPanel() {
   const art = artifactById(aid);
   /** The mission film registered for this device — null for every other device. */
   const film = filmForDevice(aid);
+  /** The mission media collection for this device (hero, gallery, video). */
+  const hero = heroForDevice(aid);
+  const mediaCount = mediaAssetsForDevice(aid).filter((m) => m.role !== "journey").length;
   /** Audited, source-backed mission facts (agency, vehicle, verified status). */
   const verified = verificationFor(aid);
   if (!art) return null;
@@ -195,6 +200,34 @@ function ArtifactPanel() {
               ))}
             </div>
           </div>
+        )}
+        {hero && (
+          <figure className="mt-3 border border-iron/40">
+            <img
+              src={assetUrl(hero.thumb ?? hero.file ?? "")}
+              srcSet={hero.thumb && hero.thumbWidth ? `${assetUrl(hero.thumb)} ${hero.thumbWidth}w, ${assetUrl(hero.file ?? "")} ${hero.width ?? 1600}w` : undefined}
+              sizes="320px"
+              width={hero.width}
+              height={hero.height}
+              alt={hero.title}
+              loading="lazy"
+              decoding="async"
+              className="aspect-[16/9] w-full object-cover"
+            />
+            <figcaption className="border-t border-iron/30 px-2 py-1.5">
+              <div className="mono text-[8.5px] leading-snug tracking-[0.06em] text-bone/80">{hero.title}</div>
+              <div className="mono mt-0.5 text-[8px] tracking-[0.1em] text-slate">{hero.credit} · {hero.classification.toUpperCase()}</div>
+            </figcaption>
+          </figure>
+        )}
+        {hero && (
+          <button
+            className="ctl ctl-primary mt-2 flex w-full items-center justify-center gap-2 py-2.5"
+            onClick={() => openMissionMedia(aid)}
+            aria-label={`Open mission media for ${art.name}: ${mediaCount} assets`}
+          >
+            MISSION MEDIA · {mediaCount} ASSETS
+          </button>
         )}
         {film && (
           <button

@@ -444,7 +444,7 @@ async function arrive(art: Artifact, nav?: NavTicket) {
   const D0 = s0.length();
   const az0 = Math.atan2(s0.z, s0.x);
   const pitch0 = Math.asin(s0.y / D0);
-  const D1 = { mer: 12.5, sojourner: 4.2, insight: 9, apollo: 34, voyager: 20 }[art.model.kind];
+  const D1 = { mer: 9.5, sojourner: 1.9, insight: 8, apollo: 30, voyager: 20 }[art.model.kind];
   const azEnd = az0 + 0.55;
   showBanner("MISSION REGION", `${art.name} · ${art.dates.landing ? "SURFACE" : ""}`, 2400);
   await fly(
@@ -1045,8 +1045,9 @@ export async function visitWaypoint(artifactId: string, wpId: string, nav?: NavT
   const finalSt = S();
   if (finalSt.scene === "site" && finalSt.artifactId === artifactId) {
     const t = siteRef.pos.clone();
-    const p = V(t.x + APPROACH.x * 70, 0, t.z + APPROACH.y * 70);
-    p.y = heightAt(p.x, p.z) + 22;
+    const dist = ({ mer: 10, sojourner: 2.4, insight: 8, apollo: 30, voyager: 18 } as Record<string, number>)[art.model.kind] ?? 10;
+    const p = V(t.x + APPROACH.x * dist, 0, t.z + APPROACH.y * dist);
+    p.y = heightAt(p.x, p.z) + dist * 0.32;
     const from = cam.camera!.position.distanceTo(p);
     await flyTo(p, t, THREE.MathUtils.clamp(2 + Math.log10(1 + from) * 1.2, 2.5, 6), smoother);
   }

@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 export type SceneId = "solar" | "planet" | "site";
 export type CamMode = "orbit" | "free" | "follow" | "surface" | "inspect" | "cinematic" | "overview";
-export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama" | "film" | "opportunity-journey" | "mission-journey";
+export type Overlay = null | "archive" | "sources" | "lab" | "search" | "remains" | "finale" | "settings" | "decode" | "evidence" | "sun" | "panorama" | "film" | "opportunity-journey" | "mission-journey" | "mission-media";
 export type Quality = "ultra" | "high" | "medium" | "low";
 export type SimMode = "solar-system" | "mission" | "historical";
 export type Level = "explore" | "understand" | "technical";
@@ -102,6 +102,8 @@ export interface EchoState {
   vignetteId: string | null;
   /** Device id whose mission film is open (null = no film). Session-scoped. */
   filmDeviceId: string | null;
+  /** Device id whose mission media collection is open (null = closed). Session-scoped. */
+  mediaDeviceId: string | null;
   /** Vignettes already shown this session (once per site). */
   vignettesSeen: string[];
   /** Data-resolution note for the current site terrain (LOLA/MOLA vs procedural); empty off-site. */
@@ -131,7 +133,7 @@ export const useEcho = create<EchoState>(() => ({
   overlay: null,
   compareOpen: false,
   minimap: true,
-  timelineOpen: true,
+  timelineOpen: false,
   replay: { active: false, index: -1, paused: false },
   demo: { active: false, caption: "" },
   activeEventId: null,
@@ -150,7 +152,7 @@ export const useEcho = create<EchoState>(() => ({
   toasts: [],
   menuOpen: false,
   sysOpen: false,
-  panelOpen: true,
+  panelOpen: false,
   sidePanelHidden: false,
   gpuLost: false,
   venusView: "surface",
@@ -162,6 +164,7 @@ export const useEcho = create<EchoState>(() => ({
   flash: 0,
   vignetteId: null,
   filmDeviceId: null,
+  mediaDeviceId: null,
   vignettesSeen: [],
   demNote: "",
 }));
@@ -237,3 +240,17 @@ export const openMissionFilm = (deviceId: string) =>
 
 /** Close the film and return to the mission experience unchanged. */
 export const closeMissionFilm = () => useEcho.setState({ filmDeviceId: null });
+
+/**
+ * Open a device's mission media collection (hero, gallery, video, provenance).
+ *
+ * Navigation safety: exactly like the film, this touches ONLY the overlay and
+ * the media id. The scene, the selected device, the journey chapter and the
+ * camera are untouched — closing the media returns the user to the mission
+ * experience they came from.
+ */
+export const openMissionMedia = (deviceId: string) =>
+  useEcho.setState({ overlay: "mission-media", mediaDeviceId: deviceId, menuOpen: false });
+
+/** Close the media collection and return to the mission experience unchanged. */
+export const closeMissionMedia = () => useEcho.setState({ mediaDeviceId: null });
