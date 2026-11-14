@@ -2,6 +2,9 @@
 
 **Every Journey Leaves a Trace.**
 
+**Explore the live website:** [Open ECHOES](https://yaseztaha-cyber.github.io/echoes/)
+
+
 ECHOES is a browser-based 3D experience for exploring the places spacecraft have visited and the machines that helped us study them. Move through a navigable solar system, descend to selected lunar and Martian sites, inspect spacecraft representations, and open mission records with timelines, discoveries, and source links.
 
 [![ECHOES — solar system](docs/images/hero-solar-system.png)](docs/images/hero-solar-system.png)
