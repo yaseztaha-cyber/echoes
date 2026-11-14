@@ -17,7 +17,7 @@ export function Worlds() {
               index="01"
               eyebrow="Destinations"
               lines={["Not just distant worlds.", "Places we have reached."]}
-              text="Every world holds a different story. Every spacecraft carries a different purpose. Explore the environments that our missions have observed, visited, and studied."
+              text="Some of these places have been mapped from orbit. A few have been explored from the ground. Choose a world and see what our spacecraft have found there."
             />
           </div>
         </Reveal>
@@ -87,7 +87,7 @@ export function Worlds() {
                         ))}
                       </dl>
                       <TextLink href={worldHref(w.id)} className="self-start">
-                        Read the {w.name === "The Moon" ? "Moon" : w.name} dossier
+                        Explore {w.name === "The Moon" ? "the Moon" : w.name}
                       </TextLink>
                     </div>
                   )}
