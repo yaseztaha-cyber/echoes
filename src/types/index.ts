@@ -156,6 +156,25 @@ export interface LegacyRecord {
   legacy: string[];
 }
 
+/**
+ * A dated distance milestone that a spacecraft actually reached. Kept as its
+ * own record (rather than only a timeline row) so the UI can explain the
+ * milestone without inventing live telemetry.
+ */
+export interface DistanceMilestone {
+  /** UTC ms at which the milestone was reached. */
+  date: number;
+  /** Human-readable date/time, already normalised to UTC. */
+  dateLabel: string;
+  distanceKm: number;
+  distanceMi: number;
+  /** One-way light travel time in hours. */
+  oneWayHours: number;
+  /** Dated operational status at the moment of the milestone. */
+  status: string;
+  sourceIds: string[];
+}
+
 export interface Artifact {
   id: string;
   name: string;
@@ -179,4 +198,6 @@ export interface Artifact {
   media: MediaAsset[];
   sun: { el: number; az: number };
   terrainSeed: number;
+  /** A dated distance milestone, when one has been officially confirmed. */
+  distanceMilestone?: DistanceMilestone;
 }

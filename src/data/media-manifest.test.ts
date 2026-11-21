@@ -31,6 +31,7 @@ const CLASSIFICATIONS: MediaClassification[] = [
   "Mission camera image",
   "Mission video",
   "Scientific visualization",
+  "Scientific audio",
   "Artist's concept",
   "Other illustration",
 ];

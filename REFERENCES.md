@@ -23,6 +23,10 @@ ECHOES combines mission-history research, planetary elevation data, spacecraft m
   https://science.nasa.gov/mission/insight/
 - **NASA Science — Voyager 1.** Mission history and current mission context.  
   https://science.nasa.gov/mission/voyager-1/
+- **NASA — Voyager 1 Makes History Reaching One Light-Day From Earth.** One light-day milestone on 18 November 2026 at 2:16 a.m. PST (10:16 UTC); about 25.9 billion km / 16.1 billion mi; 24-hour one-way signal time.  
+  https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/
+- **NASA Science — Voyager 1 Engineers Analyze Data Issue, Ready to Confirm Light-day.** Dated status: no science or engineering data since 14 November 2026; carrier signal still detected; milestone confirmed from carrier signal and trajectory calculations.  
+  https://science.nasa.gov/blogs/voyager/2026/11/18/voyager-1-engineers-analyze-data-issue-ready-to-confirm-light-day/
 - **NASA NSSDCA Master Catalog.** Spacecraft records and mission identifiers; consult the individual record linked from the mission source register.  
   https://nssdc.gsfc.nasa.gov/nmc/
 

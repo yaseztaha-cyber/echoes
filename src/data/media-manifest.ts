@@ -35,6 +35,7 @@ export type MediaClassification =
   | "Mission camera image"
   | "Mission video"
   | "Scientific visualization"
+  | "Scientific audio"
   | "Artist's concept"
   | "Other illustration";
 
@@ -762,7 +763,7 @@ export const MISSION_MEDIA: MissionMediaCollection[] = [
       {
         id: "PIA25582",
         kind: "image",
-        classification: "Scientific visualization",
+        classification: "Scientific audio",
         role: "gallery",
         title: "NASA's InSight Records the Sound of a Martian Impact",
         caption: "The seismometer record of the meteoroid strike of 24 December 2021, sped up a hundred times so it can be heard. A data plot, not a photograph.",
@@ -1449,7 +1450,7 @@ export const MISSION_MEDIA: MissionMediaCollection[] = [
         classification: "Mission video",
         role: "video",
         title: "Voyager 1 — mission update (NASA/JPL)",
-        caption: "NASA/JPL mission video on Voyager 1 and the engineering team's work on the spacecraft that is still returning data from interstellar space.",
+        caption: "NASA/JPL mission video on Voyager 1 and the engineering team's work on the spacecraft that returned scientific data from interstellar space before the November 2026 data interruption.",
         file: "/media/missions/voyager1/voyager1-team-mission-update.webm",
         poster: "/media/missions/voyager1/voyager1-team-mission-update-poster.jpg",
         sourcePage: "https://images.nasa.gov/details/JPL-20240425-VOYAGEf-0001-Voyager%201%20Team%20Reacts%20to%20Receiving%20Engineering%20Data%20From%20Spacecraft",

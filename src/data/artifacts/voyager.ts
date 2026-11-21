@@ -12,7 +12,7 @@ export const voyager1: Artifact = {
   id: "voyager1",
   name: "VOYAGER 1",
   designation: "VGR-1",
-  summary: "The most distant human-made object. Launched in 1977, it crossed into interstellar space in 2012 and is still sending data.",
+  summary: "The most distant human-made object. Launched in 1977, it crossed into interstellar space in 2012 and reached one light-day from Earth on 18 November 2026.",
   destination: "deep-space",
   type: "probe",
   missionId: "voyager",
@@ -27,11 +27,18 @@ export const voyager1: Artifact = {
   },
   location: { world: "deep-space", site: "Interstellar space", region: "BEYOND THE HELIOPAUSE", lat: 0, lon: 0 },
   status: "PARTIALLY OPERATIONAL",
-  // The Voyager mission has NOT ended: NASA states Voyager 1 "continues to
-  // collect data" beyond the heliopause. `end` is therefore intentionally
-  // absent (the mission is ongoing) — the clock range below still tracks the
-  // spacecraft out to the present.
-  dates: { launch: VOYAGER_LAUNCH, end: undefined, endLabel: "ONGOING — still returning data from interstellar space; some instruments powered down to conserve energy" },
+  // The Voyager mission has NOT ended: as described on NASA's pre-interruption
+  // mission page, Voyager 1 "continues to collect data" beyond the heliopause;
+  // `end` is therefore intentionally absent (the mission is ongoing) - the clock
+  // range below still tracks the spacecraft out to the present.
+  dates: {
+    launch: VOYAGER_LAUNCH,
+    end: undefined,
+    // Dated status, not a live claim: NASA reported on 18 November 2026 that
+    // science and engineering data had not been received since 14 November,
+    // while the carrier signal was still detected. The mission itself is ongoing.
+    endLabel: "ONGOING — carrier signal detected; science and engineering data paused since 14 November 2026 while engineers investigate (dated status as of 18 November 2026)",
+  },
   clock: { rate: DAY_MS, range: [VOYAGER_LAUNCH, VOYAGER_NOW], kind: "date" },
   sun: { el: 30, az: 90 },
   terrainSeed: 0,
@@ -81,12 +88,33 @@ export const voyager1: Artifact = {
     { id: "saturn", t: Date.UTC(1980, 10, 12), title: "SATURN FLYBY", detail: "Closest approach to Saturn; a Titan encounter then bends the path out of the planetary plane.", kind: "flyby", sourceId: "nasa-voyager" },
     { id: "pale", t: Date.UTC(1990, 1, 14), title: "FAMILY PORTRAIT", detail: "Cameras look back to capture the solar system, including the “Pale Blue Dot”.", kind: "science", sourceId: "nasa-voyager" },
     { id: "heliopause", t: Date.UTC(2012, 7, 25), title: "ENTERS INTERSTELLAR SPACE", detail: "Voyager 1 crosses the heliopause.", kind: "science", sourceId: "gurnett2013" },
+    { id: "lightday", t: Date.UTC(2026, 10, 18, 10, 16), title: "ONE LIGHT-DAY FROM EARTH", detail: "About 25.9 billion km (16.1 billion mi) away. A radio signal now takes roughly 24 hours to cross each way.", kind: "science", sourceId: "nasa-voyager-lightday" },
   ],
+  distanceMilestone: {
+    date: Date.UTC(2026, 10, 18, 10, 16),
+    dateLabel: "18 NOVEMBER 2026 · 2:16 A.M. PST (10:16 UTC)",
+    distanceKm: 25_900_000_000,
+    distanceMi: 16_100_000_000,
+    oneWayHours: 24,
+    status:
+      "Dated status: NASA had received no science or engineering data from Voyager 1 since 14 November 2026, although its carrier signal was still detected. Engineers used the carrier signal and trajectory calculations to confirm the milestone and are analysing the data issue. This is not live telemetry.",
+    sourceIds: ["nasa-voyager-lightday", "nasa-voyager-data-2026"],
+  },
   legacy: {
     physical: "Voyager 1 is travelling outward at about 17 km/s. It will not return.",
-    data: "Planetary-encounter data and interstellar measurements are archived and continue to arrive.",
-    legacy: ["First spacecraft to reach interstellar space.", "Showed the diversity of the outer planets and their moons.", "Carries the Golden Record."],
+    data: "Planetary-encounter and interstellar measurements are archived. The current data-return issue is dated in the timeline rather than presented as live.",
+    legacy: [
+      "First spacecraft to reach interstellar space.",
+      "First spacecraft to reach one light-day from Earth (18 November 2026).",
+      "Showed the diversity of the outer planets and their moons.",
+      "Carries the Golden Record.",
+    ],
   },
-  sources: [{ sourceId: "nasa-voyager", claim: "Mission dates and instruments." }, { sourceId: "gurnett2013", claim: "Interstellar plasma." }],
+  sources: [
+    { sourceId: "nasa-voyager", claim: "Mission dates and instruments." },
+    { sourceId: "gurnett2013", claim: "Interstellar plasma." },
+    { sourceId: "nasa-voyager-lightday", claim: "One light-day distance, date and signal travel time." },
+    { sourceId: "nasa-voyager-data-2026", claim: "Dated data-return status and carrier-signal confirmation." },
+  ],
   media: [],
 };

@@ -20,7 +20,7 @@
  *    page), not 21 December 2022.
  */
 
-export type MissionType = "rover" | "lander" | "flyby" | "orbiter" | "crewed-lander";
+export type MissionType = "rover" | "lander" | "flyby" | "orbiter" | "crewed-lander" | "probe";
 
 export interface VerifiedEvent {
   label: string;
@@ -319,28 +319,32 @@ export const MISSION_VERIFICATION: MissionVerification[] = [
     agency: "NASA / JPL-Caltech",
     launchVehicle: "Titan IIIE-Centaur",
     launchSite: "Space Launch Complex 41, Cape Canaveral Air Force Station, Florida",
-    missionType: "flyby",
+    missionType: "probe",
     objective:
       "Survey Jupiter and Saturn, then continue outward into interstellar space, returning planetary and interstellar measurements for as long as the spacecraft can transmit.",
     verifiedStatus: "ONGOING",
     statusNote:
-      "NASA: 'Voyager 1 crossed into interstellar space in August 2012 and continues to collect data.' The mission has not ended; the instrument set has been reduced to save power, which is a spacecraft state, not a mission state.",
+      "The mission has not ended; the instrument set has been reduced to save power, which is a spacecraft state, not a mission state. Dated status (NASA, 18 November 2026): no science or engineering data had been received since 14 November 2026, although the carrier signal was still detected while engineers analysed the data issue.",
     hardwareLocation: "Interstellar space, beyond the heliopause — the most distant human-made object.",
     keyEvents: [
       { label: "Launch", dateUtc: Date.UTC(1977, 8, 5, 12, 56), note: "Titan IIIE-Centaur from SLC-41; the first of the two Voyagers." },
       { label: "Jupiter flyby", dateUtc: Date.UTC(1979, 2, 5), note: "Closest approach ≈349,000 km; discovered Jupiter's ring and active volcanoes." },
       { label: "Saturn and Titan encounter", dateUtc: Date.UTC(1980, 10, 12), note: "Saturn at 124,000 km and Titan at 6,490 km — the only close encounter with Titan until Cassini-Huygens in 2005." },
       { label: "Interstellar space", dateUtc: Date.UTC(2012, 7, 25), note: "Crossed the heliopause; the first human-made object in interstellar space." },
-      { label: "Ongoing", dateUtc: null, note: "Still returning engineering and plasma-wave data from beyond the heliopause." },
+      { label: "Data-return issue", dateUtc: Date.UTC(2026, 10, 14), note: "Science and engineering data stopped arriving; a carrier signal was still detected. Engineers are analysing the cause. Dated status, not live telemetry." },
+      { label: "One light-day from Earth", dateUtc: Date.UTC(2026, 10, 18, 10, 16), note: "About 25.9 billion km (16.1 billion mi); a radio signal now takes roughly 24 hours each way. Confirmed from the carrier signal and trajectory calculations." },
     ],
     discoveries: [
       { title: "A volcanically active Jupiter", text: "Voyager 1 saw an eruption in Io's plume — the first direct evidence of active volcanism beyond Earth." },
       { title: "Titan's haze", text: "The only close look at Titan before Cassini: a thick nitrogen haze over a methane-rich surface." },
       { title: "The heliopause", text: "Crossed into interstellar space in 2012 and measured the plasma transition — where the Sun's influence ends." },
+      { title: "One light-day", text: "On 18 November 2026 Voyager 1 became the first spacecraft to reach a distance light crosses in 24 hours: about 25.9 billion km from Earth." },
     ],
     sources: [
-      { title: "Voyager 1", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/mission/voyager-1/", accessed: ACCESSED, supports: "Launch 1977, Jupiter and Saturn flybys, heliopause crossing August 2012, 'continues to collect data' — mission ongoing." },
+      { title: "Voyager 1", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/mission/voyager-1/", accessed: ACCESSED, supports: "Launch 1977, Jupiter and Saturn flybys, heliopause crossing August 2012, mission ongoing." },
       { title: "Voyager 1 — mission record", publisher: NSSDC, url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1977-084A", accessed: ACCESSED, supports: "Launch date, vehicle, launch site." },
+      { title: "NASA's Voyager 1 Makes History Reaching One Light-Day From Earth", publisher: NASA, url: "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/", accessed: "2026-11-21", supports: "One light-day milestone on 18 November 2026 at 2:16 a.m. PST; about 25.9 billion km / 16.1 billion mi; 24-hour one-way signal time." },
+      { title: "Voyager 1 Engineers Analyze Data Issue, Ready to Confirm Light-day", publisher: NASA_SCIENCE, url: "https://science.nasa.gov/blogs/voyager/2026/11/18/voyager-1-engineers-analyze-data-issue-ready-to-confirm-light-day/", accessed: "2026-11-21", supports: "Dated status: no science or engineering data since 14 November 2026; carrier signal still detected; milestone confirmed from carrier signal and trajectory calculations." },
     ],
   },
 ];

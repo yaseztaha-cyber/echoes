@@ -175,6 +175,16 @@ function ArtifactPanel() {
         <Field k="LAUNCH" v={fmtDate(art.dates.launch)} />
         {art.dates.landing && <Field k="LANDING" v={fmtDate(art.dates.landing)} />}
         <p className="mt-2 text-[13px] leading-snug text-ash">{art.summary}</p>
+        {voy && art.distanceMilestone && (
+          <div className="mt-3 border-t border-[#1d2429] pt-2">
+            <div className="label mb-1 text-[9px]">ONE LIGHT-DAY (DATED, NOT LIVE)</div>
+            <Field k="DATE" v={fmtDate(art.distanceMilestone.date)} />
+            <Field k="DISTANCE" v={`${(art.distanceMilestone.distanceKm / 1e9).toFixed(1)} billion km · ${(art.distanceMilestone.distanceMi / 1e9).toFixed(1)} billion mi`} />
+            <Field k="SIGNAL TIME" v={`${art.distanceMilestone.oneWayHours} hours one way`} />
+            <p className="mt-1 text-[11px] leading-snug text-ash">{art.distanceMilestone.status}</p>
+          </div>
+        )}
+
         {verified && (
           <div className="mt-3 border-t border-[#1d2429] pt-2">
             <div className="label mb-1 text-[9px]">MISSION VERIFIED</div>
